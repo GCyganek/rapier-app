@@ -1,4 +1,4 @@
-Svelte Typescript client-side
+Nest.js Typescript server-side
 
 ## Installation
 
@@ -6,15 +6,15 @@ Svelte Typescript client-side
 $ npm install
 ```
 
-## Running the client
+## Running the server
 
 ```bash
-# build the client
+# build the server
 $ npm run build
 
 # start the sever
 $ npm run start
 
 # watch mode
-$ npm run dev
+$ npm run start:dev
 ```

@@ -1,9 +1,7 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "rapier-app-server-side",
   "private": true,
-  "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
-  "license": "MIT",
+  "version": "0.0.1",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
