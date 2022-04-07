@@ -46,9 +46,15 @@ export class FightsService {
     if (fight == undefined) {
       return ResponseStatus.NotFound;
     } else if (
-      (judgeId == fight.mainJudgeId && fight.mainJudgeSocket != socket) ||
-      (judgeId == fight.redJudgeId && fight.redJudgeSocket != socket) ||
-      (judgeId == fight.blueJudgeId && fight.blueJudgeSocket != socket)
+      (judgeId == fight.mainJudgeId &&
+        fight.mainJudgeSocket != null &&
+        fight.mainJudgeSocket != socket) ||
+      (judgeId == fight.redJudgeId &&
+        fight.redJudgeSocket != null &&
+        fight.redJudgeSocket != socket) ||
+      (judgeId == fight.blueJudgeId &&
+        fight.blueJudgeSocket != null &&
+        fight.blueJudgeSocket != socket)
     ) {
       return ResponseStatus.BadRequest;
     } else if (judgeId == fight.mainJudgeId) {
