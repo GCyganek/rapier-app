@@ -4,6 +4,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
+import { PlayersDataResponse } from 'classes/playersDataResponse.class';
 
 import { Socket } from 'socket.io';
 import { PlayersService } from 'src/players/players.service';
@@ -91,7 +92,9 @@ export class JudgesGateway {
     let bluePoints: number = 0;
     fight.blueEventsHistory.forEach(event => {bluePoints += event.points})
 
-    let playersData={
+    const response: PlayersDataResponse = {
+      status: ResponseStatus.OK,
+
       redPlayerFirstName: redPlayer.firstName,
       redPlayerLastName: redPlayer.lastName,
       redPlayerPoints: redPoints,
@@ -100,11 +103,6 @@ export class JudgesGateway {
       bluePlayerLastName: bluePlayer.lastName,
       bluePlayerPoints: bluePoints
     }
-
-    const response: ResponseInterface = {
-      status: ResponseStatus.OK,
-      playersData: playersData
-    };
 
     client.emit("getPlayerData", response)
   }
