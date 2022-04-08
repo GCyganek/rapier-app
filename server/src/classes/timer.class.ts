@@ -29,6 +29,10 @@ export class Timer {
         return true;
     }
 
+    timeoutSet(): boolean {
+        return this.timeoutId != null;
+    }
+
     endTimer(): void {
         if (this.timeoutId != null && !this.timeEnded) {
             clearTimeout(this.timeoutId)

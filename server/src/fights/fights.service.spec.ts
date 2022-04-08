@@ -25,7 +25,7 @@ describe('FightsService', () => {
     redEventsHistory: [],
     blueEventsHistory: [],
 
-    timer: new Timer(1)
+    timer: new Timer(0.01)
   };
 
   beforeAll(async () => {
@@ -143,6 +143,11 @@ describe('FightsService', () => {
   });
 
   describe('startFight', () => {
+
+    beforeEach(() => {
+      fight.timer = new Timer(0.01);
+    });
+
     it('should not start random fight', () => {
       const fightService = app.get(FightsService);
       fightService.newFight(fight);
@@ -206,6 +211,56 @@ describe('FightsService', () => {
       fightService.newFight(fight);
       fightService.getFight(fight.id).state = FightState.Running;
       expect(fightService.finishFight(fight.id)).toBe(ResponseStatus.OK);
+    });
+
+    it('should finish paused fight', () => {
+      const fightService = app.get(FightsService);
+      fightService.newFight(fight);
+      fightService.getFight(fight.id).state = FightState.Paused;
+      expect(fightService.finishFight(fight.id)).toBe(ResponseStatus.OK);
+    });
+
+    it('should end the timer if it was running', () => {
+      const fightService = app.get(FightsService);
+      expect(fight.timer.timeoutSet()).toBe(false);
+      fightService.newFight(fight);
+      fightService.startFight(fight.id);
+      fightService.finishFight(fight.id);
+      expect(fight.timer.timeoutSet()).toBe(false);
+    });
+
+    it('should leave the timer as ended when it has already ended running earlier', () => {
+      const fightService = app.get(FightsService);
+      fightService.newFight(fight);
+      fightService.startFight(fight.id);
+      fight.timer.endTimer();
+      expect(fight.timer.hasTimeEnded()).toBe(true);
+      fightService.finishFight(fight.id);
+      expect(fight.timer.hasTimeEnded()).toBe(true);
+    })
+  });
+
+  describe('startTimer', () => {
+
+    beforeEach(() => {
+      fight.timer = new Timer(0.01);
+    });
+
+    it('should start timer again when it was paused', () => {
+      const fightService = app.get(FightsService);
+      fightService.newFight(fight);
+      fightService.getFight(fight.id).state = FightState.Paused;
+      fightService.startTimer(fight.id);
+      expect(fight.state).toBe(FightState.Running);
+      expect(fight.timer.timeoutSet()).toBe(true);
+    });
+
+    it('should return bad request when fight is in running state', () => {
+      const fightService = app.get(FightsService);
+      fightService.newFight(fight);
+      fightService.getFight(fight.id).state = FightState.Paused;
+      expect(fightService.startTimer(fight.id)).toBe(ResponseStatus.OK);
+      expect(fightService.startTimer(fight.id)).toBe(ResponseStatus.BadRequest);
     });
   });
 });
