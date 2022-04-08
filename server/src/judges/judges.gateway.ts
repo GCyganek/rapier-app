@@ -9,6 +9,7 @@ import { Socket } from 'socket.io';
 import { FightInterface } from '../interfaces/fight.interface';
 import { FightsService } from '../fights/fights.service';
 import {
+  PauseTimerResponseInterface,
   ResponseInterface,
   ResponseStatus,
 } from '../interfaces/response.interface';
@@ -42,8 +43,7 @@ export class JudgesGateway {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('startFight', { status: ResponseStatus.Unauthorized });
-      return;
+      return client.emit('startFight', { status: ResponseStatus.Unauthorized });
     }
 
     const response: ResponseInterface = {
@@ -61,8 +61,9 @@ export class JudgesGateway {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('finishFight', { status: ResponseStatus.Unauthorized });
-      return;
+      return client.emit('finishFight', {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: ResponseInterface = {
@@ -75,13 +76,12 @@ export class JudgesGateway {
 
   @SubscribeMessage('startTimer')
   startTimer(
-    @MessageBody('fightId') fightId: string, 
+    @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('startTimer', { status: ResponseStatus.Unauthorized });
-      return;
+      return client.emit('startTimer', { status: ResponseStatus.Unauthorized });
     }
 
     const response: ResponseInterface = {
@@ -94,21 +94,24 @@ export class JudgesGateway {
 
   @SubscribeMessage('pauseTimer')
   pauseTimer(
-    @MessageBody('fightId') fightId: string, 
+    @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('timeInMilisWhenPaused') timeInMilisWhenPaused: number,
+    @MessageBody('timeInMilisWhenPaused') exactPauseTimeInMilis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('pauseTimer', { status: ResponseStatus.Unauthorized });
-      return;
+      return client.emit('pauseTimer', { status: ResponseStatus.Unauthorized });
     }
 
-    const response: ResponseInterface = {
-      status: this.fightsService.pauseTimer(fightId, timeInMilisWhenPaused),
+    const response: PauseTimerResponseInterface = {
+      status: this.fightsService.pauseTimer(
+        fightId,
+        exactPauseTimeInMilis,
+      ),
+      exactTimeWhenPausedInMilis: exactPauseTimeInMilis,
     };
     const fight = this.fightsService.getFight(fightId);
 
-    this.sendToAllJudges(fight, 'pauseTimer', { response: response.status, timeInMilisWhenPaused: timeInMilisWhenPaused } );
+    this.sendToAllJudges(fight, 'pauseTimer', response);
   }
 }

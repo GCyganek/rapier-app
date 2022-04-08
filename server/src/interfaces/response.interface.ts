@@ -1,4 +1,4 @@
-export class ResponseInterface {
+export interface ResponseInterface {
   status: ResponseStatus;
 }
 
@@ -8,4 +8,8 @@ export enum ResponseStatus {
   NotFound,
   NotReady,
   BadRequest,
+}
+
+export interface PauseTimerResponseInterface extends ResponseInterface {
+  exactTimeWhenPausedInMilis: number;
 }

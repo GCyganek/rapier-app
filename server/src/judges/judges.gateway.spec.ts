@@ -4,7 +4,7 @@ import { FightInterface, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { JudgesGateway } from './judges.gateway';
 import { FightsService } from '../fights/fights.service';
-import { Timer } from '../classes/timer.class';
+import { Timer } from '../classes/timer/timer.class';
 
 describe('JudgesGateway', () => {
   let app: TestingModule;
@@ -26,7 +26,7 @@ describe('JudgesGateway', () => {
     redEventsHistory: [],
     blueEventsHistory: [],
 
-    timer: new Timer(1)
+    timer: new Timer(1),
   };
 
   beforeAll(async () => {

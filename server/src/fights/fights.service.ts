@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer.class';
+import { Timer } from '../classes/timer/timer.class';
 import { FightInterface, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 
@@ -15,22 +15,22 @@ export class FightsService {
     const fight: FightInterface = {
       id: 'mockup',
       state: FightState.Scheduled,
-  
+
       mainJudgeId: 'main',
       redJudgeId: 'red',
       blueJudgeId: 'blue',
-  
+
       mainJudgeSocket: null,
       redJudgeSocket: null,
       blueJudgeSocket: null,
-  
+
       redPlayerId: 'player1',
       bluePlayerId: 'player2',
-  
+
       redEventsHistory: [],
       blueEventsHistory: [],
 
-      timer: new Timer(1)
+      timer: new Timer(1),
     };
     this.newFight(fight);
   }
@@ -110,7 +110,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.startTimer()) {
+    if (fight.timer.resumeTimer()) {
       fight.state = FightState.Running;
       return ResponseStatus.OK;
     }
@@ -140,14 +140,14 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.startTimer()) {
+    if (fight.timer.hasTimeEnded() || fight.timer.resumeTimer()) {
       fight.state = FightState.Running;
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
   }
 
-  pauseTimer(fightId: string, timeInMilisReceived: number): ResponseStatus {
+  pauseTimer(fightId: string, exactPauseTimeInMilis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -156,7 +156,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.pauseTimer(timeInMilisReceived)) {
+    if (fight.timer.hasTimeEnded() || fight.timer.pauseTimer(exactPauseTimeInMilis)) {
       fight.state = FightState.Paused;
       return ResponseStatus.OK;
     }
