@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
+import { Timer } from '../classes/timer.class';
 import { FightInterface, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 
@@ -9,6 +10,30 @@ export class FightsService {
     string,
     FightInterface
   >();
+
+  constructor() {
+    const fight: FightInterface = {
+      id: 'mockup',
+      state: FightState.Scheduled,
+  
+      mainJudgeId: 'main',
+      redJudgeId: 'red',
+      blueJudgeId: 'blue',
+  
+      mainJudgeSocket: null,
+      redJudgeSocket: null,
+      blueJudgeSocket: null,
+  
+      redPlayerId: 'player1',
+      bluePlayerId: 'player2',
+  
+      redEventsHistory: [],
+      blueEventsHistory: [],
+
+      timer: new Timer(1)
+    };
+    this.newFight(fight);
+  }
 
   newFight(fight: FightInterface) {
     this.fights.set(fight.id, fight);
@@ -85,8 +110,11 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    fight.state = FightState.Running;
-    return ResponseStatus.OK;
+    if (fight.timer.startTimer()) {
+      fight.state = FightState.Running;
+      return ResponseStatus.OK;
+    }
+    return ResponseStatus.BadRequest;
   }
 
   finishFight(fightId: string): ResponseStatus {
@@ -98,7 +126,40 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
+    fight.timer.endTimer();
     fight.state = FightState.Finished;
     return ResponseStatus.OK;
+  }
+
+  startTimer(fightId: string): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (fight.state != FightState.Paused) {
+      return ResponseStatus.BadRequest;
+    }
+
+    if (fight.timer.hasTimeEnded() || fight.timer.startTimer()) {
+      fight.state = FightState.Running;
+      return ResponseStatus.OK;
+    }
+    return ResponseStatus.BadRequest;
+  }
+
+  pauseTimer(fightId: string, timeInMilisReceived: number): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (fight.state != FightState.Running) {
+      return ResponseStatus.BadRequest;
+    }
+
+    if (fight.timer.hasTimeEnded() || fight.timer.pauseTimer(timeInMilisReceived)) {
+      fight.state = FightState.Paused;
+      return ResponseStatus.OK;
+    }
+    return ResponseStatus.BadRequest;
   }
 }

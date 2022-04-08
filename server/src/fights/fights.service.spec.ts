@@ -3,6 +3,7 @@ import { FightsService } from './fights.service';
 import { FightInterface, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Manager } from 'socket.io-client';
+import { Timer } from '../classes/timer.class';
 
 describe('FightsService', () => {
   let app: TestingModule;
@@ -23,6 +24,8 @@ describe('FightsService', () => {
 
     redEventsHistory: [],
     blueEventsHistory: [],
+
+    timer: new Timer(1)
   };
 
   beforeAll(async () => {
