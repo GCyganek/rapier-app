@@ -4,7 +4,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { PlayersDataResponse } from 'classes/playersDataResponse.class';
+import { PlayersDataResponse } from 'src/classes/playersDataResponse.class';
 
 import { Socket } from 'socket.io';
 import { PlayersService } from 'src/players/players.service';
