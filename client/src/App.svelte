@@ -1,10 +1,24 @@
 <script lang="ts">
 	export let name: string;
+	import Modal from './Modal.svelte';
+
+	let isOpenModal = false;
+
+	function openModal() {
+		isOpenModal = true;
+	}
+
+	function closeModal() {
+		isOpenModal = false;
+	}
 </script>
 
 <main>
 	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+	<button on:click={openModal}>Wynik</button>
+	<Modal isOpenModal={isOpenModal} on:closeModal={closeModal} />
+	
+
 </main>
 
 <style>
