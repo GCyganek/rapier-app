@@ -35,7 +35,7 @@ export class JudgesGateway {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('startFight', { status: ResponseStatus.Unauthorized });
+      return client.emit('startFight', { status: ResponseStatus.Unauthorized });
     }
 
     const response: ResponseInterface = {
@@ -55,7 +55,9 @@ export class JudgesGateway {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      client.emit('finishFight', { status: ResponseStatus.Unauthorized });
+      return client.emit('finishFight', {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: ResponseInterface = {
