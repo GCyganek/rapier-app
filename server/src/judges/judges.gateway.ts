@@ -4,7 +4,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { PlayersDataResponse } from 'src/classes/playersDataResponse.class';
+import { PlayersDataResponse } from 'src/interfaces/playersDataResponse.interface';
 
 import { Socket } from 'socket.io';
 import { PlayersService } from 'src/players/players.service';
@@ -13,6 +13,8 @@ import {
   ResponseInterface,
   ResponseStatus,
 } from '../interfaces/response.interface';
+import { FightInterface } from 'src/interfaces/fight.interface';
+import { emit } from 'process';
 
 @WebSocketGateway()
 export class JudgesGateway {
@@ -24,9 +26,31 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: ResponseInterface = {
+
+    let response: PlayersDataResponse = {
       status: this.fightsService.addJudge(fightId, judgeId, client),
+
+      redPlayerFirstName: null,
+      redPlayerLastName: null,
+    
+      bluePlayerFirstName: null,
+      bluePlayerLastName: null
     };
+
+    if (response.status != ResponseStatus.OK){
+        client.emit('join', response)
+        return;
+    }
+
+    const fight: FightInterface = this.fightsService.getFight(fightId)
+    const redPlayer = this.playersService.getPlayer(fight.redPlayerId);
+    const bluePlayer = this.playersService.getPlayer(fight.bluePlayerId);
+
+    response.redPlayerFirstName = redPlayer.firstName,
+    response.redPlayerLastName = redPlayer.lastName,
+  
+    response.bluePlayerFirstName = bluePlayer.firstName,
+    response.bluePlayerLastName = bluePlayer.lastName
     client.emit('join', response);
   }
 
@@ -38,6 +62,7 @@ export class JudgesGateway {
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       client.emit('startFight', { status: ResponseStatus.Unauthorized });
+      return;
     }
 
     const response: ResponseInterface = {
@@ -58,6 +83,7 @@ export class JudgesGateway {
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       client.emit('finishFight', { status: ResponseStatus.Unauthorized });
+      return;
     }
 
     const response: ResponseInterface = {
@@ -70,40 +96,4 @@ export class JudgesGateway {
     fight.blueJudgeSocket.emit('finishFight', response);
   }
 
-  @SubscribeMessage('getPlayerData')
-  getPlayerData(
-    @MessageBody('fightId') fightId: string,
-    @MessageBody('judgeId') judgeId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    if (!this.fightsService.isJudge(fightId, judgeId)) {
-      client.emit('getPlayerData', { status: ResponseStatus.Unauthorized });
-      return
-    }
-
-    const fight = this.fightsService.getFight(fightId);
-
-    const redPlayer = this.playersService.getPlayer(fight.redPlayerId);
-    const bluePlayer = this.playersService.getPlayer(fight.bluePlayerId);
-
-    let redPoints: number = 0;
-    fight.redEventsHistory.forEach( event => {redPoints += event.points})
-
-    let bluePoints: number = 0;
-    fight.blueEventsHistory.forEach(event => {bluePoints += event.points})
-
-    const response: PlayersDataResponse = {
-      status: ResponseStatus.OK,
-
-      redPlayerFirstName: redPlayer.firstName,
-      redPlayerLastName: redPlayer.lastName,
-      redPlayerPoints: redPoints,
-
-      bluePlayerFirstName: bluePlayer.firstName,
-      bluePlayerLastName: bluePlayer.lastName,
-      bluePlayerPoints: bluePoints
-    }
-
-    client.emit("getPlayerData", response)
-  }
 }
