@@ -6,6 +6,7 @@ import {
 } from '@nestjs/websockets';
 
 import { Socket } from 'socket.io';
+import { PlayersService } from 'src/players/players.service';
 import { FightsService } from '../fights/fights.service';
 import {
   ResponseInterface,
@@ -14,7 +15,7 @@ import {
 
 @WebSocketGateway()
 export class JudgesGateway {
-  constructor(private fightsService: FightsService) {}
+  constructor(private fightsService: FightsService, private playersService: PlayersService) {}
 
   @SubscribeMessage('join')
   join(
@@ -66,5 +67,45 @@ export class JudgesGateway {
     fight.mainJudgeSocket.emit('finishFight', response);
     fight.redJudgeSocket.emit('finishFight', response);
     fight.blueJudgeSocket.emit('finishFight', response);
+  }
+
+  @SubscribeMessage('getPlayerData')
+  getPlayerData(
+    @MessageBody('fightId') fightId: string,
+    @MessageBody('judgeId') judgeId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    if (!this.fightsService.isJudge(fightId, judgeId)) {
+      client.emit('getPlayerData', { status: ResponseStatus.Unauthorized });
+      return
+    }
+
+    const fight = this.fightsService.getFight(fightId);
+
+    const redPlayer = this.playersService.getPlayer(fight.redPlayerId);
+    const bluePlayer = this.playersService.getPlayer(fight.bluePlayerId);
+
+    let redPoints: number = 0;
+    fight.redEventsHistory.forEach( event => {redPoints += event.points})
+
+    let bluePoints: number = 0;
+    fight.blueEventsHistory.forEach(event => {bluePoints += event.points})
+
+    let playersData={
+      redPlayerFirstName: redPlayer.firstName,
+      redPlayerLastName: redPlayer.lastName,
+      redPlayerPoints: redPoints,
+
+      bluePlayerFirstName: bluePlayer.firstName,
+      bluePlayerLastName: bluePlayer.lastName,
+      bluePlayerPoints: bluePoints
+    }
+
+    const response: ResponseInterface = {
+      status: ResponseStatus.OK,
+      playersData: playersData
+    };
+
+    client.emit("getPlayerData", response)
   }
 }
