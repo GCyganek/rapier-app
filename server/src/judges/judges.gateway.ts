@@ -36,6 +36,7 @@ export class JudgesGateway {
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       client.emit('startFight', { status: ResponseStatus.Unauthorized });
+      return;
     }
 
     const response: ResponseInterface = {
@@ -56,6 +57,7 @@ export class JudgesGateway {
   ) {
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       client.emit('finishFight', { status: ResponseStatus.Unauthorized });
+      return;
     }
 
     const response: ResponseInterface = {
