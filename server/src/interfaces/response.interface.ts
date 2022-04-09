@@ -1,4 +1,4 @@
-export class ResponseInterface {
+export interface ResponseInterface {
   status: ResponseStatus;
 }
 
