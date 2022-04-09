@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { FightsService } from './fights/fights.service';
-import { JudgesGateway } from './judges/judges.gateway';
+import { AppController } from './controllers/app.controller';
+import { AppService } from './services/app.service';
+import { FightsService } from './services/fights.service';
+import { JudgesGateway } from './gateways/judges.gateway';
 
 @Module({
   imports: [],

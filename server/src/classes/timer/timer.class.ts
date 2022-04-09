@@ -2,28 +2,29 @@ import { TimerConstants } from './timer-constants.class';
 
 export class Timer {
   private timeoutId: NodeJS.Timeout = null;
-  private remainingMilis: number;
+  private remainingMillis: number;
   private lastTimerStart: number;
   private timeEnded = false;
 
   constructor(public readonly timeInMinutes: number) {
-    this.remainingMilis = timeInMinutes * TimerConstants.MILISECONDS_IN_MINUTE;
+    this.remainingMillis =
+      timeInMinutes * TimerConstants.MILLISECONDS_IN_MINUTE;
   }
 
   resumeTimer(): boolean {
     if (this.timeoutId || this.timeEnded) return false;
 
     this.lastTimerStart = Date.now();
-    this.timeoutId = setTimeout(this.notify, this.remainingMilis);
+    this.timeoutId = setTimeout(this.notify, this.remainingMillis);
     return true;
   }
 
-  pauseTimer(exactPauseTimeInMilis: number): boolean {
+  pauseTimer(exactPauseTimeInMillis: number): boolean {
     if (this.timeoutId == null || this.timeEnded) return false;
 
     clearTimeout(this.timeoutId);
     this.timeoutId = null;
-    this.remainingMilis -= exactPauseTimeInMilis - this.lastTimerStart;
+    this.remainingMillis -= exactPauseTimeInMillis - this.lastTimerStart;
     return true;
   }
 

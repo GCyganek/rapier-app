@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FightsService } from './fights.service';
-import { FightInterface, FightState } from '../interfaces/fight.interface';
-import { ResponseStatus } from '../interfaces/response.interface';
+import { FightsService } from '../../src/services/fights.service';
+import { Fight, FightState } from '../../src/interfaces/fight.interface';
+import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { Manager } from 'socket.io-client';
-import { Timer } from '../classes/timer/timer.class';
+import { Timer } from '../../src/classes/timer/timer.class';
 
 describe('FightsService', () => {
   let app: TestingModule;
   let fightService: FightsService;
   let manager: Manager;
-  const fight: FightInterface = {
+  const fight: Fight = {
     id: 'mockup',
     state: FightState.Scheduled,
 

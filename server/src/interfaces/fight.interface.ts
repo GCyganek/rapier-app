@@ -1,8 +1,8 @@
-import { EventInterface } from './event.interface.js';
+import { Event } from './event.interface.js';
 import { Socket } from 'socket.io';
 import { Timer } from '../classes/timer/timer.class.js';
 
-export interface FightInterface {
+export interface Fight {
   id: string;
   state: FightState;
 
@@ -17,8 +17,8 @@ export interface FightInterface {
   redPlayerId: string;
   bluePlayerId: string;
 
-  redEventsHistory: EventInterface[];
-  blueEventsHistory: EventInterface[];
+  redEventsHistory: Event[];
+  blueEventsHistory: Event[];
 
   timer: Timer;
 }

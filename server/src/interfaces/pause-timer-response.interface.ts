@@ -1,3 +1,5 @@
-export interface PauseTimerResponseInterface extends ResponseInterface {
-  exactPauseTimeInMilis: number;
+import { Response } from './response.interface';
+
+export interface PauseTimerResponse extends Response {
+  exactPauseTimeInMillis: number;
 }
