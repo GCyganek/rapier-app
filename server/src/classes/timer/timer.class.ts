@@ -43,7 +43,7 @@ export class Timer {
     return this.timeEnded;
   }
 
-  notify(): void {
+  private notify(): void {
     this.timeEnded = true;
   }
 }

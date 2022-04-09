@@ -156,7 +156,10 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.pauseTimer(exactPauseTimeInMilis)) {
+    if (
+      fight.timer.hasTimeEnded() ||
+      fight.timer.pauseTimer(exactPauseTimeInMilis)
+    ) {
       fight.state = FightState.Paused;
       return ResponseStatus.OK;
     }

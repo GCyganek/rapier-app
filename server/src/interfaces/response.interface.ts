@@ -9,7 +9,3 @@ export enum ResponseStatus {
   NotReady,
   BadRequest,
 }
-
-export interface PauseTimerResponseInterface extends ResponseInterface {
-  exactPauseTimeInMilis: number;
-}

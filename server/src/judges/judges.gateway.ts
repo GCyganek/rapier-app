@@ -19,7 +19,7 @@ export class JudgesGateway {
   constructor(private fightsService: FightsService) {}
 
   sendToAllJudges(fight: FightInterface, event: string, response: any) {
-    if(fight.mainJudgeSocket != null) {
+    if (fight.mainJudgeSocket != null) {
       fight.mainJudgeSocket.emit(event, response);
     }
     if (fight.redJudgeSocket != null) {
@@ -48,7 +48,6 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-
     if (!this.fightsService.getFight(fightId)) {
       return client.emit('startFight', { status: ResponseStatus.NotFound });
     }
@@ -75,13 +74,14 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-
     if (!this.fightsService.getFight(fightId)) {
       return client.emit('finishFight', { status: ResponseStatus.NotFound });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('finishFight', { status: ResponseStatus.Unauthorized });
+      return client.emit('finishFight', {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: ResponseInterface = {
@@ -102,13 +102,14 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-
     if (!this.fightsService.getFight(fightId)) {
       return client.emit('resumeTimer', { status: ResponseStatus.NotFound });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('resumeTimer', { status: ResponseStatus.Unauthorized });
+      return client.emit('resumeTimer', {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: ResponseInterface = {
@@ -130,7 +131,6 @@ export class JudgesGateway {
     @MessageBody('exactPauseTimeInMilis') exactPauseTimeInMilis: number,
     @ConnectedSocket() client: Socket,
   ) {
-
     if (!this.fightsService.getFight(fightId)) {
       return client.emit('pauseTimer', { status: ResponseStatus.NotFound });
     }
@@ -140,10 +140,7 @@ export class JudgesGateway {
     }
 
     const response: PauseTimerResponseInterface = {
-      status: this.fightsService.pauseTimer(
-        fightId,
-        exactPauseTimeInMilis,
-      ),
+      status: this.fightsService.pauseTimer(fightId, exactPauseTimeInMilis),
       exactPauseTimeInMilis: exactPauseTimeInMilis,
     };
     const fight = this.fightsService.getFight(fightId);
@@ -151,7 +148,7 @@ export class JudgesGateway {
     if (response.status != ResponseStatus.OK) {
       return client.emit('pauseTimer', response);
     }
-    console.log(response);
+
     this.sendToAllJudges(fight, 'pauseTimer', response);
   }
 }
