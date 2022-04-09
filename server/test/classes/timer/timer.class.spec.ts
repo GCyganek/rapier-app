@@ -1,4 +1,4 @@
-import { Timer } from './timer.class';
+import { Timer } from '../../../src/classes/timer/timer.class';
 
 describe('Timer', () => {
   let timer: Timer;

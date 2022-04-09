@@ -1,18 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Timer } from '../classes/timer/timer.class';
-import { FightInterface, FightState } from '../interfaces/fight.interface';
+import { Fight, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 
 @Injectable()
 export class FightsService {
-  private readonly fights: Map<string, FightInterface> = new Map<
-    string,
-    FightInterface
-  >();
+  private readonly fights: Map<string, Fight> = new Map<string, Fight>();
 
   constructor() {
-    const fight: FightInterface = {
+    const fight: Fight = {
       id: 'mockup',
       state: FightState.Scheduled,
 
@@ -35,11 +32,11 @@ export class FightsService {
     this.newFight(fight);
   }
 
-  newFight(fight: FightInterface) {
+  newFight(fight: Fight) {
     this.fights.set(fight.id, fight);
   }
 
-  getFight(id: string): FightInterface {
+  getFight(id: string): Fight {
     return this.fights.get(id);
   }
 
@@ -147,7 +144,7 @@ export class FightsService {
     return ResponseStatus.BadRequest;
   }
 
-  pauseTimer(fightId: string, exactPauseTimeInMilis: number): ResponseStatus {
+  pauseTimer(fightId: string, exactPauseTimeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -158,7 +155,7 @@ export class FightsService {
 
     if (
       fight.timer.hasTimeEnded() ||
-      fight.timer.pauseTimer(exactPauseTimeInMilis)
+      fight.timer.pauseTimer(exactPauseTimeInMillis)
     ) {
       fight.state = FightState.Paused;
       return ResponseStatus.OK;

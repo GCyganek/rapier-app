@@ -6,19 +6,16 @@ import {
 } from '@nestjs/websockets';
 
 import { Socket } from 'socket.io';
-import { FightInterface } from '../interfaces/fight.interface';
-import { FightsService } from '../fights/fights.service';
-import {
-  PauseTimerResponseInterface,
-  ResponseInterface,
-  ResponseStatus,
-} from '../interfaces/response.interface';
+import { Fight } from '../interfaces/fight.interface';
+import { FightsService } from '../services/fights.service';
+import { Response, ResponseStatus } from '../interfaces/response.interface';
+import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
 
 @WebSocketGateway()
 export class JudgesGateway {
   constructor(private fightsService: FightsService) {}
 
-  sendToAllJudges(fight: FightInterface, event: string, response: any) {
+  sendToAllJudges(fight: Fight, event: string, response: any) {
     if (fight.mainJudgeSocket != null) {
       fight.mainJudgeSocket.emit(event, response);
     }
@@ -36,7 +33,7 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: ResponseInterface = {
+    const response: Response = {
       status: this.fightsService.addJudge(fightId, judgeId, client),
     };
     client.emit('join', response);
@@ -56,7 +53,7 @@ export class JudgesGateway {
       return client.emit('startFight', { status: ResponseStatus.Unauthorized });
     }
 
-    const response: ResponseInterface = {
+    const response: Response = {
       status: this.fightsService.startFight(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
@@ -84,7 +81,7 @@ export class JudgesGateway {
       });
     }
 
-    const response: ResponseInterface = {
+    const response: Response = {
       status: this.fightsService.finishFight(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
@@ -112,7 +109,7 @@ export class JudgesGateway {
       });
     }
 
-    const response: ResponseInterface = {
+    const response: Response = {
       status: this.fightsService.resumeTimer(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
@@ -128,7 +125,7 @@ export class JudgesGateway {
   pauseTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('exactPauseTimeInMilis') exactPauseTimeInMilis: number,
+    @MessageBody('exactPauseTimeInMillis') exactPauseTimeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -139,9 +136,9 @@ export class JudgesGateway {
       return client.emit('pauseTimer', { status: ResponseStatus.Unauthorized });
     }
 
-    const response: PauseTimerResponseInterface = {
-      status: this.fightsService.pauseTimer(fightId, exactPauseTimeInMilis),
-      exactPauseTimeInMilis: exactPauseTimeInMilis,
+    const response: PauseTimerResponse = {
+      status: this.fightsService.pauseTimer(fightId, exactPauseTimeInMillis),
+      exactPauseTimeInMillis: exactPauseTimeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 
