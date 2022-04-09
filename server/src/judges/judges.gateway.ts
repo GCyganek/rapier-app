@@ -19,9 +19,15 @@ export class JudgesGateway {
   constructor(private fightsService: FightsService) {}
 
   sendToAllJudges(fight: FightInterface, event: string, response: any) {
-    fight.mainJudgeSocket.emit(event, response);
-    fight.redJudgeSocket.emit(event, response);
-    fight.blueJudgeSocket.emit(event, response);
+    if(fight.mainJudgeSocket != null) {
+      fight.mainJudgeSocket.emit(event, response);
+    }
+    if (fight.redJudgeSocket != null) {
+      fight.redJudgeSocket.emit(event, response);
+    }
+    if (fight.blueJudgeSocket != null) {
+      fight.blueJudgeSocket.emit(event, response);
+    }
   }
 
   @SubscribeMessage('join')
@@ -42,6 +48,11 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
+
+    if (!this.fightsService.getFight(fightId)) {
+      return client.emit('startFight', { status: ResponseStatus.NotFound });
+    }
+
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       return client.emit('startFight', { status: ResponseStatus.Unauthorized });
     }
@@ -50,6 +61,10 @@ export class JudgesGateway {
       status: this.fightsService.startFight(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
+
+    if (response.status != ResponseStatus.OK) {
+      return client.emit('startFight', response);
+    }
 
     this.sendToAllJudges(fight, 'startFight', response);
   }
@@ -60,10 +75,13 @@ export class JudgesGateway {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
+
+    if (!this.fightsService.getFight(fightId)) {
+      return client.emit('finishFight', { status: ResponseStatus.NotFound });
+    }
+
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('finishFight', {
-        status: ResponseStatus.Unauthorized,
-      });
+      return client.emit('finishFight', { status: ResponseStatus.Unauthorized });
     }
 
     const response: ResponseInterface = {
@@ -71,34 +89,52 @@ export class JudgesGateway {
     };
     const fight = this.fightsService.getFight(fightId);
 
+    if (response.status != ResponseStatus.OK) {
+      return client.emit('finishFight', response);
+    }
+
     this.sendToAllJudges(fight, 'finishFight', response);
   }
 
-  @SubscribeMessage('startTimer')
-  startTimer(
+  @SubscribeMessage('resumeTimer')
+  resumeTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
+
+    if (!this.fightsService.getFight(fightId)) {
+      return client.emit('resumeTimer', { status: ResponseStatus.NotFound });
+    }
+
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('startTimer', { status: ResponseStatus.Unauthorized });
+      return client.emit('resumeTimer', { status: ResponseStatus.Unauthorized });
     }
 
     const response: ResponseInterface = {
-      status: this.fightsService.startTimer(fightId),
+      status: this.fightsService.resumeTimer(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
 
-    this.sendToAllJudges(fight, 'startTimer', response);
+    if (response.status != ResponseStatus.OK) {
+      return client.emit('resumeTimer', response);
+    }
+
+    this.sendToAllJudges(fight, 'resumeTimer', response);
   }
 
   @SubscribeMessage('pauseTimer')
   pauseTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('timeInMilisWhenPaused') exactPauseTimeInMilis: number,
+    @MessageBody('exactPauseTimeInMilis') exactPauseTimeInMilis: number,
     @ConnectedSocket() client: Socket,
   ) {
+
+    if (!this.fightsService.getFight(fightId)) {
+      return client.emit('pauseTimer', { status: ResponseStatus.NotFound });
+    }
+
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
       return client.emit('pauseTimer', { status: ResponseStatus.Unauthorized });
     }
@@ -108,10 +144,14 @@ export class JudgesGateway {
         fightId,
         exactPauseTimeInMilis,
       ),
-      exactTimeWhenPausedInMilis: exactPauseTimeInMilis,
+      exactPauseTimeInMilis: exactPauseTimeInMilis,
     };
     const fight = this.fightsService.getFight(fightId);
 
+    if (response.status != ResponseStatus.OK) {
+      return client.emit('pauseTimer', response);
+    }
+    console.log(response);
     this.sendToAllJudges(fight, 'pauseTimer', response);
   }
 }

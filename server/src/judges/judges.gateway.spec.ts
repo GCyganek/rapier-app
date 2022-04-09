@@ -1,235 +1,464 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Manager } from 'socket.io-client';
+import { io, Manager, Socket } from 'socket.io-client';
 import { FightInterface, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { JudgesGateway } from './judges.gateway';
 import { FightsService } from '../fights/fights.service';
 import { Timer } from '../classes/timer/timer.class';
+import { INestApplication } from '@nestjs/common';
+
+async function createNestApp(...providers): Promise<INestApplication> {
+  const testingModule = await Test.createTestingModule({
+    providers: providers,
+  }).compile();
+  const app = testingModule.createNestApplication();
+  return app;
+}
+
+async function joinNewJudge(fightId: string, judgeId: string) {
+  let ws = io('http://localhost:3001');
+
+  ws.emit('join', {
+    fightId: fightId,
+    judgeId: judgeId,
+  })
+
+  await new Promise<void>(resolve => 
+    ws.on('join', data => {
+      expect(data.status).toBe(ResponseStatus.OK);
+      resolve();
+    }),
+  );
+
+  return ws;
+}
 
 describe('JudgesGateway', () => {
-  let app: TestingModule;
-  const fight: FightInterface = {
-    id: 'mockup',
-    state: FightState.Scheduled,
-
-    mainJudgeId: 'main',
-    redJudgeId: 'red',
-    blueJudgeId: 'blue',
-
-    mainJudgeSocket: null,
-    redJudgeSocket: null,
-    blueJudgeSocket: null,
-
-    redPlayerId: 'player1',
-    bluePlayerId: 'player2',
-
-    redEventsHistory: [],
-    blueEventsHistory: [],
-
-    timer: new Timer(1),
-  };
+  let app: INestApplication;
+  let fight: FightInterface;
 
   beforeAll(async () => {
-    app = await Test.createTestingModule({
-      providers: [JudgesGateway, FightsService],
-    }).compile();
+    app = await createNestApp(JudgesGateway, FightsService);
+    await app.listen(3001);
+
+    fight = {
+      id: 'mockup',
+      state: FightState.Scheduled,
+  
+      mainJudgeId: 'main',
+      redJudgeId: 'red',
+      blueJudgeId: 'blue',
+  
+      mainJudgeSocket: null,
+      redJudgeSocket: null,
+      blueJudgeSocket: null,
+  
+      redPlayerId: 'player1',
+      bluePlayerId: 'player2',
+  
+      redEventsHistory: [],
+      blueEventsHistory: [],
+  
+      timer: new Timer(1),
+    };
 
     app.get(FightsService).newFight(fight);
   });
 
-  describe('join', () => {
-    it('should join fight as a main judge', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/join');
+  afterAll(() => {
+    app.close();
+  });
 
-      socket.emit('join', {
+  describe('join', () => {
+    let ws;
+
+    it('should join fight as a main judge', async () => {
+      ws = io('http://localhost:3001');
+      ws.emit('join', {
         fightId: fight.id,
         judgeId: fight.mainJudgeId,
       });
 
-      socket.on('join', (message) => {
-        expect(message.status).toBe(ResponseStatus.OK);
-      });
+      await new Promise<void>(resolve => 
+        ws.on('join', data => {
+          expect(data.status).toBe(ResponseStatus.OK);
+          resolve();
+        }),
+      );
     });
 
-    it('should join fight as a red judge', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/join');
-
-      socket.emit('join', {
+    it('should join fight as a red judge', async () => {
+      ws = io('http://localhost:3001');
+      ws.emit('join', {
         fightId: fight.id,
         judgeId: fight.redJudgeId,
       });
 
-      socket.on('join', (message) => {
-        expect(message.status).toBe(ResponseStatus.OK);
-      });
+      await new Promise<void>(resolve => 
+        ws.on('join', data => {
+          expect(data.status).toBe(ResponseStatus.OK);
+          resolve();
+        }),
+      );
     });
 
-    it('should not join fight as a random judge', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/join');
-
-      socket.emit('join', {
+    it('should not join fight as a random judge', async () => {
+      ws = io('http://localhost:3001');
+      ws.emit('join', {
         fightId: fight.id,
         judgeId: 'test 123',
       });
 
-      socket.on('join', (message) => {
-        expect(message.status).toBe(ResponseStatus.BadRequest);
-      });
+      await new Promise<void>(resolve => 
+        ws.on('join', data => {
+          expect(data.status).toBe(ResponseStatus.Unauthorized);
+          resolve();
+        }),
+      );
     });
 
-    it('should not join to the other fight', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/join');
-
-      socket.emit('join', {
+    it('should not join to the other fight', async () => {
+      ws = io('http://localhost:3001');
+      ws.emit('join', {
         fightId: 'test 123',
         judgeId: fight.mainJudgeId,
       });
 
-      socket.on('join', (message) => {
-        expect(message.status).toBe(ResponseStatus.NotFound);
-      });
+      await new Promise<void>(resolve => 
+        ws.on('join', data => {
+          expect(data.status).toBe(ResponseStatus.NotFound);
+          resolve();
+        }),
+      );
     });
+
+    afterEach(() => ws.close());
+
   });
 
-  describe('startFight', () => {
-    it('should not start random fight', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/startFight');
-      socket.emit('startFight', {
-        fightId: 'test 123',
-        judgeId: fight.mainJudgeId,
-      });
+  describe('withJudgesSockets', () => {
+    let wsMain, wsRed, wsBlue;
+  
+    beforeEach(async () => {
+      fight.mainJudgeSocket = null;
+      wsMain = await joinNewJudge(fight.id, fight.mainJudgeId);
+      fight.redJudgeSocket = null;
+      wsRed = await joinNewJudge(fight.id, fight.redJudgeId);
+      fight.blueJudgeSocket = null;
+      wsBlue = await joinNewJudge(fight.id, fight.blueJudgeId);
+    })
 
-      socket.on('startFight', (message) => {
-        expect(message.status).toBe(ResponseStatus.NotFound);
-      });
-    });
+    afterEach(() => {
+      wsMain.close();
+      wsRed.close();
+      wsBlue.close();
+    })
 
-    it('should not start fight without all judges', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/startFight');
+    describe('startFight', () => {
 
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.mainJudgeId,
+      it('should not start random fight', async () => {
+        wsMain.emit('startFight', {
+          fightId: 'test 123',
+          judgeId: fight.mainJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('startFight', data => {
+            expect(data.status).toBe(ResponseStatus.NotFound);
+            resolve();
+          }),
+        );
       });
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.redJudgeId,
+  
+      it('should not start fight without all judges', async () => {
+        fight.blueJudgeSocket = null;
+  
+        wsMain.emit('startFight', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('startFight', data => {
+            expect(data.status).toBe(ResponseStatus.NotReady);
+            resolve();
+          }),
+        );
       });
-
-      let counter = 0;
-      socket.on('startFight', (message) => {
-        if (counter == 1) {
-          expect(message.status).toBe(ResponseStatus.NotReady);
+  
+      it('should not start fight if not main judge', async () => {
+        wsRed.emit('startFight', {
+          fightId: fight.id,
+          judgeId: fight.redJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsRed.on('startFight', data => {
+            expect(data.status).toBe(ResponseStatus.Unauthorized);
+            resolve();
+          }),
+        );
+      });
+  
+      it('should start ready fight', async () => {
+        wsMain.emit('startFight', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        })
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('startFight', data => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              resolve();
+            }),
+          );
         }
-        counter++;
+  
+        fight.timer.endTimer();
+      });
+  
+      it('should not start not running fight', async () => {
+        fight.state = FightState.Finished;
+  
+        wsMain.emit('startFight', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        })
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('startFight', data => {
+            expect(data.status).toBe(ResponseStatus.BadRequest);
+            resolve();
+          }),
+        );
       });
     });
-
-    it('should start ready fight', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/startFight');
-
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.mainJudgeId,
+  
+    describe('finishFight', () => {
+      it('should not finish random fight', async () => {
+        wsMain.emit('finishFight', {
+          fightId: 'test 123',
+          judgeId: fight.mainJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('finishFight', data => {
+            expect(data.status).toBe(ResponseStatus.NotFound);
+            resolve();
+          }),
+        );
       });
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.redJudgeId,
+  
+      it('should not finish not running fight', async () => {
+        fight.state = FightState.Finished;
+  
+        wsMain.emit('finishFight', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('finishFight', data => {
+            expect(data.status).toBe(ResponseStatus.BadRequest);
+            resolve();
+          }),
+        );
       });
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.blueJudgeId,
-      });
-
-      let counter = 0;
-      socket.on('startFight', (message) => {
-        if (counter == 2) {
-          expect(message.status).toBe(ResponseStatus.OK);
+  
+      it('should finish running fight', async () => {
+        fight.state = FightState.Running;
+  
+        wsMain.emit('finishFight', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('finishFight', data => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              resolve();
+            }),
+          );
         }
-        counter++;
       });
     });
+  
+    describe('resumeTimer', () => {
 
-    it('should not start not running fight', () => {
-      const fightService = app.get(FightsService);
-      fightService.getFight(fight.id).state = FightState.Finished;
+      beforeEach(() => {
+        fight.timer = new Timer(1);
+      })
 
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/startFight');
+      afterEach(() => {
+        fight.timer.endTimer();
+      })
 
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.mainJudgeId,
+      it('not main judge should not resume timer when it was paused before timer ended', async () => {
+        fight.state = FightState.Paused;
+        let exactPauseTimeInMilis = Date.now()
+        fight.timer.pauseTimer(exactPauseTimeInMilis);
+  
+        wsRed.emit('resumeTimer', {
+          fightId: fight.id,
+          judgeId: fight.redJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsRed.on('resumeTimer', data => {
+            expect(data.status).toBe(ResponseStatus.Unauthorized);
+            resolve();
+          }),
+        );
       });
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.redJudgeId,
-      });
-      socket.emit('startFight', {
-        fightId: fight.id,
-        judgeId: fight.blueJudgeId,
-      });
-
-      let counter = 0;
-      socket.on('startFight', (message) => {
-        if (counter == 2) {
-          expect(message.status).toBe(ResponseStatus.BadRequest);
+  
+      it('main judge should resume timer when it was paused before timer ended', async () => {
+        fight.state = FightState.Paused;
+        let exactPauseTimeInMilis = Date.now()
+        fight.timer.pauseTimer(exactPauseTimeInMilis);
+  
+        wsMain.emit('resumeTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('resumeTimer', data => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              resolve();
+            }),
+          );
         }
-        counter++;
+      });
+
+      it('timer should not be resumed again when it is already running', async () => {
+        fight.state = FightState.Running;
+
+        wsMain.emit('resumeTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('resumeTimer', data => {
+            expect(data.status).toBe(ResponseStatus.BadRequest);
+            resolve();
+          }),
+        );
+      });
+
+      it('fight can be resumed even if fight time has already ended', async () => {
+        fight.timer.endTimer();
+        fight.state = FightState.Paused;
+
+        wsMain.emit('resumeTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+        });
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('resumeTimer', data => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              resolve();
+            }),
+          );
+        }
       });
     });
-  });
 
-  describe('finishFight', () => {
-    it('should not finish random fight', () => {
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/finishFight');
-      socket.emit('finishFight', {
-        fightId: 'test 123',
-        judgeId: fight.mainJudgeId,
+    describe('pauseTimer', () => {
+
+      beforeEach(() => {
+        fight.timer = new Timer(1);
+      })
+
+      afterEach(() => {
+        fight.timer.endTimer();
+      })
+
+      it('not main judge should not pause timer when it is running before timer ended', async () => {
+        fight.state = FightState.Running;
+        let exactPauseTimeInMilis = Date.now();
+
+        wsRed.emit('pauseTimer', {
+          fightId: fight.id,
+          judgeId: fight.redJudgeId,
+          exactPauseTimeInMilis: exactPauseTimeInMilis,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsRed.on('pauseTimer', data => {
+            expect(data.status).toBe(ResponseStatus.Unauthorized);
+            resolve();
+          }),
+        );
+      });
+  
+      it('main judge should pause timer when it is running before timer ended', async () => {
+        fight.state = FightState.Running;
+        fight.timer.resumeTimer();
+        let exactPauseTimeInMilis = Date.now();
+  
+        wsMain.emit('pauseTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+          exactPauseTimeInMilis: exactPauseTimeInMilis,
+        });
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('pauseTimer', data => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              expect(data.exactPauseTimeInMilis).toBe(exactPauseTimeInMilis);
+              resolve();
+            }),
+          );
+        }
       });
 
-      socket.on('finishFight', (message) => {
-        expect(message.status).toBe(ResponseStatus.NotFound);
-      });
-    });
+      it('timer should not be paused again when it is already paused', async () => {
+        fight.state = FightState.Paused;
+        let exactPauseTimeInMilis = Date.now();
+        fight.timer.pauseTimer(exactPauseTimeInMilis);
 
-    it('should not finish not running fight', () => {
-      const fightService = app.get(FightsService);
-      fightService.getFight(fight.id).state = FightState.Finished;
-
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/finishFight');
-      socket.emit('finishFight', {
-        fightId: fight.id,
-        judgeId: fight.mainJudgeId,
-      });
-
-      socket.on('finishFight', (message) => {
-        expect(message.status).toBe(ResponseStatus.BadRequest);
-      });
-    });
-
-    it('should finish running fight', () => {
-      const fightService = app.get(FightsService);
-      fightService.getFight(fight.id).state = FightState.Running;
-
-      const manager = new Manager('wss://localhost:3000');
-      const socket = manager.socket('/finishFight');
-      socket.emit('finishFight', {
-        fightId: fight.id,
-        judgeId: fight.mainJudgeId,
+        wsMain.emit('pauseTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+          exactPauseTimeInMilis: exactPauseTimeInMilis,
+        });
+  
+        await new Promise<void>(resolve => 
+          wsMain.on('pauseTimer', data => {
+            expect(data.status).toBe(ResponseStatus.BadRequest);
+            resolve();
+          }),
+        );
       });
 
-      socket.on('finishFight', (message) => {
-        expect(message.status).toBe(ResponseStatus.OK);
+      it('fight can be paused even if fight time has already ended', async () => {
+        fight.state = FightState.Running;
+        fight.timer.endTimer();
+        let exactPauseTimeInMilis = Date.now();
+
+        wsMain.emit('pauseTimer', {
+          fightId: fight.id,
+          judgeId: fight.mainJudgeId,
+          exactPauseTimeInMilis: exactPauseTimeInMilis,
+        });
+  
+        for (var ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>(resolve => 
+            ws.on('pauseTimer', data => {
+              console.log(data);
+              expect(data.status).toBe(ResponseStatus.OK);
+              expect(data.exactPauseTimeInMilis).toBe(exactPauseTimeInMilis);
+              resolve();
+            }),
+          );
+        }
       });
     });
   });

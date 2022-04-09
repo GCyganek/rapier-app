@@ -11,5 +11,5 @@ export enum ResponseStatus {
 }
 
 export interface PauseTimerResponseInterface extends ResponseInterface {
-  exactTimeWhenPausedInMilis: number;
+  exactPauseTimeInMilis: number;
 }

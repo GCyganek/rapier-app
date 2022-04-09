@@ -131,7 +131,7 @@ export class FightsService {
     return ResponseStatus.OK;
   }
 
-  startTimer(fightId: string): ResponseStatus {
+  resumeTimer(fightId: string): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {

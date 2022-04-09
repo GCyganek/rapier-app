@@ -214,21 +214,21 @@ describe('FightsService', () => {
       fight.timer.endTimer();
     })
 
-    it('should start timer again when it was paused', () => {
+    it('should resume timer again when it was paused', () => {
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
       fightService.pauseTimer(fight.id, Date.now());
-      expect(fightService.startTimer(fight.id)).toBe(ResponseStatus.OK);
+      expect(fightService.resumeTimer(fight.id)).toBe(ResponseStatus.OK);
       expect(fight.state).toBe(FightState.Running);
       expect(fight.timer.timeoutSet()).toBeTruthy();
     });
 
-    it('should start timer again when it was paused after fight time has already passed', () => {
+    it('should resume timer again when it was paused after fight time has already passed', () => {
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
       fightService.pauseTimer(fight.id, Date.now());
       fight.timer.endTimer();
-      expect(fightService.startTimer(fight.id)).toBe(ResponseStatus.OK);
+      expect(fightService.resumeTimer(fight.id)).toBe(ResponseStatus.OK);
       expect(fight.state).toBe(FightState.Running);
       expect(fight.timer.timeoutSet()).toBeFalsy();
     });
@@ -236,7 +236,7 @@ describe('FightsService', () => {
     it('should return bad request when fight is in running state', () => {
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
-      expect(fightService.startTimer(fight.id)).toBe(ResponseStatus.BadRequest);
+      expect(fightService.resumeTimer(fight.id)).toBe(ResponseStatus.BadRequest);
     });
   });
 
