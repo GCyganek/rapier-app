@@ -20,10 +20,13 @@
   "dependencies": {
     "@nestjs/common": "^8.1.1",
     "@nestjs/core": "^8.1.1",
-    "@nestjs/platform-express": "^8.1.1",
+    "@nestjs/platform-express": "^8.4.4",
+    "@nestjs/platform-socket.io": "^8.4.4",
+    "@nestjs/websockets": "^8.4.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.4.0"
+    "rxjs": "^7.4.0",
+    "socket.io": "^4.4.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.1.3",
@@ -40,6 +43,7 @@
     "eslint-plugin-prettier": "^3.4.1",
     "jest": "^27.3.0",
     "prettier": "^2.4.1",
+    "socket.io-client": "^4.4.1",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.6",
     "ts-jest": "^27.0.7",
@@ -54,7 +58,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": "test",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
