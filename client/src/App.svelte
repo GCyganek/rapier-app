@@ -1,11 +1,31 @@
 <script lang="ts">
-	export let name: string;
+	import Button, { Label } from '@smui/button';
+	import { Router, Route, useNavigate } from 'svelte-navigator';
+	import SecondView from './SecondView.svelte';
+
+	const navigate = useNavigate();
+
+	function startFight(){
+		console.log("clicked");
+	}
 </script>
 
-<main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
+
+<Router>
+	<main>
+		<Route path="/">
+			<div>
+				<Button class="startButton" on:click={()=>navigate('start')} }>
+					<Label>Rozpocznij pojedynek</Label>
+				</Button>
+			</div>
+		</Route>
+		<Route path="start">
+			<SecondView />
+		</Route>
+	</main>
+</Router>
+
 
 <style>
 	main {
@@ -15,11 +35,11 @@
 		margin: 0 auto;
 	}
 
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
+	* :global(.startButton){
+		background-color: red;
+	}
+	* :global(.startButton):active{
+		background-color: darkred;
 	}
 
 	@media (min-width: 640px) {
