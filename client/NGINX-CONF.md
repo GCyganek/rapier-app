@@ -1,7 +1,7 @@
 # Kongfiguracja NGINX
 
 ## Ogólne informacje 
-`nginx` został skonfigurowany tak, by serwował pliki skompilowane przez Svelte statycznie, obsługiwał proxy do backendu na endpoint z prefixem `/api` i dodatkowe proxy do `livereload` do ułatwienia developementu.
+`nginx` został skonfigurowany tak, by serwował pliki skompilowane przez Svelte statycznie, obsługiwał proxy do backendu na endpoint z prefixem `api` i dodatkowe proxy na endpoint `livereload` wykorzystywane przez środowisko *Rollup* dla ułatwienia pracy nad frontendem.
 
 ## Schemat działania
 
@@ -10,14 +10,24 @@ Zapytania do `api` są przekierowywane na adres `localhost:3000` (backend).
 To oznacza, że zapytanie klienta `/api/something` zostanie przekierowane na `localhost:3000/something`.
 Backend nie musi uwzględniać prefixu `api` przy wystawianiu endpointów.
 
-Serwer `livereload` jest wystawiany przez `rollup` na adresie `localhost:35729`, `nginx` został skonfigurowany tak, by nie musieć się tym martwić. `livereload` jest obsługiwany tylko przy użyciu komendy `npm run dev` dla klienta.
+Serwer `livereload` jest wystawiany przez *Rollup* na adresie `localhost:35729`, `nginx` został skonfigurowany tak, by nie musieć się tym martwić. `livereload` jest obsługiwany tylko przy użyciu komendy `npm run dev` dla klienta.
 
 ## Konfiguracja `nginx`
 
 ### Pliki konfiguracyjne
 
 Nasza konfiguracja `nginx` znajduje się w pliku `conf/nginx.conf`. 
-`nginx` został skonfigurowany tak, żeby nie musiał działać jako *daemon*.
+`nginx` został skonfigurowany tak, żeby nie musiał działać jako *daemon*, a jako zwykła aplikacja konsolowa.
+
+`nginx` zapisuje logi dostępu oraz błędów w plikach `./logs/access.log` i `./logs/error.log`. 
+Z tajemniczych powodów `nginx` nie tworzy sobie tych plików automatycznie, a wymaga ich do poprawnego działania programu.
+Dlatego trzeba je stworzyć manualnie.
+```sh
+# dla linux
+mkdir logs
+touch ./logs/access.log
+touch ./logs/error.log
+```
 
 ### Instalacja `nginx` 
 
