@@ -1,26 +1,21 @@
-import { Event } from './event.interface.js';
 import { Socket } from 'socket.io';
 import { Timer } from '../classes/timer/timer.class.js';
+import { Event } from './event.interface';
 
 export interface Fight {
   id: string;
+
   state: FightState;
-
-  mainJudgeId: string;
-  redJudgeId: string;
-  blueJudgeId: string;
-
-  mainJudgeSocket: Socket;
-  redJudgeSocket: Socket;
-  blueJudgeSocket: Socket;
-
-  redPlayerId: string;
-  bluePlayerId: string;
-
-  redEventsHistory: Event[];
-  blueEventsHistory: Event[];
-
   timer: Timer;
+
+  mainJudge: JudgeState;
+  redJudge: JudgeState;
+  blueJudge: JudgeState;
+
+  redPlayer: PlayerState;
+  bluePlayer: PlayerState;
+
+  eventsHistory: Event[];
 }
 
 export enum FightState {
@@ -28,4 +23,14 @@ export enum FightState {
   Running,
   Paused,
   Finished,
+}
+
+export interface JudgeState {
+  id: string;
+  socket: Socket;
+}
+
+export interface PlayerState {
+  id: string;
+  points: number;
 }

@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { Timer } from '../classes/timer/timer.class';
 import { Fight, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
+import { Event } from '../interfaces/event.interface';
 
 @Injectable()
 export class FightsService {
@@ -12,22 +13,31 @@ export class FightsService {
     const fight: Fight = {
       id: 'mockup',
       state: FightState.Scheduled,
-
-      mainJudgeId: 'main',
-      redJudgeId: 'red',
-      blueJudgeId: 'blue',
-
-      mainJudgeSocket: null,
-      redJudgeSocket: null,
-      blueJudgeSocket: null,
-
-      redPlayerId: 'player1',
-      bluePlayerId: 'player2',
-
-      redEventsHistory: [],
-      blueEventsHistory: [],
-
       timer: new Timer(1),
+
+      mainJudge: {
+        id: 'main',
+        socket: null,
+      },
+      redJudge: {
+        id: 'red',
+        socket: null,
+      },
+      blueJudge: {
+        id: 'blue',
+        socket: null,
+      },
+
+      redPlayer: {
+        id: 'player1',
+        points: 0,
+      },
+      bluePlayer: {
+        id: 'player2',
+        points: 0,
+      },
+
+      eventsHistory: [],
     };
     this.newFight(fight);
   }
@@ -47,7 +57,7 @@ export class FightsService {
       return false;
     }
 
-    return [fight.mainJudgeId, fight.redJudgeId, fight.blueJudgeId].includes(
+    return [fight.mainJudge.id, fight.redJudge.id, fight.blueJudge.id].includes(
       judgeId,
     );
   }
@@ -59,7 +69,7 @@ export class FightsService {
       return false;
     }
 
-    return judgeId == fight.mainJudgeId;
+    return judgeId == fight.mainJudge.id;
   }
 
   addJudge(fightId: string, judgeId: string, socket: Socket): ResponseStatus {
@@ -68,23 +78,23 @@ export class FightsService {
     if (fight == undefined) {
       return ResponseStatus.NotFound;
     } else if (
-      (judgeId == fight.mainJudgeId &&
-        fight.mainJudgeSocket != null &&
-        fight.mainJudgeSocket != socket) ||
-      (judgeId == fight.redJudgeId &&
-        fight.redJudgeSocket != null &&
-        fight.redJudgeSocket != socket) ||
-      (judgeId == fight.blueJudgeId &&
-        fight.blueJudgeSocket != null &&
-        fight.blueJudgeSocket != socket)
+      (judgeId == fight.mainJudge.id &&
+        fight.mainJudge.socket != null &&
+        fight.mainJudge.socket != socket) ||
+      (judgeId == fight.redJudge.id &&
+        fight.redJudge.socket != null &&
+        fight.redJudge.socket != socket) ||
+      (judgeId == fight.blueJudge.id &&
+        fight.blueJudge.socket != null &&
+        fight.blueJudge.socket != socket)
     ) {
       return ResponseStatus.BadRequest;
-    } else if (judgeId == fight.mainJudgeId) {
-      fight.mainJudgeSocket = socket;
-    } else if (judgeId == fight.redJudgeId) {
-      fight.redJudgeSocket = socket;
-    } else if (judgeId == fight.blueJudgeId) {
-      fight.blueJudgeSocket = socket;
+    } else if (judgeId == fight.mainJudge.id) {
+      fight.mainJudge.socket = socket;
+    } else if (judgeId == fight.redJudge.id) {
+      fight.redJudge.socket = socket;
+    } else if (judgeId == fight.blueJudge.id) {
+      fight.blueJudge.socket = socket;
     } else {
       return ResponseStatus.Unauthorized;
     }
@@ -98,9 +108,9 @@ export class FightsService {
     if (fight == undefined) {
       return ResponseStatus.NotFound;
     } else if (
-      fight.mainJudgeSocket == null ||
-      fight.redJudgeSocket == null ||
-      fight.blueJudgeSocket == null
+      fight.mainJudge.socket == null ||
+      fight.redJudge.socket == null ||
+      fight.blueJudge.socket == null
     ) {
       return ResponseStatus.NotReady;
     } else if (fight.state != FightState.Scheduled) {
@@ -161,5 +171,30 @@ export class FightsService {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
+  }
+
+  newEvents(
+    fightId: string,
+    events: Event[],
+    redPlayerPoints: number,
+    bluePlayerPoints: number,
+  ): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+      return ResponseStatus.BadRequest;
+    }
+
+    if (redPlayerPoints < 0 || bluePlayerPoints < 0) {
+      return ResponseStatus.BadRequest;
+    }
+
+    fight.redPlayer.points += redPlayerPoints;
+    fight.bluePlayer.points += bluePlayerPoints;
+    fight.eventsHistory = fight.eventsHistory.concat(events);
+
+    return ResponseStatus.OK;
   }
 }
