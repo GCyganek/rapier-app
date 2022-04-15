@@ -160,14 +160,12 @@ describe('FightsService', () => {
       fightService.addJudge(fight.id, fight.mainJudge.id, socket as any);
       fightService.addJudge(fight.id, fight.redJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.NotReady);
-      // socket.disconnect();
     });
 
     it('should start ready fight after missing judge joined', () => {
       const socket = manager.socket('/');
       fightService.addJudge(fight.id, fight.blueJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.OK);
-      // socket.disconnect();
     });
 
     it('should not start not running fight', () => {
