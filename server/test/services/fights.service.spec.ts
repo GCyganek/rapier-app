@@ -46,6 +46,19 @@ describe('FightsService', () => {
       providers: [FightsService],
     }).compile();
     fightService = app.get(FightsService);
+    manager = new Manager('wss://localhost:3000');
+  });
+
+  afterAll(() => {
+    for (const socket of [
+      fight.blueJudge.socket,
+      fight.redJudge.socket,
+      fight.mainJudge.socket,
+    ]) {
+      if (socket != null) {
+        socket.disconnect();
+      }
+    }
   });
 
   describe('newFight', () => {
@@ -130,14 +143,6 @@ describe('FightsService', () => {
   });
 
   describe('startFight', () => {
-    beforeAll(() => {
-      manager = new Manager('wss://localhost:3000');
-    });
-
-    afterAll(() => {
-      manager._close();
-    });
-
     beforeEach(() => {
       fight.timer = new Timer(1);
     });
@@ -155,12 +160,14 @@ describe('FightsService', () => {
       fightService.addJudge(fight.id, fight.mainJudge.id, socket as any);
       fightService.addJudge(fight.id, fight.redJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.NotReady);
+      // socket.disconnect();
     });
 
     it('should start ready fight after missing judge joined', () => {
       const socket = manager.socket('/');
       fightService.addJudge(fight.id, fight.blueJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.OK);
+      // socket.disconnect();
     });
 
     it('should not start not running fight', () => {
@@ -260,6 +267,11 @@ describe('FightsService', () => {
       fight.timer.endTimer();
     });
 
+    afterAll(() => {
+      fight.timer = new Timer(1);
+      fight.state = FightState.Scheduled;
+    });
+
     it('should pause timer again when it is running', () => {
       expect(fightService.pauseTimer(fight.id, Date.now())).toBe(
         ResponseStatus.OK,
@@ -289,16 +301,7 @@ describe('FightsService', () => {
     const redPlayerPoints = 2;
     const bluePlayerPoints = 1;
 
-    beforeEach(() => {
-      fight.timer = new Timer(1);
-      fight.state = FightState.Scheduled;
-
-      const socket = manager.socket('/');
-      fightService.addJudge(fight.id, fight.mainJudge.id, socket as any);
-      fightService.addJudge(fight.id, fight.redJudge.id, socket as any);
-      fightService.addJudge(fight.id, fight.blueJudge.id, socket as any);
-      fightService.startFight(fight.id);
-
+    beforeAll(() => {
       events = [
         { id: 'a', playerColor: 'red' },
         { id: 'b', playerColor: 'blue' },
@@ -322,7 +325,6 @@ describe('FightsService', () => {
     });
 
     it('should not add events for scheduled fight', () => {
-      fight.state = FightState.Scheduled;
       expect(
         fightService.newEvents(
           fight.id,
@@ -364,6 +366,7 @@ describe('FightsService', () => {
     });
 
     it('should add new events for running fight', () => {
+      fight.state = FightState.Running;
       expect(
         fightService.newEvents(
           fight.id,
