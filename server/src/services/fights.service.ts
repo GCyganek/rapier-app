@@ -176,8 +176,8 @@ export class FightsService {
   newEvents(
     fightId: string,
     events: Event[],
-    playerId: string,
-    playerPoints: number,
+    redPlayerPoints: number,
+    bluePlayerPoints: number,
   ): ResponseStatus {
     const fight = this.fights.get(fightId);
 
@@ -187,15 +187,14 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (playerId == fight.redPlayer.id) {
-      fight.redPlayer.points += playerPoints;
-    } else if (playerId == fight.blueJudge.id) {
-      fight.bluePlayer.points += playerPoints;
-    } else {
+    if (redPlayerPoints < 0 || bluePlayerPoints < 0) {
       return ResponseStatus.BadRequest;
     }
 
+    fight.redPlayer.points += redPlayerPoints;
+    fight.bluePlayer.points += bluePlayerPoints;
     fight.eventsHistory = fight.eventsHistory.concat(events);
+
     return ResponseStatus.OK;
   }
 }

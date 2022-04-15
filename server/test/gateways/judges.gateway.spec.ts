@@ -468,12 +468,12 @@ describe('JudgesGateway', () => {
 
     describe('newEvents', () => {
       let events: Event[];
-      let playerId: string;
-      let playerPoints: number;
+      let redPlayerPoints: number;
+      let bluePlayerPoints: number;
 
       beforeEach(() => {
-        playerId = fight.redPlayer.id;
-        playerPoints = 2;
+        redPlayerPoints = 2;
+        bluePlayerPoints = 1;
 
         events = [
           { id: 'a', playerColor: 'red' },
@@ -487,8 +487,8 @@ describe('JudgesGateway', () => {
           fightId: 'test 123',
           judgeId: fight.mainJudge.id,
           events: events,
-          playerId: playerId,
-          playerPoints: playerPoints,
+          redPlayerPoints: redPlayerPoints,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>
@@ -504,8 +504,8 @@ describe('JudgesGateway', () => {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
           events: events,
-          playerId: playerId,
-          playerPoints: playerPoints,
+          redPlayerPoints: redPlayerPoints,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>
@@ -516,13 +516,13 @@ describe('JudgesGateway', () => {
         );
       });
 
-      it('should not add events for random player', async () => {
+      it('should not add events with negative number of points', async () => {
         wsMain.emit('newEvents', {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           events: events,
-          playerId: 'test 123',
-          playerPoints: playerPoints,
+          redPlayerPoints: -1,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>
@@ -538,15 +538,15 @@ describe('JudgesGateway', () => {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           events: events,
-          playerId: playerId,
-          playerPoints: playerPoints,
+          redPlayerPoints: redPlayerPoints,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>
           wsMain.on('newEvents', (data) => {
             expect(data.status).toBe(ResponseStatus.OK);
             expect(fight.redPlayer.points).toBe(2);
-            expect(fight.bluePlayer.points).toBe(0);
+            expect(fight.bluePlayer.points).toBe(1);
             expect(fight.eventsHistory).toStrictEqual(events);
             resolve();
           }),
@@ -563,15 +563,15 @@ describe('JudgesGateway', () => {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           events: events,
-          playerId: playerId,
-          playerPoints: playerPoints,
+          redPlayerPoints: redPlayerPoints,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>
           wsMain.on('newEvents', (data) => {
             expect(data.status).toBe(ResponseStatus.OK);
             expect(fight.redPlayer.points).toBe(2 + 2);
-            expect(fight.bluePlayer.points).toBe(0);
+            expect(fight.bluePlayer.points).toBe(1 + 1);
             expect(fight.eventsHistory).toStrictEqual(events.concat(events));
             resolve();
           }),
@@ -588,8 +588,8 @@ describe('JudgesGateway', () => {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           events: events,
-          playerId: playerId,
-          playerPoints: playerPoints,
+          redPlayerPoints: redPlayerPoints,
+          bluePlayerPoints: bluePlayerPoints,
         });
 
         await new Promise<void>((resolve) =>

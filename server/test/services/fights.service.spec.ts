@@ -286,8 +286,8 @@ describe('FightsService', () => {
 
   describe('newEvents', () => {
     let events: Event[];
-    const playerId = fight.redPlayer.id;
-    const playerPoints = 2;
+    const redPlayerPoints = 2;
+    const bluePlayerPoints = 1;
 
     beforeEach(() => {
       fight.timer = new Timer(1);
@@ -308,7 +308,12 @@ describe('FightsService', () => {
 
     it('should not add events for random fight', () => {
       expect(
-        fightService.newEvents('test 123', events, playerId, playerPoints),
+        fightService.newEvents(
+          'test 123',
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
       ).toBe(ResponseStatus.NotFound);
 
       expect(fight.redPlayer.points).toBe(0);
@@ -319,7 +324,12 @@ describe('FightsService', () => {
     it('should not add events for scheduled fight', () => {
       fight.state = FightState.Scheduled;
       expect(
-        fightService.newEvents(fight.id, events, playerId, playerPoints),
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
       ).toBe(ResponseStatus.BadRequest);
 
       expect(fight.redPlayer.points).toBe(0);
@@ -327,9 +337,9 @@ describe('FightsService', () => {
       expect(fight.eventsHistory).toStrictEqual([]);
     });
 
-    it('should not add events for random player', () => {
+    it('should not add events with negative number of points', () => {
       expect(
-        fightService.newEvents(fight.id, events, 'test 123', playerPoints),
+        fightService.newEvents(fight.id, events, -1, bluePlayerPoints),
       ).toBe(ResponseStatus.BadRequest);
 
       expect(fight.redPlayer.points).toBe(0);
@@ -340,7 +350,12 @@ describe('FightsService', () => {
     it('should not add events for finished fight', () => {
       fight.state = FightState.Finished;
       expect(
-        fightService.newEvents(fight.id, events, playerId, playerPoints),
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
       ).toBe(ResponseStatus.BadRequest);
 
       expect(fight.redPlayer.points).toBe(0);
@@ -350,11 +365,16 @@ describe('FightsService', () => {
 
     it('should add new events for running fight', () => {
       expect(
-        fightService.newEvents(fight.id, events, playerId, playerPoints),
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
       ).toBe(ResponseStatus.OK);
 
       expect(fight.redPlayer.points).toBe(2);
-      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(1);
       expect(fight.eventsHistory).toStrictEqual(events);
 
       fight.redPlayer.points = 0;
@@ -364,11 +384,16 @@ describe('FightsService', () => {
 
     it('should add new events for paused fight', () => {
       expect(
-        fightService.newEvents(fight.id, events, playerId, playerPoints),
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
       ).toBe(ResponseStatus.OK);
 
       expect(fight.redPlayer.points).toBe(2);
-      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(1);
       expect(fight.eventsHistory).toStrictEqual(events);
 
       fight.redPlayer.points = 0;

@@ -156,8 +156,8 @@ export class JudgesGateway {
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @MessageBody('events') events: Event[],
-    @MessageBody('playerId') playerId: string,
-    @MessageBody('playerPoints') playerPoints: number,
+    @MessageBody('redPlayerPoints') redPlayerPoints: number,
+    @MessageBody('bluePlayerPoints') bluePlayerPoints: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -171,8 +171,8 @@ export class JudgesGateway {
     const status = this.fightsService.newEvents(
       fightId,
       events,
-      playerId,
-      playerPoints,
+      redPlayerPoints,
+      bluePlayerPoints,
     );
     const fight = this.fightsService.getFight(fightId);
 
