@@ -4,16 +4,23 @@ import { Timer } from '../classes/timer/timer.class';
 import { Fight, FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
+import { FightTimeEndedObserver } from 'src/interfaces/observers/fight-time-ended-observer.interface';
+import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndCondition } from '../interfaces/fight-end-condition-fulfilled-response.interface';
 
 @Injectable()
-export class FightsService {
+export class FightsService implements FightTimeEndedObserver, FightEndConditionFulfilledPublisher {
   private readonly fights: Map<string, Fight> = new Map<string, Fight>();
+  public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] = [];
 
   constructor() {
+    let fightId = 'mockup';
+    
     const fight: Fight = {
-      id: 'mockup',
+      id: fightId,
       state: FightState.Scheduled,
-      timer: new Timer(1),
+      timer: new Timer(1, fightId),
 
       mainJudge: {
         id: 'main',
@@ -37,6 +44,8 @@ export class FightsService {
         points: 0,
       },
 
+      pointsToEndFight: 5,
+
       eventsHistory: [],
     };
     this.newFight(fight);
@@ -44,6 +53,7 @@ export class FightsService {
 
   newFight(fight: Fight) {
     this.fights.set(fight.id, fight);
+    fight.timer.addFightTimeEndedObserver(this);
   }
 
   getFight(id: string): Fight {
@@ -196,5 +206,41 @@ export class FightsService {
     fight.eventsHistory = fight.eventsHistory.concat(events);
 
     return ResponseStatus.OK;
+  }
+
+  checkIfEnoughPointsToEndFight(fight: Fight) {
+    if (fight.redPlayer.points >= fight.pointsToEndFight || fight.bluePlayer.points >= fight.pointsToEndFight) {
+      this.notifyFightEndConditionFulfilled(FightEndCondition.EnoughPoints, fight);
+    }
+  }
+
+  addFightEndConditionFulfilledObserver(observer: FightEndConditionFulfilledObserver): void {
+    let obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+
+    if (obsToRemoveIndex != -1) return;
+
+    this.fightEndConditionFulfilledObservers.push(observer);
+  }
+
+  removeFightEndConditionFulfilledObserver(observer: FightEndConditionFulfilledObserver): void {
+    let obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+
+    if (obsToRemoveIndex == -1) return;
+
+    this.fightEndConditionFulfilledObservers.splice(obsToRemoveIndex, 1);
+  }
+
+  notifyFightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
+    for (const observer of this.fightEndConditionFulfilledObservers) {
+      observer.fightEndConditionFulfilled(condition, fight);
+    }
+  }
+
+  fightTimeEnded(fightId: string): void {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) return;
+
+    this.notifyFightEndConditionFulfilled(FightEndCondition.TimeEnded, fight);
   }
 }

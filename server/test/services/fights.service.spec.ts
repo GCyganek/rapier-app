@@ -5,16 +5,20 @@ import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { Event } from '../../src/interfaces/event.interface';
 import { Manager } from 'socket.io-client';
 import { Timer } from '../../src/classes/timer/timer.class';
+import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndCondition } from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
 
 describe('FightsService', () => {
   let app: TestingModule;
   let fightService: FightsService;
   let manager: Manager;
 
+  let fightId = 'mockup';
+    
   const fight: Fight = {
-    id: 'mockup',
+    id: fightId,
     state: FightState.Scheduled,
-    timer: new Timer(1),
+    timer: new Timer(1, fightId),
 
     mainJudge: {
       id: 'main',
@@ -38,8 +42,18 @@ describe('FightsService', () => {
       points: 0,
     },
 
+    pointsToEndFight: 5,
+
     eventsHistory: [],
   };
+
+  class MockFightEndConditionFulfilledObserver implements FightEndConditionFulfilledObserver {
+    fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void { 
+      return;
+    }
+  }
+
+  const mockFightEndConditionFulfilledObserver = new MockFightEndConditionFulfilledObserver();
 
   beforeAll(async () => {
     app = await Test.createTestingModule({
@@ -144,7 +158,7 @@ describe('FightsService', () => {
 
   describe('startFight', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight.id);
     });
 
     afterEach(() => {
@@ -199,7 +213,7 @@ describe('FightsService', () => {
     });
 
     it('should end the timer if it was running', () => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight.id);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
       expect(fight.timer.timeoutSet()).toBeTruthy();
@@ -219,7 +233,7 @@ describe('FightsService', () => {
 
   describe('startTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight.id);
     });
 
     afterEach(() => {
@@ -256,7 +270,7 @@ describe('FightsService', () => {
 
   describe('pauseTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight.id);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
     });
@@ -266,7 +280,7 @@ describe('FightsService', () => {
     });
 
     afterAll(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight.id);
       fight.state = FightState.Scheduled;
     });
 
@@ -402,4 +416,94 @@ describe('FightsService', () => {
       fight.eventsHistory = [];
     });
   });
+
+  describe('addFightEndConditionFulfilledObserver', () => {
+    it('should add observer to an empty observers list', () => {
+      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
+    });
+
+    it('should not add the same observer twice', () => {
+      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
+    });
+  });
+
+  describe('removeFightEndConditionFulfilledObserver', () => {
+    it('should remove observer from observers list', () => {
+      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
+      fightService.removeFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      expect(fightService.fightEndConditionFulfilledObservers.length).toBe(0);
+    });
+  });
+
+  describe('checkIfEnoughPointsToEndFight', () => {
+    let spy;
+    beforeAll(() => {
+      spy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
+    });
+
+    afterEach(() => {
+      spy.mockReset();
+    });
+
+    describe('should call notifyFightEndConditionFulfilled()', () => {
+      it('for red: 5 blue: 5 | pointsToEnd: 5', () => {
+        fight.bluePlayer.points = 5;
+        fight.redPlayer.points = 5;
+        fightService.checkIfEnoughPointsToEndFight(fight);
+        expect(spy).toBeCalledTimes(1);
+      });
+
+      it('for red: 5 blue: 4 | pointsToEnd: 5', () => {
+        fight.bluePlayer.points = 5;
+        fight.redPlayer.points = 5;
+        fightService.checkIfEnoughPointsToEndFight(fight);
+        expect(spy).toBeCalledTimes(1);
+      });
+
+      it('for red: 4 blue: 5 | pointsToEnd: 5', () => {
+        fight.bluePlayer.points = 5;
+        fight.redPlayer.points = 5;
+        fightService.checkIfEnoughPointsToEndFight(fight);
+        expect(spy).toBeCalledTimes(1);
+      });
+    });
+
+    describe('should not call notifyFightEndConditionFulfilled()', () => {
+      it('for red: 4 blue: 4 | pointsToEnd: 5', () => {
+        fight.bluePlayer.points = 4;
+        fight.redPlayer.points = 4;
+        fightService.checkIfEnoughPointsToEndFight(fight);
+        expect(spy).toBeCalledTimes(0);
+      });
+    });
+  });
+
+  describe('fightTimeEnded', () => {
+    let spy;
+    beforeAll(() => {
+      spy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
+    });
+
+    afterEach(() => {
+      spy.mockReset();
+    });
+
+    it('should call notifyFightEndConditionFulfilled() for fight in array', () => {
+      expect(fightService.getFight(fight.id)).toBe(fight);
+      fightService.fightTimeEnded(fight.id);
+      expect(spy).toBeCalledTimes(1);
+    });
+
+    it('should call notifyFightEndConditionFulfilled() for fight not in array', () => {
+      const randomFightId = '123 abc';
+      expect(fightService.getFight(randomFightId)).toBe(undefined);
+      fightService.fightTimeEnded(randomFightId);
+      expect(spy).toBeCalledTimes(0);
+    });
+  });
+
 });
