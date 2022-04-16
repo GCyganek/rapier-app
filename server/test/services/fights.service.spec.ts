@@ -440,35 +440,41 @@ describe('FightsService', () => {
   });
 
   describe('checkIfEnoughPointsToEndFight', () => {
-    let spy;
+    let notifySpy, conditionFulfilledSpy;
     beforeAll(() => {
-      spy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
+      notifySpy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
+      conditionFulfilledSpy = jest.spyOn(mockFightEndConditionFulfilledObserver, 'fightEndConditionFulfilled');
+      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
     });
 
     afterEach(() => {
-      spy.mockReset();
+      notifySpy.mockReset();
+      conditionFulfilledSpy.mockReset();
     });
 
     describe('should call notifyFightEndConditionFulfilled()', () => {
-      it('for red: 5 blue: 5 | pointsToEnd: 5', () => {
+      it('for red: 5 blue: 5 | pointsToEnd: 5 (plus should call fightEndConditionFulfilled() in observer)', () => {
         fight.bluePlayer.points = 5;
         fight.redPlayer.points = 5;
         fightService.checkIfEnoughPointsToEndFight(fight);
-        expect(spy).toBeCalledTimes(1);
+        expect(notifySpy).toBeCalledTimes(1);
+        expect(conditionFulfilledSpy).toBeCalledTimes(1);
       });
 
       it('for red: 5 blue: 4 | pointsToEnd: 5', () => {
         fight.bluePlayer.points = 5;
         fight.redPlayer.points = 5;
         fightService.checkIfEnoughPointsToEndFight(fight);
-        expect(spy).toBeCalledTimes(1);
+        expect(notifySpy).toBeCalledTimes(1);
+        expect(conditionFulfilledSpy).toBeCalledTimes(0); // was already called in the first test in this scope
       });
 
       it('for red: 4 blue: 5 | pointsToEnd: 5', () => {
         fight.bluePlayer.points = 5;
         fight.redPlayer.points = 5;
         fightService.checkIfEnoughPointsToEndFight(fight);
-        expect(spy).toBeCalledTimes(1);
+        expect(notifySpy).toBeCalledTimes(1);
+        expect(conditionFulfilledSpy).toBeCalledTimes(0); // was already called in the first test in this scope
       });
     });
 
@@ -477,32 +483,33 @@ describe('FightsService', () => {
         fight.bluePlayer.points = 4;
         fight.redPlayer.points = 4;
         fightService.checkIfEnoughPointsToEndFight(fight);
-        expect(spy).toBeCalledTimes(0);
+        expect(notifySpy).toBeCalledTimes(0);
+        expect(conditionFulfilledSpy).toBeCalledTimes(0); // was already called in the first test in previous scope
       });
     });
   });
 
   describe('fightTimeEnded', () => {
-    let spy;
+    let notifySpy;
     beforeAll(() => {
-      spy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
+      notifySpy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
     });
 
     afterEach(() => {
-      spy.mockReset();
+      notifySpy.mockReset();
     });
 
     it('should call notifyFightEndConditionFulfilled() for fight in array', () => {
       expect(fightService.getFight(fight.id)).toBe(fight);
       fightService.fightTimeEnded(fight.id);
-      expect(spy).toBeCalledTimes(1);
+      expect(notifySpy).toBeCalledTimes(1);
     });
 
     it('should call notifyFightEndConditionFulfilled() for fight not in array', () => {
       const randomFightId = '123 abc';
       expect(fightService.getFight(randomFightId)).toBe(undefined);
       fightService.fightTimeEnded(randomFightId);
-      expect(spy).toBeCalledTimes(0);
+      expect(notifySpy).toBeCalledTimes(0);
     });
   });
 

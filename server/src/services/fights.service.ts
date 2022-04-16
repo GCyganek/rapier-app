@@ -12,6 +12,7 @@ import { FightEndCondition } from '../interfaces/fight-end-condition-fulfilled-r
 @Injectable()
 export class FightsService implements FightTimeEndedObserver, FightEndConditionFulfilledPublisher {
   private readonly fights: Map<string, Fight> = new Map<string, Fight>();
+  private readonly fightEndNotified: Map<string, boolean> = new Map<string, boolean>();
   public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] = [];
 
   constructor() {
@@ -53,6 +54,7 @@ export class FightsService implements FightTimeEndedObserver, FightEndConditionF
 
   newFight(fight: Fight) {
     this.fights.set(fight.id, fight);
+    this.fightEndNotified.set(fight.id, false);
     fight.timer.addFightTimeEndedObserver(this);
   }
 
@@ -145,6 +147,7 @@ export class FightsService implements FightTimeEndedObserver, FightEndConditionF
 
     fight.timer.endTimer();
     fight.state = FightState.Finished;
+    this.fightEndNotified.delete(fight.id);
     return ResponseStatus.OK;
   }
 
@@ -231,9 +234,13 @@ export class FightsService implements FightTimeEndedObserver, FightEndConditionF
   }
 
   notifyFightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
+    if (this.fightEndNotified.get(fight.id) === true) return;
+
     for (const observer of this.fightEndConditionFulfilledObservers) {
       observer.fightEndConditionFulfilled(condition, fight);
     }
+
+    this.fightEndNotified.set(fight.id, true);
   }
 
   fightTimeEnded(fightId: string): void {
