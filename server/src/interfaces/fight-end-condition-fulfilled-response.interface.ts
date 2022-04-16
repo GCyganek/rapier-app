@@ -1,10 +1,10 @@
-import { Response } from "./response.interface";
+import { Response } from './response.interface';
 
 export interface FightEndConditionFulfilledResponse extends Response {
-    condition: FightEndCondition;
+  condition: FightEndCondition;
 }
 
 export enum FightEndCondition {
-    TimeEnded,
-    EnoughPoints,
+  TimeEnded,
+  EnoughPoints,
 }

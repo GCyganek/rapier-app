@@ -9,7 +9,10 @@ export class Timer implements FightTimeEndedPublisher {
   private timeEnded = false;
   public readonly endTimeObservers: FightTimeEndedObserver[] = [];
 
-  constructor(public readonly timeInMinutes: number, public readonly fightId: string) {
+  constructor(
+    public readonly timeInMinutes: number,
+    public readonly fightId: string,
+  ) {
     this.remainingMillis =
       timeInMinutes * TimerConstants.MILLISECONDS_IN_MINUTE;
   }
@@ -56,15 +59,19 @@ export class Timer implements FightTimeEndedPublisher {
   }
 
   addFightTimeEndedObserver(observer: FightTimeEndedObserver): void {
-    let obsToRemoveIndex = this.endTimeObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+    const obsToRemoveIndex = this.endTimeObservers.findIndex(
+      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
+    );
 
     if (obsToRemoveIndex != -1) return;
 
     this.endTimeObservers.push(observer);
   }
-  
+
   removeFightTimeEndedObserver(observer: FightTimeEndedObserver): void {
-    let obsToRemoveIndex = this.endTimeObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+    const obsToRemoveIndex = this.endTimeObservers.findIndex(
+      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
+    );
 
     if (obsToRemoveIndex == -1) return;
 

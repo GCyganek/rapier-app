@@ -14,7 +14,7 @@ export interface Fight {
 
   redPlayer: PlayerState;
   bluePlayer: PlayerState;
-  
+
   pointsToEndFight: number;
 
   eventsHistory: Event[];

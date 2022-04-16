@@ -10,14 +10,20 @@ import { FightEndConditionFulfilledObserver } from '../interfaces/observers/figh
 import { FightEndCondition } from '../interfaces/fight-end-condition-fulfilled-response.interface';
 
 @Injectable()
-export class FightsService implements FightTimeEndedObserver, FightEndConditionFulfilledPublisher {
+export class FightsService
+  implements FightTimeEndedObserver, FightEndConditionFulfilledPublisher
+{
   private readonly fights: Map<string, Fight> = new Map<string, Fight>();
-  private readonly fightEndNotified: Map<string, boolean> = new Map<string, boolean>();
-  public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] = [];
+  private readonly fightEndNotified: Map<string, boolean> = new Map<
+    string,
+    boolean
+  >();
+  public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] =
+    [];
 
   constructor() {
-    let fightId = 'mockup';
-    
+    const fightId = 'mockup';
+
     const fight: Fight = {
       id: fightId,
       state: FightState.Scheduled,
@@ -212,28 +218,45 @@ export class FightsService implements FightTimeEndedObserver, FightEndConditionF
   }
 
   checkIfEnoughPointsToEndFight(fight: Fight) {
-    if (fight.redPlayer.points >= fight.pointsToEndFight || fight.bluePlayer.points >= fight.pointsToEndFight) {
-      this.notifyFightEndConditionFulfilled(FightEndCondition.EnoughPoints, fight);
+    if (
+      fight.redPlayer.points >= fight.pointsToEndFight ||
+      fight.bluePlayer.points >= fight.pointsToEndFight
+    ) {
+      this.notifyFightEndConditionFulfilled(
+        FightEndCondition.EnoughPoints,
+        fight,
+      );
     }
   }
 
-  addFightEndConditionFulfilledObserver(observer: FightEndConditionFulfilledObserver): void {
-    let obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+  addFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ): void {
+    const obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(
+      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
+    );
 
     if (obsToRemoveIndex != -1) return;
 
     this.fightEndConditionFulfilledObservers.push(observer);
   }
 
-  removeFightEndConditionFulfilledObserver(observer: FightEndConditionFulfilledObserver): void {
-    let obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(obs => JSON.stringify(obs) == JSON.stringify(observer));
+  removeFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ): void {
+    const obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(
+      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
+    );
 
     if (obsToRemoveIndex == -1) return;
 
     this.fightEndConditionFulfilledObservers.splice(obsToRemoveIndex, 1);
   }
 
-  notifyFightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
+  notifyFightEndConditionFulfilled(
+    condition: FightEndCondition,
+    fight: Fight,
+  ): void {
     if (this.fightEndNotified.get(fight.id) === true) return;
 
     for (const observer of this.fightEndConditionFulfilledObservers) {

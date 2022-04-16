@@ -42,7 +42,7 @@ describe('JudgesGateway', () => {
     app = await createNestApp(JudgesGateway, FightsService);
     await app.listen(3001);
 
-    let fightId = 'mockup';
+    const fightId = 'mockup';
 
     fight = {
       id: fightId,

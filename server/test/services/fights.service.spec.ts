@@ -13,8 +13,8 @@ describe('FightsService', () => {
   let fightService: FightsService;
   let manager: Manager;
 
-  let fightId = 'mockup';
-    
+  const fightId = 'mockup';
+
   const fight: Fight = {
     id: fightId,
     state: FightState.Scheduled,
@@ -47,13 +47,19 @@ describe('FightsService', () => {
     eventsHistory: [],
   };
 
-  class MockFightEndConditionFulfilledObserver implements FightEndConditionFulfilledObserver {
-    fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void { 
+  class MockFightEndConditionFulfilledObserver
+    implements FightEndConditionFulfilledObserver
+  {
+    fightEndConditionFulfilled(
+      condition: FightEndCondition,
+      fight: Fight,
+    ): void {
       return;
     }
   }
 
-  const mockFightEndConditionFulfilledObserver = new MockFightEndConditionFulfilledObserver();
+  const mockFightEndConditionFulfilledObserver =
+    new MockFightEndConditionFulfilledObserver();
 
   beforeAll(async () => {
     app = await Test.createTestingModule({
@@ -419,22 +425,32 @@ describe('FightsService', () => {
 
   describe('addFightEndConditionFulfilledObserver', () => {
     it('should add observer to an empty observers list', () => {
-      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      fightService.addFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
     });
 
     it('should not add the same observer twice', () => {
-      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
-      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      fightService.addFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
+      fightService.addFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
     });
   });
 
   describe('removeFightEndConditionFulfilledObserver', () => {
     it('should remove observer from observers list', () => {
-      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      fightService.addFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.fightEndConditionFulfilledObservers.length).toBe(1);
-      fightService.removeFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      fightService.removeFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.fightEndConditionFulfilledObservers.length).toBe(0);
     });
   });
@@ -443,8 +459,13 @@ describe('FightsService', () => {
     let notifySpy, conditionFulfilledSpy;
     beforeAll(() => {
       notifySpy = jest.spyOn(fightService, 'notifyFightEndConditionFulfilled');
-      conditionFulfilledSpy = jest.spyOn(mockFightEndConditionFulfilledObserver, 'fightEndConditionFulfilled');
-      fightService.addFightEndConditionFulfilledObserver(mockFightEndConditionFulfilledObserver);
+      conditionFulfilledSpy = jest.spyOn(
+        mockFightEndConditionFulfilledObserver,
+        'fightEndConditionFulfilled',
+      );
+      fightService.addFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
     });
 
     afterEach(() => {
@@ -512,5 +533,4 @@ describe('FightsService', () => {
       expect(notifySpy).toBeCalledTimes(0);
     });
   });
-
 });

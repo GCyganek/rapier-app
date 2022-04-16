@@ -13,7 +13,10 @@ import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
 import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import { FightEndCondition, FightEndConditionFulfilledResponse } from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
+import {
+  FightEndCondition,
+  FightEndConditionFulfilledResponse,
+} from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
@@ -197,7 +200,6 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
-
     const response: FightEndConditionFulfilledResponse = {
       status: ResponseStatus.OK,
       condition: condition,

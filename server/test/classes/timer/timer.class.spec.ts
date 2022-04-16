@@ -84,13 +84,13 @@ describe('Timer', () => {
     it('should add observer to an empty observers list', () => {
       timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(1);
-    })
+    });
 
     it('should not add the same observer twice', () => {
       timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
       timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(1);
-    })
+    });
   });
 
   describe('removeFightTimeEndedObserver', () => {
@@ -99,7 +99,7 @@ describe('Timer', () => {
       expect(timer.endTimeObservers.length).toBe(1);
       timer.removeFightTimeEndedObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(0);
-    })
+    });
   });
 
   describe('notifyTimeEnded', () => {
