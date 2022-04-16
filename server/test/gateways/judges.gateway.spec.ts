@@ -7,6 +7,7 @@ import { FightsService } from '../../src/services/fights.service';
 import { Timer } from '../../src/classes/timer/timer.class';
 import { INestApplication } from '@nestjs/common';
 import { Event } from '../../src/interfaces/event.interface';
+import { FightEndCondition } from '../../src/interfaces/fight-end-condition-fulfilled-response.interface';
 
 async function createNestApp(...providers): Promise<INestApplication> {
   const testingModule = await Test.createTestingModule({
@@ -41,10 +42,12 @@ describe('JudgesGateway', () => {
     app = await createNestApp(JudgesGateway, FightsService);
     await app.listen(3001);
 
+    let fightId = 'mockup';
+
     fight = {
-      id: 'mockup',
+      id: fightId,
       state: FightState.Scheduled,
-      timer: new Timer(1),
+      timer: new Timer(1, fightId),
 
       mainJudge: {
         id: 'main',
@@ -67,6 +70,8 @@ describe('JudgesGateway', () => {
         id: 'player2',
         points: 0,
       },
+
+      pointsToEndFight: 5,
 
       eventsHistory: [],
     };
@@ -294,7 +299,7 @@ describe('JudgesGateway', () => {
 
     describe('resumeTimer', () => {
       beforeEach(() => {
-        fight.timer = new Timer(1);
+        fight.timer = new Timer(1, fight.id);
       });
 
       afterEach(() => {
@@ -377,7 +382,7 @@ describe('JudgesGateway', () => {
 
     describe('pauseTimer', () => {
       beforeEach(() => {
-        fight.timer = new Timer(1);
+        fight.timer = new Timer(1, fight.id);
       });
 
       afterEach(() => {
@@ -534,6 +539,8 @@ describe('JudgesGateway', () => {
       });
 
       it('should add events to started fight', async () => {
+        fight.state = FightState.Running;
+
         wsMain.emit('newEvents', {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
@@ -598,6 +605,28 @@ describe('JudgesGateway', () => {
             resolve();
           }),
         );
+      });
+
+      it('should add events to started fight and send back fightEndConditionFulfilled', async () => {
+        fight.state = FightState.Running;
+
+        wsMain.emit('newEvents', {
+          fightId: fight.id,
+          judgeId: fight.mainJudge.id,
+          events: events,
+          redPlayerPoints: redPlayerPoints, // now will have 6 points > fight.pointsToEnd
+          bluePlayerPoints: bluePlayerPoints,
+        });
+
+        for (const ws of [wsMain, wsRed, wsBlue]) {
+          await new Promise<void>((resolve) =>
+            ws.on('fightEndConditionFulfilled', (data) => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              expect(data.condition).toBe(FightEndCondition.EnoughPoints);
+              resolve();
+            }),
+          );
+        }
       });
     });
   });

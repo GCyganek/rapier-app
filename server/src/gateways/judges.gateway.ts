@@ -12,10 +12,14 @@ import { Response, ResponseStatus } from '../interfaces/response.interface';
 import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
+import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndCondition, FightEndConditionFulfilledResponse } from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
 
 @WebSocketGateway()
-export class JudgesGateway {
-  constructor(private fightsService: FightsService) {}
+export class JudgesGateway implements FightEndConditionFulfilledObserver {
+  constructor(private fightsService: FightsService) {
+    fightsService.addFightEndConditionFulfilledObserver(this);
+  }
 
   sendToAllJudges(fight: Fight, event: string, response: any) {
     if (fight.mainJudge.socket != null) {
@@ -188,5 +192,17 @@ export class JudgesGateway {
     };
 
     this.sendToAllJudges(fight, 'newEvents', response);
+
+    this.fightsService.checkIfEnoughPointsToEndFight(fight);
+  }
+
+  fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
+
+    const response: FightEndConditionFulfilledResponse = {
+      status: ResponseStatus.OK,
+      condition: condition,
+    };
+
+    this.sendToAllJudges(fight, 'fightEndConditionFulfilled', response);
   }
 }
