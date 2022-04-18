@@ -1,6 +1,9 @@
-import { FightEndCondition } from '../fight-end-condition-fulfilled-response.interface';
-import { Fight } from '../fight.interface';
+import { FightImpl } from 'src/classes/fight.class';
+import { FightEndConditionName } from '../fight-end-condition.interface';
 
 export interface FightEndConditionFulfilledObserver {
-  fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void;
+  fightEndConditionFulfilled(
+    conditionName: FightEndConditionName,
+    fight: FightImpl,
+  ): void;
 }

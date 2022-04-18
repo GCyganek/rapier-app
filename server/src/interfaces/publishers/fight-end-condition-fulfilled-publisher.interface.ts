@@ -1,5 +1,4 @@
-import { FightEndCondition } from '../fight-end-condition-fulfilled-response.interface';
-import { Fight } from '../fight.interface';
+import { FightEndConditionName } from '../fight-end-condition.interface';
 import { FightEndConditionFulfilledObserver } from '../observers/fight-end-condition-fulfilled-observer.interface';
 
 export interface FightEndConditionFulfilledPublisher {
@@ -9,8 +8,5 @@ export interface FightEndConditionFulfilledPublisher {
   removeFightEndConditionFulfilledObserver(
     observer: FightEndConditionFulfilledObserver,
   ): void;
-  notifyFightEndConditionFulfilled(
-    condition: FightEndCondition,
-    fight: Fight,
-  ): void;
+  notifyFightEndConditionFulfilled(conditionName: FightEndConditionName): void;
 }

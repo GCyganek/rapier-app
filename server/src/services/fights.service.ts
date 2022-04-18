@@ -1,70 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer/timer.class';
-import { Fight, FightState } from '../interfaces/fight.interface';
+import { FightState } from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
-import { FightTimeEndedObserver } from 'src/interfaces/observers/fight-time-ended-observer.interface';
-import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import { FightEndCondition } from '../interfaces/fight-end-condition-fulfilled-response.interface';
+import {
+  FightEndCondition,
+  FightEndConditionName,
+} from '../interfaces/fight-end-condition.interface';
+import { FightImpl } from '../classes/fight.class';
 
 @Injectable()
-export class FightsService
-  implements FightTimeEndedObserver, FightEndConditionFulfilledPublisher
-{
-  private readonly fights: Map<string, Fight> = new Map<string, Fight>();
-  private readonly fightEndNotified: Map<string, boolean> = new Map<
+export class FightsService {
+  private readonly fights: Map<string, FightImpl> = new Map<
     string,
-    boolean
+    FightImpl
   >();
-  public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] =
-    [];
+  private fightEndConditionFulfilledObserver: FightEndConditionFulfilledObserver;
 
   constructor() {
-    const fightId = 'mockup';
-
-    const fight: Fight = {
-      id: fightId,
-      state: FightState.Scheduled,
-      timer: new Timer(1, fightId),
-
-      mainJudge: {
-        id: 'main',
-        socket: null,
-      },
-      redJudge: {
-        id: 'red',
-        socket: null,
-      },
-      blueJudge: {
-        id: 'blue',
-        socket: null,
-      },
-
-      redPlayer: {
-        id: 'player1',
-        points: 0,
-      },
-      bluePlayer: {
-        id: 'player2',
-        points: 0,
-      },
-
-      pointsToEndFight: 5,
-
-      eventsHistory: [],
-    };
+    const fight = new FightImpl(
+      'mockup',
+      FightState.Scheduled,
+      { id: 'main', socket: null },
+      { id: 'red', socket: null },
+      { id: 'blue', socket: null },
+      { id: 'player1', points: 0 },
+      { id: 'player2', points: 0 },
+      new Set<FightEndCondition>([
+        { name: FightEndConditionName.EnoughPoints, value: 5 },
+        { name: FightEndConditionName.TimeEnded, value: 1 },
+      ]),
+      [],
+    );
     this.newFight(fight);
   }
 
-  newFight(fight: Fight) {
-    this.fights.set(fight.id, fight);
-    this.fightEndNotified.set(fight.id, false);
-    fight.timer.addFightTimeEndedObserver(this);
+  setFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ) {
+    this.fightEndConditionFulfilledObserver = observer;
   }
 
-  getFight(id: string): Fight {
+  newFight(fight: FightImpl) {
+    this.fights.set(fight.id, fight);
+    if (this.fightEndConditionFulfilledObserver) {
+      fight.addFightEndConditionFulfilledObserver(
+        this.fightEndConditionFulfilledObserver,
+      );
+    }
+  }
+
+  getFight(id: string): FightImpl {
     return this.fights.get(id);
   }
 
@@ -95,17 +82,7 @@ export class FightsService
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      (judgeId == fight.mainJudge.id &&
-        fight.mainJudge.socket != null &&
-        fight.mainJudge.socket != socket) ||
-      (judgeId == fight.redJudge.id &&
-        fight.redJudge.socket != null &&
-        fight.redJudge.socket != socket) ||
-      (judgeId == fight.blueJudge.id &&
-        fight.blueJudge.socket != null &&
-        fight.blueJudge.socket != socket)
-    ) {
+    } else if (fight.judgeSocketAlreadyAssigned(judgeId, socket)) {
       return ResponseStatus.BadRequest;
     } else if (judgeId == fight.mainJudge.id) {
       fight.mainJudge.socket = socket;
@@ -125,18 +102,13 @@ export class FightsService
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      fight.mainJudge.socket == null ||
-      fight.redJudge.socket == null ||
-      fight.blueJudge.socket == null
-    ) {
+    } else if (fight.allJudgesAssigned() === false) {
       return ResponseStatus.NotReady;
     } else if (fight.state != FightState.Scheduled) {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.startFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -151,9 +123,7 @@ export class FightsService
       return ResponseStatus.BadRequest;
     }
 
-    fight.timer.endTimer();
-    fight.state = FightState.Finished;
-    this.fightEndNotified.delete(fight.id);
+    fight.finishFight();
     return ResponseStatus.OK;
   }
 
@@ -166,8 +136,7 @@ export class FightsService
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.resumeFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -182,11 +151,7 @@ export class FightsService
       return ResponseStatus.BadRequest;
     }
 
-    if (
-      fight.timer.hasTimeEnded() ||
-      fight.timer.pauseTimer(exactPauseTimeInMillis)
-    ) {
-      fight.state = FightState.Paused;
+    if (fight.pauseFight(exactPauseTimeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -206,71 +171,9 @@ export class FightsService
       return ResponseStatus.BadRequest;
     }
 
-    if (redPlayerPoints < 0 || bluePlayerPoints < 0) {
-      return ResponseStatus.BadRequest;
+    if (fight.addNewEvents(events, redPlayerPoints, bluePlayerPoints)) {
+      return ResponseStatus.OK;
     }
-
-    fight.redPlayer.points += redPlayerPoints;
-    fight.bluePlayer.points += bluePlayerPoints;
-    fight.eventsHistory = fight.eventsHistory.concat(events);
-
-    return ResponseStatus.OK;
-  }
-
-  checkIfEnoughPointsToEndFight(fight: Fight) {
-    if (
-      fight.redPlayer.points >= fight.pointsToEndFight ||
-      fight.bluePlayer.points >= fight.pointsToEndFight
-    ) {
-      this.notifyFightEndConditionFulfilled(
-        FightEndCondition.EnoughPoints,
-        fight,
-      );
-    }
-  }
-
-  addFightEndConditionFulfilledObserver(
-    observer: FightEndConditionFulfilledObserver,
-  ): void {
-    const obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(
-      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
-    );
-
-    if (obsToRemoveIndex != -1) return;
-
-    this.fightEndConditionFulfilledObservers.push(observer);
-  }
-
-  removeFightEndConditionFulfilledObserver(
-    observer: FightEndConditionFulfilledObserver,
-  ): void {
-    const obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(
-      (obs) => JSON.stringify(obs) == JSON.stringify(observer),
-    );
-
-    if (obsToRemoveIndex == -1) return;
-
-    this.fightEndConditionFulfilledObservers.splice(obsToRemoveIndex, 1);
-  }
-
-  notifyFightEndConditionFulfilled(
-    condition: FightEndCondition,
-    fight: Fight,
-  ): void {
-    if (this.fightEndNotified.get(fight.id) === true) return;
-
-    for (const observer of this.fightEndConditionFulfilledObservers) {
-      observer.fightEndConditionFulfilled(condition, fight);
-    }
-
-    this.fightEndNotified.set(fight.id, true);
-  }
-
-  fightTimeEnded(fightId: string): void {
-    const fight = this.fights.get(fightId);
-
-    if (fight == undefined) return;
-
-    this.notifyFightEndConditionFulfilled(FightEndCondition.TimeEnded, fight);
+    return ResponseStatus.BadRequest;
   }
 }

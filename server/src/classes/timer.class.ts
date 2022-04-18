@@ -1,20 +1,21 @@
-import { FightTimeEndedObserver } from 'src/interfaces/observers/fight-time-ended-observer.interface';
-import { FightTimeEndedPublisher } from 'src/interfaces/publishers/fight-time-ended-publisher.interface';
-import { TimerConstants } from './timer-constants.class';
+import { FightEndConditionName } from '../interfaces/fight-end-condition.interface';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
+import { FightImpl } from './fight.class';
 
-export class Timer implements FightTimeEndedPublisher {
+export class Timer implements FightEndConditionFulfilledPublisher {
   private timeoutId: NodeJS.Timeout = null;
   private remainingMillis: number;
   private lastTimerStart: number;
   private timeEnded = false;
-  public readonly endTimeObservers: FightTimeEndedObserver[] = [];
+  public readonly endTimeObservers: FightEndConditionFulfilledObserver[] = [];
+  public static readonly MILLISECONDS_IN_MINUTE = 60000;
 
   constructor(
     public readonly timeInMinutes: number,
-    public readonly fightId: string,
+    public readonly fight: FightImpl,
   ) {
-    this.remainingMillis =
-      timeInMinutes * TimerConstants.MILLISECONDS_IN_MINUTE;
+    this.remainingMillis = timeInMinutes * Timer.MILLISECONDS_IN_MINUTE;
   }
 
   resumeTimer(): boolean {
@@ -53,12 +54,20 @@ export class Timer implements FightTimeEndedPublisher {
   notifyTimeEnded(): void {
     this.timeEnded = true;
 
+    this.notifyFightEndConditionFulfilled(FightEndConditionName.TimeEnded);
+  }
+
+  notifyFightEndConditionFulfilled(conditionName: FightEndConditionName): void {
+    this.timeEnded = true;
+
     for (const observer of this.endTimeObservers) {
-      observer.fightTimeEnded(this.fightId);
+      observer.fightEndConditionFulfilled(conditionName, this.fight);
     }
   }
 
-  addFightTimeEndedObserver(observer: FightTimeEndedObserver): void {
+  addFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ): void {
     const obsToRemoveIndex = this.endTimeObservers.findIndex(
       (obs) => JSON.stringify(obs) == JSON.stringify(observer),
     );
@@ -68,7 +77,9 @@ export class Timer implements FightTimeEndedPublisher {
     this.endTimeObservers.push(observer);
   }
 
-  removeFightTimeEndedObserver(observer: FightTimeEndedObserver): void {
+  removeFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ): void {
     const obsToRemoveIndex = this.endTimeObservers.findIndex(
       (obs) => JSON.stringify(obs) == JSON.stringify(observer),
     );

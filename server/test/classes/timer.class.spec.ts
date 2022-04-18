@@ -1,12 +1,30 @@
-import exp from 'constants';
-import { FightTimeEndedObserver } from 'src/interfaces/observers/fight-time-ended-observer.interface';
-import { Timer } from '../../../src/classes/timer/timer.class';
+import { FightImpl } from '../../src/classes/fight.class';
+import { Timer } from '../../src/classes/timer.class';
+import {
+  FightEndCondition,
+  FightEndConditionName,
+} from '../../src/interfaces/fight-end-condition.interface';
+import { FightState } from '../../src/interfaces/fight.interface';
+import { FightEndConditionFulfilledObserver } from '../../src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 
 describe('Timer', () => {
+  const fight = new FightImpl(
+    'mockup',
+    FightState.Scheduled,
+    { id: 'main', socket: null },
+    { id: 'red', socket: null },
+    { id: 'blue', socket: null },
+    { id: 'player1', points: 0 },
+    { id: 'player2', points: 0 },
+    new Set<FightEndCondition>([
+      { name: FightEndConditionName.TimeEnded, value: 1 },
+    ]),
+    [],
+  );
   let timer: Timer;
 
   beforeEach(() => {
-    timer = new Timer(1, 'id');
+    timer = new Timer(1, fight);
   });
 
   afterEach(() => {
@@ -72,40 +90,52 @@ describe('Timer', () => {
     });
   });
 
-  class MockFightTimeEndedObserver implements FightTimeEndedObserver {
-    fightTimeEnded(fightId: string): void {
+  class MockFightTimeEndedObserver
+    implements FightEndConditionFulfilledObserver
+  {
+    fightEndConditionFulfilled(
+      conditionName: FightEndConditionName,
+      fightReceived: FightImpl,
+    ): void {
+      expect(conditionName).toBe(FightEndConditionName.TimeEnded);
+      expect(fightReceived).toBe(fight);
       return;
     }
   }
 
   const mockFightTimeEndedObserver = new MockFightTimeEndedObserver();
 
-  describe('addFightTimeEndedObserver', () => {
+  describe('addFightEndConditionFulfilledObserver', () => {
     it('should add observer to an empty observers list', () => {
-      timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
+      timer.addFightEndConditionFulfilledObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(1);
     });
 
     it('should not add the same observer twice', () => {
-      timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
-      timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
+      timer.addFightEndConditionFulfilledObserver(mockFightTimeEndedObserver);
+      timer.addFightEndConditionFulfilledObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(1);
     });
   });
 
   describe('removeFightTimeEndedObserver', () => {
     it('should remove observer from observers list', () => {
-      timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
+      timer.addFightEndConditionFulfilledObserver(mockFightTimeEndedObserver);
       expect(timer.endTimeObservers.length).toBe(1);
-      timer.removeFightTimeEndedObserver(mockFightTimeEndedObserver);
+      timer.removeFightEndConditionFulfilledObserver(
+        mockFightTimeEndedObserver,
+      );
       expect(timer.endTimeObservers.length).toBe(0);
     });
   });
 
   describe('notifyTimeEnded', () => {
     it('should notify observer when time ends', () => {
-      const spy = jest.spyOn(mockFightTimeEndedObserver, 'fightTimeEnded');
-      timer.addFightTimeEndedObserver(mockFightTimeEndedObserver);
+      const spy = jest.spyOn(
+        mockFightTimeEndedObserver,
+        'fightEndConditionFulfilled',
+      );
+      timer.addFightEndConditionFulfilledObserver(mockFightTimeEndedObserver);
       timer.endTimer();
       timer.notifyTimeEnded();
       expect(spy).toBeCalledTimes(1);

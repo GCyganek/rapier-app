@@ -1,13 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { io } from 'socket.io-client';
-import { Fight, FightState } from '../../src/interfaces/fight.interface';
+import { FightState } from '../../src/interfaces/fight.interface';
 import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { JudgesGateway } from '../../src/gateways/judges.gateway';
 import { FightsService } from '../../src/services/fights.service';
-import { Timer } from '../../src/classes/timer/timer.class';
+import { Timer } from '../../src/classes/timer.class';
 import { INestApplication } from '@nestjs/common';
 import { Event } from '../../src/interfaces/event.interface';
-import { FightEndCondition } from '../../src/interfaces/fight-end-condition-fulfilled-response.interface';
+import {
+  FightEndCondition,
+  FightEndConditionName,
+} from '../../src/interfaces/fight-end-condition.interface';
+import { FightImpl } from '../../src/classes/fight.class';
 
 async function createNestApp(...providers): Promise<INestApplication> {
   const testingModule = await Test.createTestingModule({
@@ -36,45 +40,26 @@ async function joinNewJudge(fightId: string, judgeId: string) {
 
 describe('JudgesGateway', () => {
   let app: INestApplication;
-  let fight: Fight;
+  let fight: FightImpl;
 
   beforeAll(async () => {
     app = await createNestApp(JudgesGateway, FightsService);
     await app.listen(3001);
 
-    const fightId = 'mockup';
-
-    fight = {
-      id: fightId,
-      state: FightState.Scheduled,
-      timer: new Timer(1, fightId),
-
-      mainJudge: {
-        id: 'main',
-        socket: null,
-      },
-      redJudge: {
-        id: 'red',
-        socket: null,
-      },
-      blueJudge: {
-        id: 'blue',
-        socket: null,
-      },
-
-      redPlayer: {
-        id: 'player1',
-        points: 0,
-      },
-      bluePlayer: {
-        id: 'player2',
-        points: 0,
-      },
-
-      pointsToEndFight: 5,
-
-      eventsHistory: [],
-    };
+    fight = new FightImpl(
+      'mockup',
+      FightState.Scheduled,
+      { id: 'main', socket: null },
+      { id: 'red', socket: null },
+      { id: 'blue', socket: null },
+      { id: 'player1', points: 0 },
+      { id: 'player2', points: 0 },
+      new Set<FightEndCondition>([
+        { name: FightEndConditionName.EnoughPoints, value: 5 },
+        { name: FightEndConditionName.TimeEnded, value: 1 },
+      ]),
+      [],
+    );
 
     app.get(FightsService).newFight(fight);
   });
@@ -230,7 +215,7 @@ describe('JudgesGateway', () => {
         fight.timer.endTimer();
       });
 
-      it('should not start not running fight', async () => {
+      it('should not start finished fight', async () => {
         fight.state = FightState.Finished;
 
         wsMain.emit('startFight', {
@@ -299,7 +284,7 @@ describe('JudgesGateway', () => {
 
     describe('resumeTimer', () => {
       beforeEach(() => {
-        fight.timer = new Timer(1, fight.id);
+        fight.timer = new Timer(1, fight);
       });
 
       afterEach(() => {
@@ -382,7 +367,7 @@ describe('JudgesGateway', () => {
 
     describe('pauseTimer', () => {
       beforeEach(() => {
-        fight.timer = new Timer(1, fight.id);
+        fight.timer = new Timer(1, fight);
       });
 
       afterEach(() => {
@@ -622,7 +607,9 @@ describe('JudgesGateway', () => {
           await new Promise<void>((resolve) =>
             ws.on('fightEndConditionFulfilled', (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
-              expect(data.condition).toBe(FightEndCondition.EnoughPoints);
+              expect(data.conditionName).toBe(
+                FightEndConditionName.EnoughPoints,
+              );
               resolve();
             }),
           );

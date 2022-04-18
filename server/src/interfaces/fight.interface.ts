@@ -1,12 +1,13 @@
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer/timer.class.js';
+import { Timer } from '../classes/timer.class.js';
 import { Event } from './event.interface';
+import { FightEndCondition } from 'src/interfaces/fight-end-condition.interface';
 
 export interface Fight {
   id: string;
 
   state: FightState;
-  timer: Timer;
+  timer?: Timer;
 
   mainJudge: JudgeState;
   redJudge: JudgeState;
@@ -15,7 +16,7 @@ export interface Fight {
   redPlayer: PlayerState;
   bluePlayer: PlayerState;
 
-  pointsToEndFight: number;
+  endConditions: Set<FightEndCondition>;
 
   eventsHistory: Event[];
 }

@@ -6,25 +6,23 @@ import {
 } from '@nestjs/websockets';
 
 import { Socket } from 'socket.io';
-import { Fight } from '../interfaces/fight.interface';
 import { FightsService } from '../services/fights.service';
 import { Response, ResponseStatus } from '../interfaces/response.interface';
 import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
 import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import {
-  FightEndCondition,
-  FightEndConditionFulfilledResponse,
-} from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
+import { FightEndConditionFulfilledResponse } from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
+import { FightEndConditionName } from 'src/interfaces/fight-end-condition.interface';
+import { FightImpl } from 'src/classes/fight.class';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
   constructor(private fightsService: FightsService) {
-    fightsService.addFightEndConditionFulfilledObserver(this);
+    fightsService.setFightEndConditionFulfilledObserver(this);
   }
 
-  sendToAllJudges(fight: Fight, event: string, response: any) {
+  sendToAllJudges(fight: FightImpl, event: string, response: any) {
     if (fight.mainJudge.socket != null) {
       fight.mainJudge.socket.emit(event, response);
     }
@@ -196,13 +194,16 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
 
     this.sendToAllJudges(fight, 'newEvents', response);
 
-    this.fightsService.checkIfEnoughPointsToEndFight(fight);
+    fight.checkIfEnoughPointsToEndFight();
   }
 
-  fightEndConditionFulfilled(condition: FightEndCondition, fight: Fight): void {
+  fightEndConditionFulfilled(
+    conditionName: FightEndConditionName,
+    fight: FightImpl,
+  ): void {
     const response: FightEndConditionFulfilledResponse = {
       status: ResponseStatus.OK,
-      condition: condition,
+      conditionName: conditionName,
     };
 
     this.sendToAllJudges(fight, 'fightEndConditionFulfilled', response);
