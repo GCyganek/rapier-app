@@ -15,6 +15,7 @@ import { FightEndConditionFulfilledObserver } from '../interfaces/observers/figh
 import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
 import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
+import { JoinResponse } from '../interfaces/join-response.interface';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
@@ -40,10 +41,19 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: Response = {
+    const status: Response = {
       status: this.fightsService.addJudge(fightId, judgeId, client),
     };
-    client.emit('join', response);
+    if (status.status != ResponseStatus.OK) {
+      return client.emit('join', status);
+    }
+
+    const response: JoinResponse = {
+      status: status.status,
+      redPlayer: { id: 'red', firstName: 'Jan', lastName: 'Kowalski' },
+      bluePlayer: { id: 'blue', firstName: 'Maciej', lastName: 'Nowak' },
+    };
+    return client.emit('join', response);
   }
 
   @SubscribeMessage('startFight')
