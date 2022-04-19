@@ -1,15 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FightsService } from '../../src/services/fights.service';
-import { FightState } from '../../src/interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../../src/interfaces/fight.interface';
 import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { Event } from '../../src/interfaces/event.interface';
 import { Manager } from 'socket.io-client';
 import { Timer } from '../../src/classes/timer.class';
 import { FightImpl } from '../../src/classes/fight.class';
-import {
-  FightEndCondition,
-  FightEndConditionName,
-} from '../../src/interfaces/fight-end-condition.interface';
 import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 
 describe('FightsService', () => {
@@ -19,17 +18,15 @@ describe('FightsService', () => {
 
   const fight = new FightImpl(
     'mockup',
-    FightState.Scheduled,
-    { id: 'main', socket: null },
-    { id: 'red', socket: null },
-    { id: 'blue', socket: null },
-    { id: 'player1', points: 0 },
-    { id: 'player2', points: 0 },
-    new Set<FightEndCondition>([
-      { name: FightEndConditionName.EnoughPoints, value: 5 },
-      { name: FightEndConditionName.TimeEnded, value: 1 },
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([
+      [FightEndConditionName.EnoughPoints, 5],
+      [FightEndConditionName.TimeEnded, 1],
     ]),
-    [],
   );
 
   class MockFightEndConditionFulfilledObserver

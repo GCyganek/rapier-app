@@ -1,10 +1,9 @@
 import { Manager } from 'socket.io-client';
 import { FightImpl } from '../../src/classes/fight.class';
 import {
-  FightEndCondition,
   FightEndConditionName,
-} from '../../src/interfaces/fight-end-condition.interface';
-import { FightState } from '../../src/interfaces/fight.interface';
+  FightState,
+} from '../../src/interfaces/fight.interface';
 import { FightEndConditionFulfilledObserver } from '../../src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 
 describe('FightImpl', () => {
@@ -12,29 +11,25 @@ describe('FightImpl', () => {
 
   const fight = new FightImpl(
     'mockup',
-    FightState.Scheduled,
-    { id: 'main', socket: null },
-    { id: 'red', socket: null },
-    { id: 'blue', socket: null },
-    { id: 'player1', points: 0 },
-    { id: 'player2', points: 0 },
-    new Set<FightEndCondition>([
-      { name: FightEndConditionName.EnoughPoints, value: 5 },
-      { name: FightEndConditionName.TimeEnded, value: 1 },
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([
+      [FightEndConditionName.EnoughPoints, 5],
+      [FightEndConditionName.TimeEnded, 1],
     ]),
-    [],
   );
 
   const fightWithoutEndConditions = new FightImpl(
     'mockup',
-    FightState.Scheduled,
-    { id: 'main', socket: null },
-    { id: 'red', socket: null },
-    { id: 'blue', socket: null },
-    { id: 'player1', points: 0 },
-    { id: 'player2', points: 0 },
-    new Set<FightEndCondition>(),
-    [],
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([]),
   );
 
   beforeAll(async () => {
@@ -67,25 +62,23 @@ describe('FightImpl', () => {
 
   describe('getConditionWithName', () => {
     it('should return FightEndCondition', () => {
-      expect(
-        fight.getConditionWithName(FightEndConditionName.EnoughPoints).value,
-      ).toBe(5);
-      expect(
-        fight.getConditionWithName(FightEndConditionName.TimeEnded).value,
-      ).toBe(1);
+      expect(fight.endConditions.get(FightEndConditionName.EnoughPoints)).toBe(
+        5,
+      );
+      expect(fight.endConditions.get(FightEndConditionName.TimeEnded)).toBe(1);
     });
 
     it('should return null when called on a fight with no end conditions', () => {
       expect(
-        fightWithoutEndConditions.getConditionWithName(
+        fightWithoutEndConditions.endConditions.get(
           FightEndConditionName.EnoughPoints,
         ),
-      ).toBeNull;
+      ).toBeUndefined();
       expect(
-        fightWithoutEndConditions.getConditionWithName(
+        fightWithoutEndConditions.endConditions.get(
           FightEndConditionName.TimeEnded,
         ),
-      ).toBeNull;
+      ).toBeUndefined();
     });
   });
 

@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { FightState } from '../interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import {
-  FightEndCondition,
-  FightEndConditionName,
-} from '../interfaces/fight-end-condition.interface';
 import { FightImpl } from '../classes/fight.class';
 
 @Injectable()
@@ -21,17 +20,15 @@ export class FightsService {
   constructor() {
     const fight = new FightImpl(
       'mockup',
-      FightState.Scheduled,
-      { id: 'main', socket: null },
-      { id: 'red', socket: null },
-      { id: 'blue', socket: null },
-      { id: 'player1', points: 0 },
-      { id: 'player2', points: 0 },
-      new Set<FightEndCondition>([
-        { name: FightEndConditionName.EnoughPoints, value: 5 },
-        { name: FightEndConditionName.TimeEnded, value: 1 },
+      'main',
+      'red',
+      'blue',
+      'player1',
+      'player2',
+      new Map<FightEndConditionName, number>([
+        [FightEndConditionName.EnoughPoints, 5],
+        [FightEndConditionName.TimeEnded, 1],
       ]),
-      [],
     );
     this.newFight(fight);
   }
@@ -62,9 +59,7 @@ export class FightsService {
       return false;
     }
 
-    return [fight.mainJudge.id, fight.redJudge.id, fight.blueJudge.id].includes(
-      judgeId,
-    );
+    return fight.isJudge(judgeId);
   }
 
   isMainJudge(fightId: string, judgeId: string): boolean {
@@ -74,7 +69,7 @@ export class FightsService {
       return false;
     }
 
-    return judgeId == fight.mainJudge.id;
+    return fight.isMainJudge(judgeId);
   }
 
   addJudge(fightId: string, judgeId: string, socket: Socket): ResponseStatus {

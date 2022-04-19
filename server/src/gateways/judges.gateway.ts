@@ -11,10 +11,10 @@ import { Response, ResponseStatus } from '../interfaces/response.interface';
 import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
-import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import { FightEndConditionFulfilledResponse } from 'src/interfaces/fight-end-condition-fulfilled-response.interface';
-import { FightEndConditionName } from 'src/interfaces/fight-end-condition.interface';
-import { FightImpl } from 'src/classes/fight.class';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
+import { FightEndConditionName } from '../interfaces/fight.interface';
+import { FightImpl } from '../classes/fight.class';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {

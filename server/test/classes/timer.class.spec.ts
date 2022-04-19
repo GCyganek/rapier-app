@@ -1,26 +1,22 @@
 import { FightImpl } from '../../src/classes/fight.class';
 import { Timer } from '../../src/classes/timer.class';
-import {
-  FightEndCondition,
-  FightEndConditionName,
-} from '../../src/interfaces/fight-end-condition.interface';
-import { FightState } from '../../src/interfaces/fight.interface';
 import { FightEndConditionFulfilledObserver } from '../../src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndConditionName } from '../../src/interfaces/fight.interface';
 
 describe('Timer', () => {
   const fight = new FightImpl(
     'mockup',
-    FightState.Scheduled,
-    { id: 'main', socket: null },
-    { id: 'red', socket: null },
-    { id: 'blue', socket: null },
-    { id: 'player1', points: 0 },
-    { id: 'player2', points: 0 },
-    new Set<FightEndCondition>([
-      { name: FightEndConditionName.TimeEnded, value: 1 },
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([
+      [FightEndConditionName.EnoughPoints, 5],
+      [FightEndConditionName.TimeEnded, 1],
     ]),
-    [],
   );
+
   let timer: Timer;
 
   beforeEach(() => {

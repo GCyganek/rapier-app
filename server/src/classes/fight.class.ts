@@ -1,11 +1,8 @@
 import { Event } from '../interfaces/event.interface';
 import {
-  FightEndCondition,
-  FightEndConditionName,
-} from '../interfaces/fight-end-condition.interface';
-import {
-  FightState,
   Fight,
+  FightEndConditionName,
+  FightState,
   JudgeState,
   PlayerState,
 } from '../interfaces/fight.interface';
@@ -22,43 +19,45 @@ export class FightImpl
     FightEndConditionFulfilledPublisher
 {
   state: FightState;
-  eventsHistory: Event[];
   timer?: Timer;
-  private fightEndAlreadyNotified = false;
-  public readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[] =
-    [];
+  mainJudge: JudgeState;
+  redJudge: JudgeState;
+  blueJudge: JudgeState;
+  redPlayer: PlayerState;
+  bluePlayer: PlayerState;
+  eventsHistory: Event[];
+
+  private fightEndAlreadyNotified;
+  readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[];
 
   constructor(
     readonly id: string,
-    state: FightState,
-    readonly mainJudge: JudgeState,
-    readonly redJudge: JudgeState,
-    readonly blueJudge: JudgeState,
-    readonly redPlayer: PlayerState,
-    readonly bluePlayer: PlayerState,
-    readonly endConditions: Set<FightEndCondition>,
-    eventsHistory: Event[],
+    readonly mainJudgeId: string,
+    readonly redJudgeId: string,
+    readonly blueJudgeId: string,
+    readonly redPlayerId: string,
+    readonly bluePlayerId: string,
+    readonly endConditions: Map<FightEndConditionName, number>,
   ) {
-    this.state = state;
-    this.eventsHistory = eventsHistory;
-    const timeCondition: FightEndCondition = this.getConditionWithName(
+    this.id = id;
+    this.state = FightState.Scheduled;
+    this.mainJudge = { id: mainJudgeId, socket: null };
+    this.redJudge = { id: redJudgeId, socket: null };
+    this.blueJudge = { id: blueJudgeId, socket: null };
+    this.redPlayer = { id: redPlayerId, points: 0 };
+    this.bluePlayer = { id: bluePlayerId, points: 0 };
+    this.eventsHistory = [];
+
+    const timeConditionValue = this.endConditions.get(
       FightEndConditionName.TimeEnded,
     );
-    if (timeCondition) {
-      this.timer = new Timer(timeCondition.value, this);
+    if (timeConditionValue) {
+      this.timer = new Timer(timeConditionValue, this);
       this.timer.addFightEndConditionFulfilledObserver(this);
     }
-  }
 
-  getConditionWithName(
-    conditionName: FightEndConditionName,
-  ): FightEndCondition {
-    for (const condition of this.endConditions) {
-      if (condition.name === conditionName) {
-        return condition;
-      }
-    }
-    return null;
+    this.fightEndAlreadyNotified = false;
+    this.fightEndConditionFulfilledObservers = [];
   }
 
   judgeSocketAlreadyAssigned(judgeId: string, socket: Socket): boolean {
@@ -81,6 +80,16 @@ export class FightImpl
       this.redJudge.socket != null &&
       this.blueJudge.socket != null
     );
+  }
+
+  isJudge(judgeId: string): boolean {
+    return [this.mainJudge.id, this.redJudge.id, this.blueJudge.id].includes(
+      judgeId,
+    );
+  }
+
+  isMainJudge(judgeId: string): boolean {
+    return this.mainJudge.id == judgeId;
   }
 
   startFight(): boolean {
@@ -147,13 +156,14 @@ export class FightImpl
 
   checkIfEnoughPointsToEndFight(): void {
     if (this.fightEndAlreadyNotified) return;
-    const pointsCondition = this.getConditionWithName(
+    const pointsConditionValue = this.endConditions.get(
       FightEndConditionName.EnoughPoints,
     );
-    if (!pointsCondition) return;
+
+    if (!pointsConditionValue) return;
     if (
-      this.redPlayer.points >= pointsCondition.value ||
-      this.bluePlayer.points >= pointsCondition.value
+      this.redPlayer.points >= pointsConditionValue ||
+      this.bluePlayer.points >= pointsConditionValue
     ) {
       this.notifyFightEndConditionFulfilled(FightEndConditionName.EnoughPoints);
     }
@@ -163,11 +173,11 @@ export class FightImpl
     observer: FightEndConditionFulfilledObserver,
   ): void {
     if (this.endConditions.size === 0) return;
-    const obsToRemoveIndex = this.fightEndConditionFulfilledObservers.findIndex(
+    const observerIndex = this.fightEndConditionFulfilledObservers.findIndex(
       (obs) => JSON.stringify(obs) == JSON.stringify(observer),
     );
 
-    if (obsToRemoveIndex != -1) return;
+    if (observerIndex != -1) return;
 
     this.fightEndConditionFulfilledObservers.push(observer);
   }

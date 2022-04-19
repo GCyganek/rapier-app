@@ -1,4 +1,4 @@
-import { FightEndConditionName } from '../interfaces/fight-end-condition.interface';
+import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
 import { FightImpl } from './fight.class';
@@ -68,11 +68,11 @@ export class Timer implements FightEndConditionFulfilledPublisher {
   addFightEndConditionFulfilledObserver(
     observer: FightEndConditionFulfilledObserver,
   ): void {
-    const obsToRemoveIndex = this.endTimeObservers.findIndex(
+    const observerIndex = this.endTimeObservers.findIndex(
       (obs) => JSON.stringify(obs) == JSON.stringify(observer),
     );
 
-    if (obsToRemoveIndex != -1) return;
+    if (observerIndex != -1) return;
 
     this.endTimeObservers.push(observer);
   }

@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io';
 import { Timer } from '../classes/timer.class.js';
 import { Event } from './event.interface';
-import { FightEndCondition } from 'src/interfaces/fight-end-condition.interface';
 
 export interface Fight {
   id: string;
@@ -16,7 +15,7 @@ export interface Fight {
   redPlayer: PlayerState;
   bluePlayer: PlayerState;
 
-  endConditions: Set<FightEndCondition>;
+  endConditions: Map<FightEndConditionName, number>;
 
   eventsHistory: Event[];
 }
@@ -36,4 +35,9 @@ export interface JudgeState {
 export interface PlayerState {
   id: string;
   points: number;
+}
+
+export enum FightEndConditionName {
+  TimeEnded = 'TIME_ENDED',
+  EnoughPoints = 'ENOUGH_POINTS',
 }
