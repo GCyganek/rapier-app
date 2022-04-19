@@ -1,45 +1,49 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FightsService } from '../../src/services/fights.service';
-import { Fight, FightState } from '../../src/interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../../src/interfaces/fight.interface';
 import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { Event } from '../../src/interfaces/event.interface';
 import { Manager } from 'socket.io-client';
-import { Timer } from '../../src/classes/timer/timer.class';
+import { Timer } from '../../src/classes/timer.class';
+import { FightImpl } from '../../src/classes/fight.class';
+import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 
 describe('FightsService', () => {
   let app: TestingModule;
   let fightService: FightsService;
   let manager: Manager;
 
-  const fight: Fight = {
-    id: 'mockup',
-    state: FightState.Scheduled,
-    timer: new Timer(1),
+  const fight = new FightImpl(
+    'mockup',
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([
+      [FightEndConditionName.EnoughPoints, 5],
+      [FightEndConditionName.TimeEnded, 1],
+    ]),
+  );
 
-    mainJudge: {
-      id: 'main',
-      socket: null,
-    },
-    redJudge: {
-      id: 'red',
-      socket: null,
-    },
-    blueJudge: {
-      id: 'blue',
-      socket: null,
-    },
+  class MockFightEndConditionFulfilledObserver
+    implements FightEndConditionFulfilledObserver
+  {
+    fightEndConditionFulfilled(
+      condition: FightEndConditionName,
+      fightReceived: FightImpl,
+    ): void {
+      expect(condition).toBe(FightEndConditionName.EnoughPoints);
+      expect(fightReceived).toBe(fight);
+      return;
+    }
+  }
 
-    redPlayer: {
-      id: 'player1',
-      points: 0,
-    },
-    bluePlayer: {
-      id: 'player2',
-      points: 0,
-    },
-
-    eventsHistory: [],
-  };
+  const mockFightEndConditionFulfilledObserver =
+    new MockFightEndConditionFulfilledObserver();
 
   beforeAll(async () => {
     app = await Test.createTestingModule({
@@ -62,8 +66,16 @@ describe('FightsService', () => {
   });
 
   describe('newFight', () => {
-    it('should create new fight and find it', () => {
+    it('should create new fight, add observer to it and find it', () => {
+      expect(fight.fightEndConditionFulfilledObservers.length).toBe(0);
+      fightService.setFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       fightService.newFight(fight);
+      expect(fight.fightEndConditionFulfilledObservers.length).toBe(1);
+      expect(fight.fightEndConditionFulfilledObservers[0]).toBe(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.getFight(fight.id)).not.toBeUndefined();
     });
   });
@@ -144,7 +156,7 @@ describe('FightsService', () => {
 
   describe('startFight', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
     });
 
     afterEach(() => {
@@ -199,7 +211,7 @@ describe('FightsService', () => {
     });
 
     it('should end the timer if it was running', () => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
       expect(fight.timer.timeoutSet()).toBeTruthy();
@@ -219,7 +231,7 @@ describe('FightsService', () => {
 
   describe('startTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
     });
 
     afterEach(() => {
@@ -256,7 +268,7 @@ describe('FightsService', () => {
 
   describe('pauseTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
     });
@@ -266,7 +278,7 @@ describe('FightsService', () => {
     });
 
     afterAll(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
       fight.state = FightState.Scheduled;
     });
 

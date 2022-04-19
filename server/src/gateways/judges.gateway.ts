@@ -6,18 +6,23 @@ import {
 } from '@nestjs/websockets';
 
 import { Socket } from 'socket.io';
-import { Fight } from '../interfaces/fight.interface';
 import { FightsService } from '../services/fights.service';
 import { Response, ResponseStatus } from '../interfaces/response.interface';
 import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
+import { FightEndConditionName } from '../interfaces/fight.interface';
+import { FightImpl } from '../classes/fight.class';
 
 @WebSocketGateway()
-export class JudgesGateway {
-  constructor(private fightsService: FightsService) {}
+export class JudgesGateway implements FightEndConditionFulfilledObserver {
+  constructor(private fightsService: FightsService) {
+    fightsService.setFightEndConditionFulfilledObserver(this);
+  }
 
-  sendToAllJudges(fight: Fight, event: string, response: any) {
+  sendToAllJudges(fight: FightImpl, event: string, response: any) {
     if (fight.mainJudge.socket != null) {
       fight.mainJudge.socket.emit(event, response);
     }
@@ -188,5 +193,19 @@ export class JudgesGateway {
     };
 
     this.sendToAllJudges(fight, 'newEvents', response);
+
+    fight.checkIfEnoughPointsToEndFight();
+  }
+
+  fightEndConditionFulfilled(
+    conditionName: FightEndConditionName,
+    fight: FightImpl,
+  ): void {
+    const response: FightEndConditionFulfilledResponse = {
+      status: ResponseStatus.OK,
+      conditionName: conditionName,
+    };
+
+    this.sendToAllJudges(fight, 'fightEndConditionFulfilled', response);
   }
 }
