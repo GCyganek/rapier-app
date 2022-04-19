@@ -21,10 +21,10 @@ export interface Fight {
 }
 
 export enum FightState {
-  Scheduled,
-  Running,
-  Paused,
-  Finished,
+  Scheduled = 'SCHEDULED',
+  Running = 'RUNNING',
+  Paused = 'PAUSED',
+  Finished = 'FINISHED',
 }
 
 export interface JudgeState {
