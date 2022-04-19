@@ -88,7 +88,7 @@ and sends message to all judges.
 
 Endpoint to pause fight. Only main judge is allowed to pause fight. Endpoint makes sure that it is called by main judge, 
 pauses fight (changes fight state to `PAUSED` and pauses timer) and sends message to all judges.
-Additional parameter `exactPauseTimeInMillis` can be used to synchronize time between judges and server.
+Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between judges and server.
 
 ### Parameters
 | name                   | type   |
