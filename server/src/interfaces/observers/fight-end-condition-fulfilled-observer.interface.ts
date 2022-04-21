@@ -1,5 +1,5 @@
 import { FightImpl } from 'src/classes/fight.class';
-import { FightEndConditionName } from '../fight-end-condition.interface';
+import { FightEndConditionName } from '../fight.interface';
 
 export interface FightEndConditionFulfilledObserver {
   fightEndConditionFulfilled(
