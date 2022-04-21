@@ -1,42 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer/timer.class';
-import { Fight, FightState } from '../interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
+import { Event } from '../interfaces/event.interface';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightImpl } from '../classes/fight.class';
 
 @Injectable()
 export class FightsService {
-  private readonly fights: Map<string, Fight> = new Map<string, Fight>();
+  private readonly fights: Map<string, FightImpl> = new Map<
+    string,
+    FightImpl
+  >();
+  private fightEndConditionFulfilledObserver: FightEndConditionFulfilledObserver;
 
   constructor() {
-    const fight: Fight = {
-      id: 'mockup',
-      state: FightState.Scheduled,
-
-      mainJudgeId: 'main',
-      redJudgeId: 'red',
-      blueJudgeId: 'blue',
-
-      mainJudgeSocket: null,
-      redJudgeSocket: null,
-      blueJudgeSocket: null,
-
-      redPlayerId: 'player1',
-      bluePlayerId: 'player2',
-
-      redEventsHistory: [],
-      blueEventsHistory: [],
-
-      timer: new Timer(1),
-    };
+    const fight = new FightImpl(
+      'mockup',
+      'main',
+      'red',
+      'blue',
+      'player1',
+      'player2',
+      new Map<FightEndConditionName, number>([
+        [FightEndConditionName.EnoughPoints, 5],
+        [FightEndConditionName.TimeEnded, 1],
+      ]),
+    );
     this.newFight(fight);
   }
 
-  newFight(fight: Fight) {
-    this.fights.set(fight.id, fight);
+  setFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ) {
+    this.fightEndConditionFulfilledObserver = observer;
   }
 
-  getFight(id: string): Fight {
+  newFight(fight: FightImpl) {
+    this.fights.set(fight.id, fight);
+    if (this.fightEndConditionFulfilledObserver) {
+      fight.addFightEndConditionFulfilledObserver(
+        this.fightEndConditionFulfilledObserver,
+      );
+    }
+  }
+
+  getFight(id: string): FightImpl {
     return this.fights.get(id);
   }
 
@@ -47,9 +59,7 @@ export class FightsService {
       return false;
     }
 
-    return [fight.mainJudgeId, fight.redJudgeId, fight.blueJudgeId].includes(
-      judgeId,
-    );
+    return fight.isJudge(judgeId);
   }
 
   isMainJudge(fightId: string, judgeId: string): boolean {
@@ -59,7 +69,7 @@ export class FightsService {
       return false;
     }
 
-    return judgeId == fight.mainJudgeId;
+    return fight.isMainJudge(judgeId);
   }
 
   addJudge(fightId: string, judgeId: string, socket: Socket): ResponseStatus {
@@ -67,24 +77,14 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      (judgeId == fight.mainJudgeId &&
-        fight.mainJudgeSocket != null &&
-        fight.mainJudgeSocket != socket) ||
-      (judgeId == fight.redJudgeId &&
-        fight.redJudgeSocket != null &&
-        fight.redJudgeSocket != socket) ||
-      (judgeId == fight.blueJudgeId &&
-        fight.blueJudgeSocket != null &&
-        fight.blueJudgeSocket != socket)
-    ) {
+    } else if (fight.judgeSocketAlreadyAssigned(judgeId, socket)) {
       return ResponseStatus.BadRequest;
-    } else if (judgeId == fight.mainJudgeId) {
-      fight.mainJudgeSocket = socket;
-    } else if (judgeId == fight.redJudgeId) {
-      fight.redJudgeSocket = socket;
-    } else if (judgeId == fight.blueJudgeId) {
-      fight.blueJudgeSocket = socket;
+    } else if (judgeId == fight.mainJudge.id) {
+      fight.mainJudge.socket = socket;
+    } else if (judgeId == fight.redJudge.id) {
+      fight.redJudge.socket = socket;
+    } else if (judgeId == fight.blueJudge.id) {
+      fight.blueJudge.socket = socket;
     } else {
       return ResponseStatus.Unauthorized;
     }
@@ -97,18 +97,13 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      fight.mainJudgeSocket == null ||
-      fight.redJudgeSocket == null ||
-      fight.blueJudgeSocket == null
-    ) {
+    } else if (fight.allJudgesAssigned() === false) {
       return ResponseStatus.NotReady;
     } else if (fight.state != FightState.Scheduled) {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.startFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -123,8 +118,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    fight.timer.endTimer();
-    fight.state = FightState.Finished;
+    fight.finishFight();
     return ResponseStatus.OK;
   }
 
@@ -137,8 +131,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.resumeFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -153,11 +146,27 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (
-      fight.timer.hasTimeEnded() ||
-      fight.timer.pauseTimer(exactPauseTimeInMillis)
-    ) {
-      fight.state = FightState.Paused;
+    if (fight.pauseFight(exactPauseTimeInMillis)) {
+      return ResponseStatus.OK;
+    }
+    return ResponseStatus.BadRequest;
+  }
+
+  newEvents(
+    fightId: string,
+    events: Event[],
+    redPlayerPoints: number,
+    bluePlayerPoints: number,
+  ): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+      return ResponseStatus.BadRequest;
+    }
+
+    if (fight.addNewEvents(events, redPlayerPoints, bluePlayerPoints)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;

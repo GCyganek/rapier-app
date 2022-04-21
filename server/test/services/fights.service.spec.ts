@@ -1,45 +1,81 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FightsService } from '../../src/services/fights.service';
-import { Fight, FightState } from '../../src/interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../../src/interfaces/fight.interface';
 import { ResponseStatus } from '../../src/interfaces/response.interface';
+import { Event } from '../../src/interfaces/event.interface';
 import { Manager } from 'socket.io-client';
-import { Timer } from '../../src/classes/timer/timer.class';
+import { Timer } from '../../src/classes/timer.class';
+import { FightImpl } from '../../src/classes/fight.class';
+import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 
 describe('FightsService', () => {
   let app: TestingModule;
   let fightService: FightsService;
   let manager: Manager;
-  const fight: Fight = {
-    id: 'mockup',
-    state: FightState.Scheduled,
 
-    mainJudgeId: 'main',
-    redJudgeId: 'red',
-    blueJudgeId: 'blue',
+  const fight = new FightImpl(
+    'mockup',
+    'main',
+    'red',
+    'blue',
+    'player1',
+    'player2',
+    new Map<FightEndConditionName, number>([
+      [FightEndConditionName.EnoughPoints, 5],
+      [FightEndConditionName.TimeEnded, 1],
+    ]),
+  );
 
-    mainJudgeSocket: null,
-    redJudgeSocket: null,
-    blueJudgeSocket: null,
+  class MockFightEndConditionFulfilledObserver
+    implements FightEndConditionFulfilledObserver
+  {
+    fightEndConditionFulfilled(
+      condition: FightEndConditionName,
+      fightReceived: FightImpl,
+    ): void {
+      expect(condition).toBe(FightEndConditionName.EnoughPoints);
+      expect(fightReceived).toBe(fight);
+      return;
+    }
+  }
 
-    redPlayerId: 'player1',
-    bluePlayerId: 'player2',
-
-    redEventsHistory: [],
-    blueEventsHistory: [],
-
-    timer: new Timer(1),
-  };
+  const mockFightEndConditionFulfilledObserver =
+    new MockFightEndConditionFulfilledObserver();
 
   beforeAll(async () => {
     app = await Test.createTestingModule({
       providers: [FightsService],
     }).compile();
     fightService = app.get(FightsService);
+    manager = new Manager('wss://localhost:3000');
+  });
+
+  afterAll(() => {
+    for (const socket of [
+      fight.blueJudge.socket,
+      fight.redJudge.socket,
+      fight.mainJudge.socket,
+    ]) {
+      if (socket != null) {
+        socket.disconnect();
+      }
+    }
   });
 
   describe('newFight', () => {
-    it('should create new fight and find it', () => {
+    it('should create new fight, add observer to it and find it', () => {
+      expect(fight.fightEndConditionFulfilledObservers.length).toBe(0);
+      fightService.setFightEndConditionFulfilledObserver(
+        mockFightEndConditionFulfilledObserver,
+      );
       fightService.newFight(fight);
+      expect(fight.fightEndConditionFulfilledObservers.length).toBe(1);
+      expect(fight.fightEndConditionFulfilledObservers[0]).toBe(
+        mockFightEndConditionFulfilledObserver,
+      );
       expect(fightService.getFight(fight.id)).not.toBeUndefined();
     });
   });
@@ -55,45 +91,45 @@ describe('FightsService', () => {
   });
 
   describe('isJudge', () => {
-    it('should check if given judgeId belongs to main judge', () => {
-      expect(fightService.isJudge(fight.id, fight.mainJudgeId)).toBeTruthy();
+    it('should check if given Judge.id belongs to main judge', () => {
+      expect(fightService.isJudge(fight.id, fight.mainJudge.id)).toBeTruthy();
     });
 
-    it('should check if given judgeId belongs to red judge', () => {
-      expect(fightService.isJudge(fight.id, fight.redJudgeId)).toBeTruthy();
+    it('should check if given Judge.id belongs to red judge', () => {
+      expect(fightService.isJudge(fight.id, fight.redJudge.id)).toBeTruthy();
     });
 
-    it('should check if given judgeId not belongs to random judge', () => {
+    it('should check if given Judge.id not belongs to random judge', () => {
       expect(fightService.isJudge(fight.id, 'test 123')).not.toBeTruthy();
     });
 
-    it('should check if given judgeId not belongs to random fight', () => {
+    it('should check if given Judge.id not belongs to random fight', () => {
       expect(
-        fightService.isJudge('test 123', fight.mainJudgeId),
+        fightService.isJudge('test 123', fight.mainJudge.id),
       ).not.toBeTruthy();
     });
   });
 
   describe('isMainJudge', () => {
-    it('should check if given judgeId belongs to the main judge', () => {
+    it('should check if given Judge.id belongs to the main judge', () => {
       expect(
-        fightService.isMainJudge(fight.id, fight.mainJudgeId),
+        fightService.isMainJudge(fight.id, fight.mainJudge.id),
       ).toBeTruthy();
     });
 
-    it('should check if given judgeId not belongs to the main judge', () => {
+    it('should check if given Judge.id not belongs to the main judge', () => {
       expect(
-        fightService.isMainJudge(fight.id, fight.redJudgeId),
+        fightService.isMainJudge(fight.id, fight.redJudge.id),
       ).not.toBeTruthy();
     });
 
-    it('should check if random judgeId not belongs to the main judge', () => {
+    it('should check if random Judge.id not belongs to the main judge', () => {
       expect(fightService.isMainJudge(fight.id, 'test 123')).not.toBeTruthy();
     });
 
-    it('should check if main judgeId not belongs to the random fight', () => {
+    it('should check if main Judge.id not belongs to the random fight', () => {
       expect(
-        fightService.isMainJudge('test 123', fight.mainJudgeId),
+        fightService.isMainJudge('test 123', fight.mainJudge.id),
       ).not.toBeTruthy();
     });
   });
@@ -106,29 +142,21 @@ describe('FightsService', () => {
     });
 
     it('should not be able to join random fight', () => {
-      expect(fightService.addJudge('test 123', fight.mainJudgeId, null)).toBe(
+      expect(fightService.addJudge('test 123', fight.mainJudge.id, null)).toBe(
         ResponseStatus.NotFound,
       );
     });
 
     it('red judge should be able to join fight and save his/her socket', () => {
-      expect(fightService.addJudge(fight.id, fight.redJudgeId, null)).toBe(
+      expect(fightService.addJudge(fight.id, fight.redJudge.id, null)).toBe(
         ResponseStatus.OK,
       );
     });
   });
 
   describe('startFight', () => {
-    beforeAll(() => {
-      manager = new Manager('wss://localhost:3000');
-    });
-
-    afterAll(() => {
-      manager._close();
-    });
-
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
     });
 
     afterEach(() => {
@@ -141,14 +169,14 @@ describe('FightsService', () => {
 
     it('should not start fight without all judges', () => {
       const socket = manager.socket('/');
-      fightService.addJudge(fight.id, fight.mainJudgeId, socket as any);
-      fightService.addJudge(fight.id, fight.redJudgeId, socket as any);
+      fightService.addJudge(fight.id, fight.mainJudge.id, socket as any);
+      fightService.addJudge(fight.id, fight.redJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.NotReady);
     });
 
     it('should start ready fight after missing judge joined', () => {
       const socket = manager.socket('/');
-      fightService.addJudge(fight.id, fight.blueJudgeId, socket as any);
+      fightService.addJudge(fight.id, fight.blueJudge.id, socket as any);
       expect(fightService.startFight(fight.id)).toBe(ResponseStatus.OK);
     });
 
@@ -183,7 +211,7 @@ describe('FightsService', () => {
     });
 
     it('should end the timer if it was running', () => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
       expect(fight.timer.timeoutSet()).toBeTruthy();
@@ -203,7 +231,7 @@ describe('FightsService', () => {
 
   describe('startTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
     });
 
     afterEach(() => {
@@ -240,13 +268,18 @@ describe('FightsService', () => {
 
   describe('pauseTimer', () => {
     beforeEach(() => {
-      fight.timer = new Timer(1);
+      fight.timer = new Timer(1, fight);
       fight.state = FightState.Scheduled;
       fightService.startFight(fight.id);
     });
 
     afterEach(() => {
       fight.timer.endTimer();
+    });
+
+    afterAll(() => {
+      fight.timer = new Timer(1, fight);
+      fight.state = FightState.Scheduled;
     });
 
     it('should pause timer again when it is running', () => {
@@ -270,6 +303,115 @@ describe('FightsService', () => {
       expect(fightService.pauseTimer(fight.id, Date.now())).toBe(
         ResponseStatus.BadRequest,
       );
+    });
+  });
+
+  describe('newEvents', () => {
+    let events: Event[];
+    const redPlayerPoints = 2;
+    const bluePlayerPoints = 1;
+
+    beforeAll(() => {
+      events = [
+        { id: 'a', playerColor: 'red' },
+        { id: 'b', playerColor: 'blue' },
+        { id: 'a', playerColor: 'red' },
+      ];
+    });
+
+    it('should not add events for random fight', () => {
+      expect(
+        fightService.newEvents(
+          'test 123',
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
+      ).toBe(ResponseStatus.NotFound);
+
+      expect(fight.redPlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.eventsHistory).toStrictEqual([]);
+    });
+
+    it('should not add events for scheduled fight', () => {
+      expect(
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
+      ).toBe(ResponseStatus.BadRequest);
+
+      expect(fight.redPlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.eventsHistory).toStrictEqual([]);
+    });
+
+    it('should not add events with negative number of points', () => {
+      expect(
+        fightService.newEvents(fight.id, events, -1, bluePlayerPoints),
+      ).toBe(ResponseStatus.BadRequest);
+
+      expect(fight.redPlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.eventsHistory).toStrictEqual([]);
+    });
+
+    it('should not add events for finished fight', () => {
+      fight.state = FightState.Finished;
+      expect(
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
+      ).toBe(ResponseStatus.BadRequest);
+
+      expect(fight.redPlayer.points).toBe(0);
+      expect(fight.bluePlayer.points).toBe(0);
+      expect(fight.eventsHistory).toStrictEqual([]);
+    });
+
+    it('should add new events for running fight', () => {
+      fight.state = FightState.Running;
+      expect(
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
+      ).toBe(ResponseStatus.OK);
+
+      expect(fight.redPlayer.points).toBe(2);
+      expect(fight.bluePlayer.points).toBe(1);
+      expect(fight.eventsHistory).toStrictEqual(events);
+
+      fight.redPlayer.points = 0;
+      fight.bluePlayer.points = 0;
+      fight.eventsHistory = [];
+    });
+
+    it('should add new events for paused fight', () => {
+      expect(
+        fightService.newEvents(
+          fight.id,
+          events,
+          redPlayerPoints,
+          bluePlayerPoints,
+        ),
+      ).toBe(ResponseStatus.OK);
+
+      expect(fight.redPlayer.points).toBe(2);
+      expect(fight.bluePlayer.points).toBe(1);
+      expect(fight.eventsHistory).toStrictEqual(events);
+
+      fight.redPlayer.points = 0;
+      fight.bluePlayer.points = 0;
+      fight.eventsHistory = [];
     });
   });
 });

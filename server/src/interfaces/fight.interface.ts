@@ -1,31 +1,43 @@
-import { Event } from './event.interface.js';
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer/timer.class.js';
+import { Timer } from '../classes/timer.class.js';
+import { Event } from './event.interface';
 
 export interface Fight {
   id: string;
+
   state: FightState;
+  timer?: Timer;
 
-  mainJudgeId: string;
-  redJudgeId: string;
-  blueJudgeId: string;
+  mainJudge: JudgeState;
+  redJudge: JudgeState;
+  blueJudge: JudgeState;
 
-  mainJudgeSocket: Socket;
-  redJudgeSocket: Socket;
-  blueJudgeSocket: Socket;
+  redPlayer: PlayerState;
+  bluePlayer: PlayerState;
 
-  redPlayerId: string;
-  bluePlayerId: string;
+  endConditions: Map<FightEndConditionName, number>;
 
-  redEventsHistory: Event[];
-  blueEventsHistory: Event[];
-
-  timer: Timer;
+  eventsHistory: Event[];
 }
 
 export enum FightState {
-  Scheduled,
-  Running,
-  Paused,
-  Finished,
+  Scheduled = 'SCHEDULED',
+  Running = 'RUNNING',
+  Paused = 'PAUSED',
+  Finished = 'FINISHED',
+}
+
+export interface JudgeState {
+  id: string;
+  socket: Socket;
+}
+
+export interface PlayerState {
+  id: string;
+  points: number;
+}
+
+export enum FightEndConditionName {
+  TimeEnded = 'TIME_ENDED',
+  EnoughPoints = 'ENOUGH_POINTS',
 }
