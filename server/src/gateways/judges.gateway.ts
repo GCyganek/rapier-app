@@ -16,10 +16,11 @@ import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-cond
 import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
 import { JoinResponse } from '../interfaces/join-response.interface';
+import { PlayersService } from '../services/players.service';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
-  constructor(private fightsService: FightsService) {
+  constructor(private fightsService: FightsService, private playersService: PlayersService) {
     fightsService.setFightEndConditionFulfilledObserver(this);
   }
 
@@ -41,18 +42,19 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const status: Response = {
+    const response: JoinResponse = {
       status: this.fightsService.addJudge(fightId, judgeId, client),
+      redPlayer: null,
+      bluePlayer: null
     };
-    if (status.status != ResponseStatus.OK) {
-      return client.emit('join', status);
+    if (response.status != ResponseStatus.OK) {
+      return client.emit('join', response);
     }
 
-    const response: JoinResponse = {
-      status: status.status,
-      redPlayer: { id: 'red', firstName: 'Jan', lastName: 'Kowalski' },
-      bluePlayer: { id: 'blue', firstName: 'Maciej', lastName: 'Nowak' },
-    };
+    const fight: FightImpl = this.fightsService.getFight(fightId);
+    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id),
+    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id)
+
     return client.emit('join', response);
   }
 

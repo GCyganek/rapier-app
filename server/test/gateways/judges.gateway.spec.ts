@@ -11,6 +11,9 @@ import { Timer } from '../../src/classes/timer.class';
 import { INestApplication } from '@nestjs/common';
 import { Event } from '../../src/interfaces/event.interface';
 import { FightImpl } from '../../src/classes/fight.class';
+import { Player } from '../../src/interfaces/player.interface';
+import { PlayersService } from '../../src/services/players.service';
+import { JoinResponse } from 'src/interfaces/join-response.interface';
 
 async function createNestApp(...providers): Promise<INestApplication> {
   const testingModule = await Test.createTestingModule({
@@ -40,9 +43,12 @@ async function joinNewJudge(fightId: string, judgeId: string) {
 describe('JudgesGateway', () => {
   let app: INestApplication;
   let fight: FightImpl;
+  let player1: Player;
+  let player2: Player;
+  let playersService: PlayersService;
 
   beforeAll(async () => {
-    app = await createNestApp(JudgesGateway, FightsService);
+    app = await createNestApp(JudgesGateway, FightsService, PlayersService);
     await app.listen(3001);
 
     fight = new FightImpl(
@@ -58,7 +64,21 @@ describe('JudgesGateway', () => {
       ]),
     );
 
+    player1 = {
+        id: "player1",
+        firstName: "Ala",
+        lastName: "Kowalska"
+    }
+
+    player2 = {
+        id: "player2",
+        firstName: "Jan",
+        lastName: "Kowalski"
+    }
+    playersService = app.get(PlayersService);
     app.get(FightsService).newFight(fight);
+    playersService.newPlayer(player1);
+    playersService.newPlayer(player2);
   });
 
   afterAll(() => {
@@ -78,6 +98,8 @@ describe('JudgesGateway', () => {
       await new Promise<void>((resolve) =>
         ws.on('join', (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.redPlayer).toStrictEqual(playersService.getPlayer(fight.redPlayer.id));
+          expect(data.bluePlayer).toStrictEqual(playersService.getPlayer(fight.bluePlayer.id));
           resolve();
         }),
       );
@@ -93,6 +115,8 @@ describe('JudgesGateway', () => {
       await new Promise<void>((resolve) =>
         ws.on('join', (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.redPlayer).toStrictEqual(playersService.getPlayer(fight.redPlayer.id));
+          expect(data.bluePlayer).toStrictEqual(playersService.getPlayer(fight.bluePlayer.id));
           resolve();
         }),
       );
