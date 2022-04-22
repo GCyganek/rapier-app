@@ -17,42 +17,41 @@ describe('PlayersService', () => {
   describe('newPlayer', () => {
     it('should create new player', () => {
       const player: Player = {
-          id: "NewPlayer1",
-          lastName: "Nowak",
-          firstName: "Jan"
-      }
+        id: 'NewPlayer1',
+        lastName: 'Nowak',
+        firstName: 'Jan',
+      };
       expect(playersService.newPlayer(player)).toBe(ResponseStatus.OK);
       expect(playersService.getPlayer(player.id)).toStrictEqual(player);
     });
 
     it('should not create player with duplicated id', () => {
-        const player: Player = {
-            id: "NewPlayer1",
-            lastName: "kowalska",
-            firstName: "Maria"
-        }
-        expect(playersService.newPlayer(player)).toBe(ResponseStatus.BadRequest);
+      const player: Player = {
+        id: 'NewPlayer1',
+        lastName: 'kowalska',
+        firstName: 'Maria',
+      };
+      expect(playersService.newPlayer(player)).toBe(ResponseStatus.BadRequest);
     });
   });
 
   describe('getPlayer', () => {
     it('should return existing player', () => {
       const player: Player = {
-          id: "NewPlayer1",
-          lastName: "Nowak",
-          firstName: "Jan"
-      }
+        id: 'NewPlayer1',
+        lastName: 'Nowak',
+        firstName: 'Jan',
+      };
       expect(playersService.getPlayer(player.id)).toStrictEqual(player);
     });
 
     it('should not find invalid player', () => {
-        const player: Player = {
-            id: "546543231546548",
-            lastName: "kowalska",
-            firstName: "Maria"
-        }
-        expect(playersService.getPlayer(player.id)).toBe(undefined);
+      const player: Player = {
+        id: '546543231546548',
+        lastName: 'kowalska',
+        firstName: 'Maria',
+      };
+      expect(playersService.getPlayer(player.id)).toBe(undefined);
     });
   });
-
 });

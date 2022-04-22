@@ -114,7 +114,7 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+    } else if (!fight.inProgress()) {
       return ResponseStatus.BadRequest;
     }
 
@@ -162,7 +162,7 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+    } else if (!fight.inProgress()) {
       return ResponseStatus.BadRequest;
     }
 
@@ -170,5 +170,25 @@ export class FightsService {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
+  }
+
+  eventsCanBeSuggested(
+    fightId: string,
+    redPlayerPoints: number,
+    bluePlayerPoints: number,
+  ): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (
+      !fight.inProgress() ||
+      redPlayerPoints < 0 ||
+      bluePlayerPoints < 0
+    ) {
+      return ResponseStatus.BadRequest;
+    }
+
+    return ResponseStatus.OK;
   }
 }

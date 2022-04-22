@@ -17,10 +17,15 @@ import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
 import { JoinResponse } from '../interfaces/join-response.interface';
 import { PlayersService } from '../services/players.service';
+import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwarding.interface';
+import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
-  constructor(private fightsService: FightsService, private playersService: PlayersService) {
+  constructor(
+    private fightsService: FightsService,
+    private playersService: PlayersService,
+  ) {
     fightsService.setFightEndConditionFulfilledObserver(this);
   }
 
@@ -36,7 +41,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
   }
 
-  @SubscribeMessage('join')
+  @SubscribeMessage(JudgesSocketEvents.JOIN)
   join(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
@@ -45,31 +50,37 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const response: JoinResponse = {
       status: this.fightsService.addJudge(fightId, judgeId, client),
       redPlayer: null,
-      bluePlayer: null
+      bluePlayer: null,
     };
     if (response.status != ResponseStatus.OK) {
-      return client.emit('join', response);
+      return client.emit(JudgesSocketEvents.JOIN, response);
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
-    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id),
-    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id)
+    (response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id)),
+      (response.bluePlayer = this.playersService.getPlayer(
+        fight.bluePlayer.id,
+      ));
 
-    return client.emit('join', response);
+    return client.emit(JudgesSocketEvents.JOIN, response);
   }
 
-  @SubscribeMessage('startFight')
+  @SubscribeMessage(JudgesSocketEvents.START_FIGHT)
   startFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
-      return client.emit('startFight', { status: ResponseStatus.NotFound });
+      return client.emit(JudgesSocketEvents.START_FIGHT, {
+        status: ResponseStatus.NotFound,
+      });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('startFight', { status: ResponseStatus.Unauthorized });
+      return client.emit(JudgesSocketEvents.START_FIGHT, {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: Response = {
@@ -78,24 +89,26 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const fight = this.fightsService.getFight(fightId);
 
     if (response.status != ResponseStatus.OK) {
-      return client.emit('startFight', response);
+      return client.emit(JudgesSocketEvents.START_FIGHT, response);
     }
 
-    this.sendToAllJudges(fight, 'startFight', response);
+    this.sendToAllJudges(fight, JudgesSocketEvents.START_FIGHT, response);
   }
 
-  @SubscribeMessage('finishFight')
+  @SubscribeMessage(JudgesSocketEvents.FINISH_FIGHT)
   finishFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
-      return client.emit('finishFight', { status: ResponseStatus.NotFound });
+      return client.emit(JudgesSocketEvents.FINISH_FIGHT, {
+        status: ResponseStatus.NotFound,
+      });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('finishFight', {
+      return client.emit(JudgesSocketEvents.FINISH_FIGHT, {
         status: ResponseStatus.Unauthorized,
       });
     }
@@ -106,24 +119,26 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const fight = this.fightsService.getFight(fightId);
 
     if (response.status != ResponseStatus.OK) {
-      return client.emit('finishFight', response);
+      return client.emit(JudgesSocketEvents.FINISH_FIGHT, response);
     }
 
-    this.sendToAllJudges(fight, 'finishFight', response);
+    this.sendToAllJudges(fight, JudgesSocketEvents.FINISH_FIGHT, response);
   }
 
-  @SubscribeMessage('resumeTimer')
+  @SubscribeMessage(JudgesSocketEvents.RESUME_TIMER)
   resumeTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
-      return client.emit('resumeTimer', { status: ResponseStatus.NotFound });
+      return client.emit(JudgesSocketEvents.RESUME_TIMER, {
+        status: ResponseStatus.NotFound,
+      });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('resumeTimer', {
+      return client.emit(JudgesSocketEvents.RESUME_TIMER, {
         status: ResponseStatus.Unauthorized,
       });
     }
@@ -134,13 +149,13 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const fight = this.fightsService.getFight(fightId);
 
     if (response.status != ResponseStatus.OK) {
-      return client.emit('resumeTimer', response);
+      return client.emit(JudgesSocketEvents.RESUME_TIMER, response);
     }
 
-    this.sendToAllJudges(fight, 'resumeTimer', response);
+    this.sendToAllJudges(fight, JudgesSocketEvents.RESUME_TIMER, response);
   }
 
-  @SubscribeMessage('pauseTimer')
+  @SubscribeMessage(JudgesSocketEvents.PAUSE_TIMER)
   pauseTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
@@ -148,11 +163,15 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
-      return client.emit('pauseTimer', { status: ResponseStatus.NotFound });
+      return client.emit(JudgesSocketEvents.PAUSE_TIMER, {
+        status: ResponseStatus.NotFound,
+      });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('pauseTimer', { status: ResponseStatus.Unauthorized });
+      return client.emit(JudgesSocketEvents.PAUSE_TIMER, {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const response: PauseTimerResponse = {
@@ -162,13 +181,13 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const fight = this.fightsService.getFight(fightId);
 
     if (response.status != ResponseStatus.OK) {
-      return client.emit('pauseTimer', response);
+      return client.emit(JudgesSocketEvents.PAUSE_TIMER, response);
     }
 
-    this.sendToAllJudges(fight, 'pauseTimer', response);
+    this.sendToAllJudges(fight, JudgesSocketEvents.PAUSE_TIMER, response);
   }
 
-  @SubscribeMessage('newEvents')
+  @SubscribeMessage(JudgesSocketEvents.NEW_EVENTS)
   newEvents(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
@@ -178,11 +197,15 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
-      return client.emit('newEvents', { status: ResponseStatus.NotFound });
+      return client.emit(JudgesSocketEvents.NEW_EVENTS, {
+        status: ResponseStatus.NotFound,
+      });
     }
 
     if (!this.fightsService.isMainJudge(fightId, judgeId)) {
-      return client.emit('newEvents', { status: ResponseStatus.Unauthorized });
+      return client.emit(JudgesSocketEvents.NEW_EVENTS, {
+        status: ResponseStatus.Unauthorized,
+      });
     }
 
     const status = this.fightsService.newEvents(
@@ -191,11 +214,12 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       redPlayerPoints,
       bluePlayerPoints,
     );
-    const fight = this.fightsService.getFight(fightId);
 
     if (status != ResponseStatus.OK) {
-      return client.emit('newEvents', { status: status });
+      return client.emit(JudgesSocketEvents.NEW_EVENTS, { status: status });
     }
+
+    const fight = this.fightsService.getFight(fightId);
 
     const response: NewEventsResponse = {
       status: status,
@@ -204,9 +228,60 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       bluePlayer: fight.bluePlayer,
     };
 
-    this.sendToAllJudges(fight, 'newEvents', response);
+    this.sendToAllJudges(fight, JudgesSocketEvents.NEW_EVENTS, response);
 
     fight.checkIfEnoughPointsToEndFight();
+  }
+
+  @SubscribeMessage(JudgesSocketEvents.EVENTS_SUGGESTION)
+  eventsSuggestion(
+    @MessageBody('fightId') fightId: string,
+    @MessageBody('judgeId') judgeId: string,
+    @MessageBody('events') events: Event[],
+    @MessageBody('redPlayerPoints') redPlayerPoints: number,
+    @MessageBody('bluePlayerPoints') bluePlayerPoints: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    if (!this.fightsService.getFight(fightId)) {
+      return client.emit(JudgesSocketEvents.EVENTS_SUGGESTION, {
+        status: ResponseStatus.NotFound,
+      });
+    }
+
+    if (this.fightsService.isMainJudge(fightId, judgeId)) {
+      return client.emit(JudgesSocketEvents.EVENTS_SUGGESTION, {
+        status: ResponseStatus.Unauthorized,
+      });
+    }
+
+    const status = this.fightsService.eventsCanBeSuggested(
+      fightId,
+      redPlayerPoints,
+      bluePlayerPoints,
+    );
+
+    if (status !== ResponseStatus.OK) {
+      return client.emit(JudgesSocketEvents.EVENTS_SUGGESTION, {
+        status: status,
+      });
+    }
+    client.emit(JudgesSocketEvents.EVENTS_SUGGESTION, { status: status });
+
+    const fight = this.fightsService.getFight(fightId);
+
+    const judgeColor = judgeId === fight.redJudgeId ? 'red' : 'blue';
+
+    const forwarding: SuggestedEventsForwarding = {
+      judgeColor: judgeColor,
+      events: events,
+      redPlayerPoints: redPlayerPoints,
+      bluePlayerPoints: bluePlayerPoints,
+    };
+
+    fight.mainJudge.socket.emit(
+      JudgesSocketEvents.EVENTS_SUGGESTION,
+      forwarding,
+    );
   }
 
   fightEndConditionFulfilled(
@@ -218,6 +293,10 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       conditionName: conditionName,
     };
 
-    this.sendToAllJudges(fight, 'fightEndConditionFulfilled', response);
+    this.sendToAllJudges(
+      fight,
+      JudgesSocketEvents.FIGHT_END_CONDITION_FULFILLED,
+      response,
+    );
   }
 }
