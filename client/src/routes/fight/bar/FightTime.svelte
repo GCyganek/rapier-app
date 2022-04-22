@@ -1,12 +1,22 @@
 <script lang="ts">
     export let time: number;
+    let current = time;
+    const start = Date.now();
+    let timeout: NodeJS.Timeout = null;
 
-    let interval = setInterval(() => time -= 1, 1000);
-    
-    $: {    
-        if (time <= 0 && interval) {
-            clearInterval(interval);
-            interval = null;
+    function preciseTimer(last) {
+        const delta = Date.now() - last;
+        current = time - Math.floor((Date.now() - start) / 1000);
+        console.log(delta);
+        timeout = setTimeout(preciseTimer, Math.max(0, 1000 - delta), Date.now());
+    }
+
+    preciseTimer(Date.now());
+
+    $: {
+        if (current <= 0 && timeout !== null) {
+            clearTimeout(timeout);
+            timeout = null;
         }
     }
 
@@ -20,14 +30,23 @@
     
 </script>
 
-<p> {showTime(time)} </p>
+<span> {showTime(current)} </span>
 
 <style>
-    p {
+    span {
+        box-sizing: border-box;
+        border: 1px white solid;
+        border-top: 0px;
+        position: absolute;
+        top: 0px;
+        left: calc(50% - 3em);
         color: white;
-        padding: 10px;
-        width: 20%;
-        background: linear-gradient(90deg, #fb4141, #3b3bed);
+        width: 6em;
+        background: fixed #333;
+        border-bottom-left-radius: 0.5em;
+        border-bottom-right-radius: 0.5em;
+        margin: 0px;
+        padding: 2px 5px;
     }
 
 </style>

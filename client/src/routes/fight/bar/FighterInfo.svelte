@@ -13,37 +13,63 @@
     export let fighter: Fighter;
 </script>
 
-<div class={type}>
-    <span> 
-        {fighter.firstName} {fighter.lastName} 
-    </span>
+<div class={type}>    
     <span class="points"> {fighter.points} </span>
+    
+    <span>
+        {fighter.firstName}
+        {fighter.lastName}
+    </span>
+
+    <span></span>
 </div>
 
 <style>
     .red,
     .blue {
         display: flex;
-        flex-direction: row;
         align-items: center;
         justify-content: center;
-        padding: 10px;
+        padding: 1em;
+        font-size: 1.25em;
         width: 50%;
+        margin: 0;
+    }
+
+    .red span:last-child {
+        margin-left: auto;
+    }
+
+    .blue span:last-child {
+        margin-right: auto;
+    }
+
+    .points {
+        font-size: 2em;
+    }
+
+    .red .points {
+        margin-right: auto;
+    }
+
+    .blue .points {
+        margin-left: auto;
     }
 
     .red {
-        background-color: #fb4141;
+        background-color: var(--red-fighter);
+        flex-direction: row;
+        padding-right: 25px;
     }
 
     .blue {
-        background-color: #3b3bed;
+        background-color: var(--blue-fighter);
+        flex-direction: row-reverse;
+        padding-left: 25px;
     }
 
     span {
         color: white;
-    }
-
-    .points {
         padding: 0px 5px;
     }
 </style>

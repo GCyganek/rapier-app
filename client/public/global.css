@@ -1,3 +1,8 @@
+:root {
+	--red-fighter: rgb(255, 95, 105);
+	--blue-fighter: rgb(65, 97, 254);
+}
+
 html, body {
 	position: relative;
 	width: 100%;
@@ -13,7 +18,7 @@ body {
 }
 
 a {
-	color: rgb(0,100,200);
+	color: rgb(0, 100, 200);
 	text-decoration: none;
 }
 

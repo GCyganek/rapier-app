@@ -17,6 +17,7 @@
 
 <style>
     div {
+        position: relative;
         display: flex;
         align-items: center;
         flex-direction: row;
