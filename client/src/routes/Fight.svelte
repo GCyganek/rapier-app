@@ -1,9 +1,10 @@
 <script lang="ts">
-    import FightStart from "./fight/FightStart.svelte"
+    import FightBar from "./fight/FighterBar.svelte"
 </script>
 
 <main>
-    <FightStart/>
+    <FightBar/>
+    <p>tutaj reszta komponentów fight</p>
 </main>
 
 <style>

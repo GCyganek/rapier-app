@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Fight from "./routes/Fight.svelte"
+	import FightStart from "./routes/FightStart.svelte"
 </script>
 
-<Fight/>
+<FightStart/>

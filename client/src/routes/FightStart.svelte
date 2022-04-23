@@ -1,5 +1,6 @@
 <script lang="ts">
     import Button, { Label } from '@smui/button';
+    import Fight from "./Fight.svelte"
 
     let started = false;
 
@@ -16,7 +17,7 @@
             </Button>
         </div>
     {:else}
-        <p>todo tutaj pozostałe komponenty</p>
+        <Fight/>
     {/if}
 </main>
 
@@ -30,10 +31,6 @@
         height: 640px;
         margin: 0 auto;
         border: 1px solid;
-    }
-
-    .startDiv{
-        background-image: url("../../src/resources/start_background.jpg");
     }
 
     * :global(.startButton){
