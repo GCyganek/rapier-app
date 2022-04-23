@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts">
     import FighterInfo, { Fighter } from './bar/FighterInfo.svelte';
     import FightTime from './bar/FightTime.svelte';
 
@@ -7,11 +7,12 @@
         lastName: "Wazowski",
         points: 0
     };
+
 </script>
 
 <div>
     <FighterInfo type={"red"} fighter={red} />
-    <FightTime time={600} />
+    <FightTime time={10} on:action />
     <FighterInfo type={"blue"} fighter={red} />
 </div>
 
@@ -22,5 +23,5 @@
         align-items: center;
         flex-direction: row;
     }
-       
+
 </style>

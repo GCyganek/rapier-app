@@ -4,5 +4,5 @@
 
 </script>
 
-<FighterBar />
+<FighterBar on:action={console.log} />
 <FightSequence />
