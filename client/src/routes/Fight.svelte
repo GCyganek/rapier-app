@@ -3,10 +3,9 @@
     import FightSequence from "./fight/FightSequence.svelte";
 </script>
 
-<main>
-    <FighterBar />
-    <FightSequence />
-</main>
+<FighterBar />
+<FightSequence />
+
 
 <style>
     main {
