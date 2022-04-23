@@ -1,19 +1,6 @@
 <script lang="ts">
-	
-	import Fight from "./routes/Fight.svelte";
-
+	import FightStart from "./routes/FightStart.svelte"
 </script>
 
-<main>
-	
-	<Fight />
+<FightStart/>
 
-</main>
-
-<style>
-	main {
-		text-align: center;
-		margin: 0 auto;
-	}
-
-</style>

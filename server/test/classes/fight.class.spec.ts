@@ -132,6 +132,22 @@ describe('FightImpl', () => {
     });
   });
 
+  describe('inProgress', () => {
+    it('should return true when fight paused or running', () => {
+      fight.state = FightState.Running;
+      expect(fight.inProgress()).toBeTruthy;
+      fight.state = FightState.Paused;
+      expect(fight.inProgress()).toBeTruthy;
+    });
+
+    it('should return false when fight scheduled or finished', () => {
+      fight.state = FightState.Scheduled;
+      expect(fight.inProgress()).toBeFalsy;
+      fight.state = FightState.Finished;
+      expect(fight.inProgress()).toBeFalsy;
+    });
+  });
+
   describe('startFight', () => {
     it('should start fight and timer when fight with end time condition', () => {
       expect(fight.startFight()).toBeTruthy();
