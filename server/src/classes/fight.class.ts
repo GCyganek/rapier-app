@@ -92,6 +92,10 @@ export class FightImpl
     return this.mainJudge.id == judgeId;
   }
 
+  inProgress(): boolean {
+    return [FightState.Running, FightState.Paused].includes(this.state);
+  }
+
   startFight(): boolean {
     if (this.timer) {
       if (this.timer.resumeTimer()) {

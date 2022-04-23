@@ -179,7 +179,7 @@ where `PlayerState` is an interface:
 - `UNAUTHORIZED` - judge with given judgeId is not the main judge
 - `BAD_REQUEST` - number of points is negative
 
-## `newProposal` (not yet implemented)
+## `eventsSuggestion`
 
 Endpoint to propose new events to the events' history. Only red or blue judge is allowed to propose new events. 
 Endpoint makes sure that it is called by the red or blue judge and sends proposal to the main judge.
@@ -193,20 +193,25 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 | redPlayerPoints  | number  |
 | bluePlayerPoints | number  |
 
+### Response (send to the judge suggesting new events)
+
+| name    | type    |
+|---------|---------|
+| status  | string  |
+
+### Error codes
+- `NOT_FOUND` - fight with given fightId doesn't exist
+- `UNAUTHORIZED` - judge with given judgeId is the main judge (only red or blue can suggest new events)
+- `BAD_REQUEST` - number of points is negative or fight has ended / was never started
+
 ### Response (send to the main judge)
 
 | name             | type    |
 |------------------|---------|
-| status           | string  |
 | judgeColor       | string  |
 | events           | Event[] |
 | redPlayerPoints  | number  |
 | bluePlayerPoints | number  |
-
-### Error codes
-- `NOT_FOUND` - fight with given fightId doesn't exist
-- `UNAUTHORIZED` - judge with given judgeId is not the main judge
-- `BAD_REQUEST` - number of points is negative
 
 ## `fightEndConditionFulfilled`
 

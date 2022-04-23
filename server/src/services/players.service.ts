@@ -4,10 +4,7 @@ import { Player } from '../interfaces/player.interface';
 
 @Injectable()
 export class PlayersService {
-  private readonly players: Map<string, Player> = new Map<
-    string,
-    Player
-  >();
+  private readonly players: Map<string, Player> = new Map<string, Player>();
 
   constructor() {
     // const player1: Player = {
@@ -15,7 +12,6 @@ export class PlayersService {
     //     firstName: "Ala",
     //     lastName: "Kowalska"
     // }
-
     // const player2: Player = {
     //     id: "player2",
     //     firstName: "Jan",
@@ -25,22 +21,19 @@ export class PlayersService {
     // this.newPlayer(player2);
   }
 
-  newPlayer(player: Player): ResponseStatus{
-    if (this.isPlayer(player.id))
-        return ResponseStatus.BadRequest;
-    
+  newPlayer(player: Player): ResponseStatus {
+    if (this.isPlayer(player.id)) return ResponseStatus.BadRequest;
+
     this.players.set(player.id, player);
-    return ResponseStatus.OK
+    return ResponseStatus.OK;
   }
 
   getPlayer(id: string): Player {
     return this.players.get(id);
   }
 
-  isPlayer(id: string): boolean{
-    if (this.players.get(id) == undefined)
-        return false;
+  isPlayer(id: string): boolean {
+    if (this.players.get(id) == undefined) return false;
     return true;
   }
-
 }
