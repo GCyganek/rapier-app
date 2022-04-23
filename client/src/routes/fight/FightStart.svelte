@@ -1,13 +1,5 @@
 <script lang="ts">
     import Button, { Label } from '@smui/button';
-    import { navigate } from 'svelte-navigator';
-
-    // function startFight(){
-    //     navigate("fight");
-    //     //TODO
-    //     //send info to backend
-    //     console.log("clicked");
-    // }
 
     let started = false;
 
