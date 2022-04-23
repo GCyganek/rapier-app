@@ -1,10 +1,11 @@
 <script lang="ts">
-    import FightBar from "./fight/FighterBar.svelte"
+    import FighterBar from "./fight/FighterBar.svelte";
+    import FightSequence from "./fight/FightSequence.svelte";
 </script>
 
 <main>
-    <FightBar/>
-    <p>tutaj reszta komponentów fight</p>
+    <FighterBar />
+    <FightSequence />
 </main>
 
 <style>

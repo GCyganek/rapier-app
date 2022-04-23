@@ -11,6 +11,9 @@ import { Timer } from '../../src/classes/timer.class';
 import { INestApplication } from '@nestjs/common';
 import { Event } from '../../src/interfaces/event.interface';
 import { FightImpl } from '../../src/classes/fight.class';
+import { Player } from '../../src/interfaces/player.interface';
+import { PlayersService } from '../../src/services/players.service';
+import { JudgesSocketEvents } from '../../src/interfaces/judges-socket-events.enum';
 
 async function createNestApp(...providers): Promise<INestApplication> {
   const testingModule = await Test.createTestingModule({
@@ -22,13 +25,13 @@ async function createNestApp(...providers): Promise<INestApplication> {
 async function joinNewJudge(fightId: string, judgeId: string) {
   const ws = io('http://localhost:3001');
 
-  ws.emit('join', {
+  ws.emit(JudgesSocketEvents.Join, {
     fightId: fightId,
     judgeId: judgeId,
   });
 
   await new Promise<void>((resolve) =>
-    ws.on('join', (data) => {
+    ws.on(JudgesSocketEvents.Join, (data) => {
       expect(data.status).toBe(ResponseStatus.OK);
       resolve();
     }),
@@ -40,9 +43,12 @@ async function joinNewJudge(fightId: string, judgeId: string) {
 describe('JudgesGateway', () => {
   let app: INestApplication;
   let fight: FightImpl;
+  let player1: Player;
+  let player2: Player;
+  let playersService: PlayersService;
 
   beforeAll(async () => {
-    app = await createNestApp(JudgesGateway, FightsService);
+    app = await createNestApp(JudgesGateway, FightsService, PlayersService);
     await app.listen(3001);
 
     fight = new FightImpl(
@@ -58,7 +64,21 @@ describe('JudgesGateway', () => {
       ]),
     );
 
+    player1 = {
+      id: 'player1',
+      firstName: 'Ala',
+      lastName: 'Kowalska',
+    };
+
+    player2 = {
+      id: 'player2',
+      firstName: 'Jan',
+      lastName: 'Kowalski',
+    };
+    playersService = app.get(PlayersService);
     app.get(FightsService).newFight(fight);
+    playersService.newPlayer(player1);
+    playersService.newPlayer(player2);
   });
 
   afterAll(() => {
@@ -70,14 +90,20 @@ describe('JudgesGateway', () => {
 
     it('should join fight as a main judge', async () => {
       ws = io('http://localhost:3001');
-      ws.emit('join', {
+      ws.emit(JudgesSocketEvents.Join, {
         fightId: fight.id,
         judgeId: fight.mainJudge.id,
       });
 
       await new Promise<void>((resolve) =>
-        ws.on('join', (data) => {
+        ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.redPlayer).toStrictEqual(
+            playersService.getPlayer(fight.redPlayer.id),
+          );
+          expect(data.bluePlayer).toStrictEqual(
+            playersService.getPlayer(fight.bluePlayer.id),
+          );
           resolve();
         }),
       );
@@ -85,14 +111,20 @@ describe('JudgesGateway', () => {
 
     it('should join fight as a red judge', async () => {
       ws = io('http://localhost:3001');
-      ws.emit('join', {
+      ws.emit(JudgesSocketEvents.Join, {
         fightId: fight.id,
         judgeId: fight.redJudge.id,
       });
 
       await new Promise<void>((resolve) =>
-        ws.on('join', (data) => {
+        ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.redPlayer).toStrictEqual(
+            playersService.getPlayer(fight.redPlayer.id),
+          );
+          expect(data.bluePlayer).toStrictEqual(
+            playersService.getPlayer(fight.bluePlayer.id),
+          );
           resolve();
         }),
       );
@@ -100,13 +132,13 @@ describe('JudgesGateway', () => {
 
     it('should not join fight as a random judge', async () => {
       ws = io('http://localhost:3001');
-      ws.emit('join', {
+      ws.emit(JudgesSocketEvents.Join, {
         fightId: fight.id,
         judgeId: 'test 123',
       });
 
       await new Promise<void>((resolve) =>
-        ws.on('join', (data) => {
+        ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.Unauthorized);
           resolve();
         }),
@@ -115,13 +147,13 @@ describe('JudgesGateway', () => {
 
     it('should not join to the other fight', async () => {
       ws = io('http://localhost:3001');
-      ws.emit('join', {
+      ws.emit(JudgesSocketEvents.Join, {
         fightId: 'test 123',
         judgeId: fight.mainJudge.id,
       });
 
       await new Promise<void>((resolve) =>
-        ws.on('join', (data) => {
+        ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.NotFound);
           resolve();
         }),
@@ -151,13 +183,13 @@ describe('JudgesGateway', () => {
 
     describe('startFight', () => {
       it('should not start random fight', async () => {
-        wsMain.emit('startFight', {
+        wsMain.emit(JudgesSocketEvents.StartFight, {
           fightId: 'test 123',
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('startFight', (data) => {
+          wsMain.on(JudgesSocketEvents.StartFight, (data) => {
             expect(data.status).toBe(ResponseStatus.NotFound);
             resolve();
           }),
@@ -167,13 +199,13 @@ describe('JudgesGateway', () => {
       it('should not start fight without all judges', async () => {
         fight.blueJudge.socket = null;
 
-        wsMain.emit('startFight', {
+        wsMain.emit(JudgesSocketEvents.StartFight, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('startFight', (data) => {
+          wsMain.on(JudgesSocketEvents.StartFight, (data) => {
             expect(data.status).toBe(ResponseStatus.NotReady);
             resolve();
           }),
@@ -181,13 +213,13 @@ describe('JudgesGateway', () => {
       });
 
       it('should not start fight if not main judge', async () => {
-        wsRed.emit('startFight', {
+        wsRed.emit(JudgesSocketEvents.StartFight, {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsRed.on('startFight', (data) => {
+          wsRed.on(JudgesSocketEvents.StartFight, (data) => {
             expect(data.status).toBe(ResponseStatus.Unauthorized);
             resolve();
           }),
@@ -195,14 +227,14 @@ describe('JudgesGateway', () => {
       });
 
       it('should start ready fight', async () => {
-        wsMain.emit('startFight', {
+        wsMain.emit(JudgesSocketEvents.StartFight, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('startFight', (data) => {
+            ws.on(JudgesSocketEvents.StartFight, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               resolve();
             }),
@@ -215,13 +247,13 @@ describe('JudgesGateway', () => {
       it('should not start finished fight', async () => {
         fight.state = FightState.Finished;
 
-        wsMain.emit('startFight', {
+        wsMain.emit(JudgesSocketEvents.StartFight, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('startFight', (data) => {
+          wsMain.on(JudgesSocketEvents.StartFight, (data) => {
             expect(data.status).toBe(ResponseStatus.BadRequest);
             resolve();
           }),
@@ -231,13 +263,13 @@ describe('JudgesGateway', () => {
 
     describe('finishFight', () => {
       it('should not finish random fight', async () => {
-        wsMain.emit('finishFight', {
+        wsMain.emit(JudgesSocketEvents.FinishFight, {
           fightId: 'test 123',
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('finishFight', (data) => {
+          wsMain.on(JudgesSocketEvents.FinishFight, (data) => {
             expect(data.status).toBe(ResponseStatus.NotFound);
             resolve();
           }),
@@ -247,13 +279,13 @@ describe('JudgesGateway', () => {
       it('should not finish not running fight', async () => {
         fight.state = FightState.Finished;
 
-        wsMain.emit('finishFight', {
+        wsMain.emit(JudgesSocketEvents.FinishFight, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('finishFight', (data) => {
+          wsMain.on(JudgesSocketEvents.FinishFight, (data) => {
             expect(data.status).toBe(ResponseStatus.BadRequest);
             resolve();
           }),
@@ -263,14 +295,14 @@ describe('JudgesGateway', () => {
       it('should finish running fight', async () => {
         fight.state = FightState.Running;
 
-        wsMain.emit('finishFight', {
+        wsMain.emit(JudgesSocketEvents.FinishFight, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('finishFight', (data) => {
+            ws.on(JudgesSocketEvents.FinishFight, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               resolve();
             }),
@@ -293,13 +325,13 @@ describe('JudgesGateway', () => {
         const exactPauseTimeInMillis = Date.now();
         fight.timer.pauseTimer(exactPauseTimeInMillis);
 
-        wsRed.emit('resumeTimer', {
+        wsRed.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsRed.on('resumeTimer', (data) => {
+          wsRed.on(JudgesSocketEvents.ResumeTimer, (data) => {
             expect(data.status).toBe(ResponseStatus.Unauthorized);
             resolve();
           }),
@@ -311,14 +343,14 @@ describe('JudgesGateway', () => {
         const exactPauseTimeInMillis = Date.now();
         fight.timer.pauseTimer(exactPauseTimeInMillis);
 
-        wsMain.emit('resumeTimer', {
+        wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('resumeTimer', (data) => {
+            ws.on(JudgesSocketEvents.ResumeTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               resolve();
             }),
@@ -329,31 +361,31 @@ describe('JudgesGateway', () => {
       it('timer should not be resumed again when it is already running', async () => {
         fight.state = FightState.Running;
 
-        wsMain.emit('resumeTimer', {
+        wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('resumeTimer', (data) => {
+          wsMain.on(JudgesSocketEvents.ResumeTimer, (data) => {
             expect(data.status).toBe(ResponseStatus.BadRequest);
             resolve();
           }),
         );
       });
 
-      it('fight can be resumed even if fight time has already ended', async () => {
+      it('fight should be resumed even if fight time has already ended', async () => {
         fight.timer.endTimer();
         fight.state = FightState.Paused;
 
-        wsMain.emit('resumeTimer', {
+        wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('resumeTimer', (data) => {
+            ws.on(JudgesSocketEvents.ResumeTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               resolve();
             }),
@@ -375,14 +407,14 @@ describe('JudgesGateway', () => {
         fight.state = FightState.Running;
         const exactPauseTimeInMillis = Date.now();
 
-        wsRed.emit('pauseTimer', {
+        wsRed.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
           exactPauseTimeInMillis: exactPauseTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
-          wsRed.on('pauseTimer', (data) => {
+          wsRed.on(JudgesSocketEvents.PauseTimer, (data) => {
             expect(data.status).toBe(ResponseStatus.Unauthorized);
             resolve();
           }),
@@ -394,7 +426,7 @@ describe('JudgesGateway', () => {
         fight.timer.resumeTimer();
         const exactPauseTimeInMillis = Date.now();
 
-        wsMain.emit('pauseTimer', {
+        wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           exactPauseTimeInMillis: exactPauseTimeInMillis,
@@ -402,7 +434,7 @@ describe('JudgesGateway', () => {
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('pauseTimer', (data) => {
+            ws.on(JudgesSocketEvents.PauseTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               expect(data.exactPauseTimeInMillis).toBe(exactPauseTimeInMillis);
               resolve();
@@ -416,26 +448,26 @@ describe('JudgesGateway', () => {
         const exactPauseTimeInMillis = Date.now();
         fight.timer.pauseTimer(exactPauseTimeInMillis);
 
-        wsMain.emit('pauseTimer', {
+        wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           exactPauseTimeInMillis: exactPauseTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
-          wsMain.on('pauseTimer', (data) => {
+          wsMain.on(JudgesSocketEvents.PauseTimer, (data) => {
             expect(data.status).toBe(ResponseStatus.BadRequest);
             resolve();
           }),
         );
       });
 
-      it('fight can be paused even if fight time has already ended', async () => {
+      it('fight should be paused even if fight time has already ended', async () => {
         fight.state = FightState.Running;
         fight.timer.endTimer();
         const exactPauseTimeInMillis = Date.now();
 
-        wsMain.emit('pauseTimer', {
+        wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
           exactPauseTimeInMillis: exactPauseTimeInMillis,
@@ -443,7 +475,7 @@ describe('JudgesGateway', () => {
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('pauseTimer', (data) => {
+            ws.on(JudgesSocketEvents.PauseTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
               expect(data.exactPauseTimeInMillis).toBe(exactPauseTimeInMillis);
               resolve();
@@ -453,7 +485,7 @@ describe('JudgesGateway', () => {
       });
     });
 
-    describe('newEvents', () => {
+    describe('events handling', () => {
       let events: Event[];
       let redPlayerPoints: number;
       let bluePlayerPoints: number;
@@ -469,148 +501,278 @@ describe('JudgesGateway', () => {
         ];
       });
 
-      it('should not add events to random fight', async () => {
-        wsMain.emit('newEvents', {
-          fightId: 'test 123',
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints,
-          bluePlayerPoints: bluePlayerPoints,
-        });
+      describe('newEvents', () => {
+        it('should not add events to random fight', async () => {
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: 'test 123',
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
 
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.NotFound);
-            resolve();
-          }),
-        );
-      });
-
-      it('should not add events when not main judge', async () => {
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.redJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints,
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.Unauthorized);
-            resolve();
-          }),
-        );
-      });
-
-      it('should not add events with negative number of points', async () => {
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: -1,
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.BadRequest);
-            resolve();
-          }),
-        );
-      });
-
-      it('should add events to started fight', async () => {
-        fight.state = FightState.Running;
-
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints,
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.OK);
-            expect(fight.redPlayer.points).toBe(2);
-            expect(fight.bluePlayer.points).toBe(1);
-            expect(fight.eventsHistory).toStrictEqual(events);
-            resolve();
-          }),
-        );
-      });
-
-      it('should add events to paused fight', async () => {
-        wsMain.emit('pauseFight', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-        });
-
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints,
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.OK);
-            expect(fight.redPlayer.points).toBe(2 + 2);
-            expect(fight.bluePlayer.points).toBe(1 + 1);
-            expect(fight.eventsHistory).toStrictEqual(events.concat(events));
-            resolve();
-          }),
-        );
-      });
-
-      it('should not add events to finished fight', async () => {
-        wsMain.emit('finishFight', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-        });
-
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints,
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        await new Promise<void>((resolve) =>
-          wsMain.on('newEvents', (data) => {
-            expect(data.status).toBe(ResponseStatus.BadRequest);
-            resolve();
-          }),
-        );
-      });
-
-      it('should add events to started fight and send back fightEndConditionFulfilled', async () => {
-        fight.state = FightState.Running;
-
-        wsMain.emit('newEvents', {
-          fightId: fight.id,
-          judgeId: fight.mainJudge.id,
-          events: events,
-          redPlayerPoints: redPlayerPoints, // now will have 6 points > fight.pointsToEnd
-          bluePlayerPoints: bluePlayerPoints,
-        });
-
-        for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
-            ws.on('fightEndConditionFulfilled', (data) => {
-              expect(data.status).toBe(ResponseStatus.OK);
-              expect(data.conditionName).toBe(
-                FightEndConditionName.EnoughPoints,
-              );
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.NotFound);
               resolve();
             }),
           );
-        }
+        });
+
+        it('should not add events when not main judge', async () => {
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.redJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.Unauthorized);
+              resolve();
+            }),
+          );
+        });
+
+        it('should not add events with negative number of points', async () => {
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: -1,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.BadRequest);
+              resolve();
+            }),
+          );
+        });
+
+        it('should add events to started fight', async () => {
+          fight.state = FightState.Running;
+
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              expect(fight.redPlayer.points).toBe(2);
+              expect(fight.bluePlayer.points).toBe(1);
+              expect(fight.eventsHistory).toStrictEqual(events);
+              resolve();
+            }),
+          );
+        });
+
+        it('should add events to paused fight', async () => {
+          wsMain.emit('pauseFight', {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+          });
+
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              expect(fight.redPlayer.points).toBe(2 + 2);
+              expect(fight.bluePlayer.points).toBe(1 + 1);
+              expect(fight.eventsHistory).toStrictEqual(events.concat(events));
+              resolve();
+            }),
+          );
+        });
+
+        it('should not add events to finished fight', async () => {
+          wsMain.emit(JudgesSocketEvents.FinishFight, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+          });
+
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.NewEvents, (data) => {
+              expect(data.status).toBe(ResponseStatus.BadRequest);
+              resolve();
+            }),
+          );
+        });
+
+        it('should add events to started fight and send back fightEndConditionFulfilled', async () => {
+          fight.state = FightState.Running;
+
+          wsMain.emit(JudgesSocketEvents.NewEvents, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints, // now will have 6 points > fight.pointsToEnd
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          for (const ws of [wsMain, wsRed, wsBlue]) {
+            await new Promise<void>((resolve) =>
+              ws.on(JudgesSocketEvents.FightEndConditionFulfilled, (data) => {
+                expect(data.status).toBe(ResponseStatus.OK);
+                expect(data.conditionName).toBe(
+                  FightEndConditionName.EnoughPoints,
+                );
+                resolve();
+              }),
+            );
+          }
+        });
+      });
+
+      describe('eventsSuggestion', () => {
+        it('should not suggest events to random fight', async () => {
+          wsBlue.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: 'test 123',
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsBlue.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.NotFound);
+              resolve();
+            }),
+          );
+        });
+
+        it('should not suggest events when main judge', async () => {
+          wsMain.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: fight.id,
+            judgeId: fight.mainJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.Unauthorized);
+              resolve();
+            }),
+          );
+        });
+
+        it('should not suggest events with negative number of points', async () => {
+          wsBlue.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: fight.id,
+            judgeId: fight.blueJudge.id,
+            events: events,
+            redPlayerPoints: -1,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsBlue.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.BadRequest);
+              resolve();
+            }),
+          );
+        });
+
+        it('should not suggest events to scheduled', async () => {
+          fight.state = FightState.Scheduled;
+
+          wsBlue.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: fight.id,
+            judgeId: fight.blueJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsBlue.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.BadRequest);
+              resolve();
+            }),
+          );
+        });
+
+        it('should not suggest events to finished fight', async () => {
+          fight.state = FightState.Finished;
+
+          wsBlue.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: fight.id,
+            judgeId: fight.blueJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsBlue.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.BadRequest);
+              resolve();
+            }),
+          );
+        });
+
+        const correctEventsSuggestionEmitAndCheck = async () => {
+          wsBlue.emit(JudgesSocketEvents.EventsSuggestion, {
+            fightId: fight.id,
+            judgeId: fight.blueJudge.id,
+            events: events,
+            redPlayerPoints: redPlayerPoints,
+            bluePlayerPoints: bluePlayerPoints,
+          });
+
+          await new Promise<void>((resolve) =>
+            wsBlue.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.status).toBe(ResponseStatus.OK);
+              resolve();
+            }),
+          );
+
+          await new Promise<void>((resolve) =>
+            wsMain.on(JudgesSocketEvents.EventsSuggestion, (data) => {
+              expect(data.judgeColor).toBe('blue');
+              expect(data.events).toStrictEqual(events);
+              expect(data.redPlayerPoints).toBe(redPlayerPoints);
+              expect(data.bluePlayerPoints).toBe(bluePlayerPoints);
+              resolve();
+            }),
+          );
+        };
+
+        it('should be able to suggest events to running fight', async () => {
+          fight.state = FightState.Running;
+          await correctEventsSuggestionEmitAndCheck();
+        });
+
+        it('should be able to suggest events to paused fight', async () => {
+          fight.state = FightState.Paused;
+          await correctEventsSuggestionEmitAndCheck();
+        });
       });
     });
   });
