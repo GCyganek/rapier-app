@@ -1,17 +1,15 @@
-<script lang="ts">
-    import FighterBar from "./fight/FighterBar.svelte";
-    import FightSequence from "./fight/FightSequence.svelte";
-</script>
-
 <main>
-    <FighterBar />
-    <FightSequence />
+    <div>
+        <h1> Hello there! </h1>
+    </div>
+
 </main>
 
 <style>
     main {
         text-align: center;
         padding: 1em;
+        max-width: 240px;
         margin: 0 auto;
     }
 
