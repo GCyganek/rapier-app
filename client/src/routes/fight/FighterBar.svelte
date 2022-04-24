@@ -2,18 +2,15 @@
     import FighterInfo, { Fighter } from './bar/FighterInfo.svelte';
     import FightTime from './bar/FightTime.svelte';
 
-    const red: Fighter = {
-        firstName: "Mike",
-        lastName: "Wazowski",
-        points: 0
-    };
+    export let red: Fighter;
+    export let blue: Fighter;
 
 </script>
 
 <div>
     <FighterInfo type={"red"} fighter={red} />
     <FightTime time={10} on:action />
-    <FighterInfo type={"blue"} fighter={red} />
+    <FighterInfo type={"blue"} fighter={blue} />
 </div>
 
 <style>

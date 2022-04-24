@@ -21,8 +21,6 @@
     {/if}
 </main>
 
-
-
 <style>
     main {
         text-align: center;
@@ -44,6 +42,7 @@
         position: relative;
         top: 302px;
     }
+    
     * :global(.startButton):active{
         background-color: darkred;
         color: grey;
