@@ -19,8 +19,6 @@
     <Fight/>
 {/if}
 
-
-
 <style>
     .startDiv {
         text-align: center;
@@ -28,7 +26,7 @@
         margin: auto auto;
     }
 
-    * :global(.startButton){
+    * :global(.startButton) {
         background-color: #FF5F69;
         color: white;
         font-size: 20px;
@@ -37,7 +35,8 @@
         width: 240px;
         height: 60px;
     }
-    * :global(.startButton):active{
+    
+    * :global(.startButton):active {
         background-color: darkred;
         color: grey;
     }

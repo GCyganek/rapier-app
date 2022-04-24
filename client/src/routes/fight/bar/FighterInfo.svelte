@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
     export type FighterType = "red" | "blue";
 
-    export interface Fighter {
+    export class Fighter {
         firstName: string;
         lastName: string;
         points: number;
@@ -36,24 +36,18 @@
         margin: 0;
     }
 
+    .blue .points,
     .red span:last-child {
         margin-left: auto;
     }
 
+    .red .points,
     .blue span:last-child {
         margin-right: auto;
     }
 
     .points {
         font-size: 2em;
-    }
-
-    .red .points {
-        margin-right: auto;
-    }
-
-    .blue .points {
-        margin-left: auto;
     }
 
     .red {
