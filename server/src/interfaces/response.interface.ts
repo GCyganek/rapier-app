@@ -3,9 +3,9 @@ export interface Response {
 }
 
 export enum ResponseStatus {
-  OK,
-  Unauthorized,
-  NotFound,
-  NotReady,
-  BadRequest,
+  OK = 'OK',
+  Unauthorized = 'UNAUTHORIZED',
+  NotFound = 'NOT_FOUND',
+  NotReady = 'NOT_READY',
+  BadRequest = 'BAD_REQUEST',
 }

@@ -1,52 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { Timer } from '../classes/timer/timer.class';
-import { Fight, FightState } from '../interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  FightState,
+} from '../interfaces/fight.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
+import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightImpl } from '../classes/fight.class';
 
 @Injectable()
 export class FightsService {
-  private readonly fights: Map<string, Fight> = new Map<string, Fight>();
+  private readonly fights: Map<string, FightImpl> = new Map<
+    string,
+    FightImpl
+  >();
+  private fightEndConditionFulfilledObserver: FightEndConditionFulfilledObserver;
 
   constructor() {
-    const fight: Fight = {
-      id: 'mockup',
-      state: FightState.Scheduled,
-      timer: new Timer(1),
-
-      mainJudge: {
-        id: 'main',
-        socket: null,
-      },
-      redJudge: {
-        id: 'red',
-        socket: null,
-      },
-      blueJudge: {
-        id: 'blue',
-        socket: null,
-      },
-
-      redPlayer: {
-        id: 'player1',
-        points: 0,
-      },
-      bluePlayer: {
-        id: 'player2',
-        points: 0,
-      },
-
-      eventsHistory: [],
-    };
+    const fight = new FightImpl(
+      'mockup',
+      'main',
+      'red',
+      'blue',
+      'player1',
+      'player2',
+      new Map<FightEndConditionName, number>([
+        [FightEndConditionName.EnoughPoints, 5],
+        [FightEndConditionName.TimeEnded, 1],
+      ]),
+    );
     this.newFight(fight);
   }
 
-  newFight(fight: Fight) {
-    this.fights.set(fight.id, fight);
+  setFightEndConditionFulfilledObserver(
+    observer: FightEndConditionFulfilledObserver,
+  ) {
+    this.fightEndConditionFulfilledObserver = observer;
   }
 
-  getFight(id: string): Fight {
+  newFight(fight: FightImpl) {
+    this.fights.set(fight.id, fight);
+    if (this.fightEndConditionFulfilledObserver) {
+      fight.addFightEndConditionFulfilledObserver(
+        this.fightEndConditionFulfilledObserver,
+      );
+    }
+  }
+
+  getFight(id: string): FightImpl {
     return this.fights.get(id);
   }
 
@@ -57,9 +59,7 @@ export class FightsService {
       return false;
     }
 
-    return [fight.mainJudge.id, fight.redJudge.id, fight.blueJudge.id].includes(
-      judgeId,
-    );
+    return fight.isJudge(judgeId);
   }
 
   isMainJudge(fightId: string, judgeId: string): boolean {
@@ -69,7 +69,7 @@ export class FightsService {
       return false;
     }
 
-    return judgeId == fight.mainJudge.id;
+    return fight.isMainJudge(judgeId);
   }
 
   addJudge(fightId: string, judgeId: string, socket: Socket): ResponseStatus {
@@ -77,17 +77,7 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      (judgeId == fight.mainJudge.id &&
-        fight.mainJudge.socket != null &&
-        fight.mainJudge.socket != socket) ||
-      (judgeId == fight.redJudge.id &&
-        fight.redJudge.socket != null &&
-        fight.redJudge.socket != socket) ||
-      (judgeId == fight.blueJudge.id &&
-        fight.blueJudge.socket != null &&
-        fight.blueJudge.socket != socket)
-    ) {
+    } else if (fight.judgeSocketAlreadyAssigned(judgeId, socket)) {
       return ResponseStatus.BadRequest;
     } else if (judgeId == fight.mainJudge.id) {
       fight.mainJudge.socket = socket;
@@ -107,18 +97,13 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (
-      fight.mainJudge.socket == null ||
-      fight.redJudge.socket == null ||
-      fight.blueJudge.socket == null
-    ) {
+    } else if (fight.allJudgesAssigned() === false) {
       return ResponseStatus.NotReady;
     } else if (fight.state != FightState.Scheduled) {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.startFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -129,12 +114,11 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+    } else if (!fight.inProgress()) {
       return ResponseStatus.BadRequest;
     }
 
-    fight.timer.endTimer();
-    fight.state = FightState.Finished;
+    fight.finishFight();
     return ResponseStatus.OK;
   }
 
@@ -147,8 +131,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.timer.hasTimeEnded() || fight.timer.resumeTimer()) {
-      fight.state = FightState.Running;
+    if (fight.resumeFight()) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -163,11 +146,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (
-      fight.timer.hasTimeEnded() ||
-      fight.timer.pauseTimer(exactPauseTimeInMillis)
-    ) {
-      fight.state = FightState.Paused;
+    if (fight.pauseFight(exactPauseTimeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -183,17 +162,32 @@ export class FightsService {
 
     if (fight == undefined) {
       return ResponseStatus.NotFound;
-    } else if (![FightState.Running, FightState.Paused].includes(fight.state)) {
+    } else if (!fight.inProgress()) {
       return ResponseStatus.BadRequest;
     }
 
-    if (redPlayerPoints < 0 || bluePlayerPoints < 0) {
+    if (fight.addNewEvents(events, redPlayerPoints, bluePlayerPoints)) {
+      return ResponseStatus.OK;
+    }
+    return ResponseStatus.BadRequest;
+  }
+
+  eventsCanBeSuggested(
+    fightId: string,
+    redPlayerPoints: number,
+    bluePlayerPoints: number,
+  ): ResponseStatus {
+    const fight = this.fights.get(fightId);
+
+    if (fight == undefined) {
+      return ResponseStatus.NotFound;
+    } else if (
+      !fight.inProgress() ||
+      redPlayerPoints < 0 ||
+      bluePlayerPoints < 0
+    ) {
       return ResponseStatus.BadRequest;
     }
-
-    fight.redPlayer.points += redPlayerPoints;
-    fight.bluePlayer.points += bluePlayerPoints;
-    fight.eventsHistory = fight.eventsHistory.concat(events);
 
     return ResponseStatus.OK;
   }

@@ -1,11 +1,5 @@
-<script>
-import Fight from "./routes/Fight.svelte";
-
-
+<script lang="ts">
+	import FightStart from "./routes/FightStart.svelte"
 </script>
 
-<Fight/>
-
-<style>
-
-</style>
+<FightStart/>
