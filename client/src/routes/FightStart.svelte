@@ -26,7 +26,7 @@
         margin: auto auto;
     }
 
-    * :global(.startButton){
+    * :global(.startButton) {
         background-color: #FF5F69;
         color: white;
         font-size: 20px;
@@ -36,7 +36,7 @@
         height: 60px;
     }
     
-    * :global(.startButton):active{
+    * :global(.startButton):active {
         background-color: darkred;
         color: grey;
     }

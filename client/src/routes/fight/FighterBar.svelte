@@ -9,7 +9,7 @@
 
 <div>
     <FighterInfo type={"red"} fighter={red} />
-    <FightTime time={10} on:action />
+    <FightTime time={20} on:action />
     <FighterInfo type={"blue"} fighter={blue} />
 </div>
 

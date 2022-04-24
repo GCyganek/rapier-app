@@ -55,7 +55,7 @@
 
 <div>
     <p> {showTime(current)} </p>
-
+    
     <button on:click={pauseTimer}> # </button>
     <button on:click={startTimer}> + </button>
 </div>
@@ -83,6 +83,8 @@
         border-top: 0px;
         border-bottom-left-radius: 0.5em;
         border-bottom-right-radius: 0.5em;
+
+        text-align: center;
     }
 
     button {
@@ -92,6 +94,7 @@
         width: 2.5em;
         height: 2.5em;
         box-sizing: border-box;
+        margin: auto;
         margin-top: 4px;
     }
 
