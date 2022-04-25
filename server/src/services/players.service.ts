@@ -7,18 +7,18 @@ export class PlayersService {
   private readonly players: Map<string, Player> = new Map<string, Player>();
 
   constructor() {
-    // const player1: Player = {
-    //     id: "player1",
-    //     firstName: "Ala",
-    //     lastName: "Kowalska"
-    // }
-    // const player2: Player = {
-    //     id: "player2",
-    //     firstName: "Jan",
-    //     lastName: "Kowalski"
-    // }
-    // this.newPlayer(player1);
-    // this.newPlayer(player2);
+    const player1: Player = {
+        id: "player1",
+        firstName: "Ala",
+        lastName: "Kowalska"
+    }
+    const player2: Player = {
+        id: "player2",
+        firstName: "Jan",
+        lastName: "Kowalski"
+    }
+    this.newPlayer(player1);
+    this.newPlayer(player2);
   }
 
   newPlayer(player: Player): ResponseStatus {
