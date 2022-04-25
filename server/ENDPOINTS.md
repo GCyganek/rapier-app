@@ -8,7 +8,7 @@
 - If there are no errors, returned status is `OK`
 - Endpoints source code: `server/src/gateways/judges.gateway.ts`
 
-## `join` (work in progress) 
+## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
 Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players.
