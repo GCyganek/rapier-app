@@ -53,7 +53,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       bluePlayer: null,
     };
     if (response.status != ResponseStatus.OK) {
-      return client.emit(JudgesSocketEvents.Join, {status: response.status});
+      return client.emit(JudgesSocketEvents.Join, { status: response.status });
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);

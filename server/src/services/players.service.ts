@@ -8,15 +8,15 @@ export class PlayersService {
 
   constructor() {
     const player1: Player = {
-        id: "player1",
-        firstName: "Ala",
-        lastName: "Kowalska"
-    }
+      id: 'player1',
+      firstName: 'Ala',
+      lastName: 'Kowalska',
+    };
     const player2: Player = {
-        id: "player2",
-        firstName: "Jan",
-        lastName: "Kowalski"
-    }
+      id: 'player2',
+      firstName: 'Jan',
+      lastName: 'Kowalski',
+    };
     this.newPlayer(player1);
     this.newPlayer(player2);
   }
@@ -33,7 +33,6 @@ export class PlayersService {
   }
 
   isPlayer(id: string): boolean {
-    if (this.players.get(id) == undefined) return false;
-    return true;
+    return this.players.get(id) != undefined;
   }
 }
