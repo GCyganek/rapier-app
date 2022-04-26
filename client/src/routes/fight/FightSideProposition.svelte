@@ -9,6 +9,7 @@
 <div class="sideDiv">
     <p>Proponowane zdarzenia od sędziów bocznych:</p>
     <Button class="redButton" disabled=true on:click={() => handleClick("red")}>
+        <Label>[informacje od czerwonego]</Label>
     </Button>
     <Button class="blueButton" on:click={() => handleClick("blue")}>
         <Label>[informacje od niebieskiego]</Label>
@@ -34,12 +35,14 @@
         background-color: var(--red-fighter);
     }
     * :global(Button){
-        width: 85vw;
-        height: 50px;
-        border-radius: 10px;
+        width: 85%;
+        height: 3em;
+        border-radius: 0.5em;
         color: white;
     }
     * :global(Button:disabled){
-        opacity: 0.5;
+        background-color: lightgray;
+        border-color: lightgray;
+        color: gray;
     }
 </style>
