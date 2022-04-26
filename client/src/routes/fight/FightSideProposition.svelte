@@ -2,7 +2,7 @@
     import Button, {Label} from "@smui/button";
 
     function handleClick(type){
-        console.log("clicked!")
+        console.log("clicked! " + type)
     }
 </script>
 
