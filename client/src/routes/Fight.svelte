@@ -3,6 +3,7 @@
     import FighterBar from "./fight/FighterBar.svelte";
     import FightSequence, { fightSequence, clear, pop } from "./fight/FightSequence.svelte";
     import FightStack from "./fight/FightStack.svelte";
+    import FightSideProposition from "./fight/FightSideProposition.svelte";
 
     const red: Fighter = {
         firstName: "Mike",
@@ -21,6 +22,7 @@
 <div class="container">
     <FighterBar red={red} blue={blue} on:action={console.log} on:return={pop} />
     <FightSequence />
+    <FightSideProposition/>
     <FightStack stack={$fightSequence} on:clear={clear} />
 </div>
 
