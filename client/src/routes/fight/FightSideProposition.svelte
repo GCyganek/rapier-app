@@ -1,8 +1,19 @@
 <script>
     import Button, {Label} from "@smui/button";
+    import FightPoints from "./modal/FightPoints.svelte";
 
     function handleClick(type){
         console.log("clicked! " + type)
+    }
+
+    let isOpenPoints = false;
+
+    function openPoints() {
+        isOpenPoints = true;
+    }
+
+    function closePoints() {
+        isOpenPoints = false;
     }
 </script>
 
@@ -14,6 +25,12 @@
     <Button class="blueButton" on:click={() => handleClick("blue")}>
         <Label>[informacje od niebieskiego]</Label>
     </Button>
+<!--    TODO delete below-->
+    <Button style="color: black;" on:click={() => openPoints()}>
+        <Label>Zaproponuj punkty</Label>
+    </Button>
+    <FightPoints isOpenModal={isOpenPoints} on:closeModal={closePoints} />
+<!--    TODO delete above-->
 </div>
 
 <style>
