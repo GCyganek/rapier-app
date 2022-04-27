@@ -1,6 +1,5 @@
 <script>
     import Button, {Label} from "@smui/button";
-    import FightPoints from "./modal/FightPoints.svelte";
 
     function handleClick(type){
         console.log("clicked! " + type)
