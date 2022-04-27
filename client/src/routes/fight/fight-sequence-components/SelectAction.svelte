@@ -15,7 +15,7 @@
         component.dispatchEvent && component.dispatchEvent(new CustomEvent(name, { detail }))
     }
 
-    let batch = new Batch;
+    let batch = new Batch();
     batch.currentComponent = Components.SelectAction;
 
     const stepBack = () => {
