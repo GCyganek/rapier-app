@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Fighter } from "./fight/bar/FighterInfo.svelte";
     import FighterBar from "./fight/FighterBar.svelte";
-    import FightSequence, { fightSequence } from "./fight/FightSequence.svelte";
+    import FightSequence, { fightSequence, clear, pop } from "./fight/FightSequence.svelte";
     import FightStack from "./fight/FightStack.svelte";
 
     const red: Fighter = {
@@ -19,16 +19,16 @@
 </script>
 
 <div class="container">
-    <FighterBar red={red} blue={blue} on:action={console.log} />
+    <FighterBar red={red} blue={blue} on:action={console.log} on:return={pop} />
     <FightSequence />
-    <FightStack stack={$fightSequence} />
+    <FightStack stack={$fightSequence} on:clear={clear} />
 </div>
 
 <style>
     div.container {
-        display: flex;
-        gap: 1em;
-        flex-direction: column;
-        justify-content: space-between;
+        display:            flex;
+        justify-content:    space-between;
+        flex-direction:     column;
+        box-sizing:         border-box;
     }
 </style>

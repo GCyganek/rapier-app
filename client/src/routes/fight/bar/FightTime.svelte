@@ -4,11 +4,13 @@
 
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
+    import Icon from '@iconify/svelte';
 
     export let time: number;
 
     let current = time;
     let timeout: NodeJS.Timeout = null;
+    let paused: boolean = true;
     
     const dispatch = createEventDispatcher();
 
@@ -40,6 +42,7 @@
         });
             
         timeout = (clearTimeout(timeout), null);
+        paused = true;
     }
 
     const startTimer = () => {
@@ -49,53 +52,55 @@
 
         time = current;
         preciseTimer(Date.now(), Date.now());
+        paused = false;
     }
 
 </script>
 
 <div>
+    <button on:click={() => dispatch('return')}>
+        <Icon icon="fe:arrow-left" height="3em" />
+    </button>
+
     <p> {showTime(current)} </p>
-    
-    <button on:click={pauseTimer}> # </button>
-    <button on:click={startTimer}> + </button>
+
+    <button class="previous" on:click={paused ? startTimer : pauseTimer}>
+        {#if paused}
+            <Icon icon="fe:play" height="3em" />
+        {:else}
+            <Icon icon="fe:pause" height="3em" />
+        {/if}
+    </button>
 </div>
 
 <style>
     div {
-        position: absolute;
-        top: 0px;
-        left: calc(50% - 3em);
-        width: 6em;
-        height: 1.9em;
-        box-sizing: border-box;
-    }
-    
-    p {
-        color: white;
-        background: fixed #333;
-        width: 100%;
-        height: 100%;
-        margin: 0px;
-        padding: 2px 5px;
-        box-sizing: border-box;    
-        
-        border: 1px white solid;
-        border-top: 0px;
-        border-bottom-left-radius: 0.5em;
-        border-bottom-right-radius: 0.5em;
-
-        text-align: center;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
     }
 
     button {
-        background-color: #333;
-        border: none;
-        color: white;
-        width: 2.5em;
-        height: 2.5em;
-        box-sizing: border-box;
-        margin: auto;
-        margin-top: 4px;
+        border-radius:  .5em;
+        box-sizing:     content-box;
+        padding:        0;
+        margin:         5px;
+        height:         3em;
+        border:         1px #555 solid;
+        width:          3em;
+    }
+
+    p {
+        background-color:   #333;
+        border-radius:      .3em;
+        text-align:         center;
+        font-size:          2em;
+        padding:            .125em;
+        margin:             0;
+        color:              whitesmoke;
+        width:              4em;
     }
 
 </style>
