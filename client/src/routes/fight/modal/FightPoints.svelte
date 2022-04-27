@@ -154,14 +154,16 @@
         color: white;
     }
 
-    input{
+    input[type="number"]{
         height: 2.5em;
         width: 2.5em;
         margin: 0 0.5em;
         border-radius: 0.5em;
+        border: 0.1em solid black;
         text-align: center;
         color: white;
     }
+
 
     .buttonDiv{
         display: flex;
