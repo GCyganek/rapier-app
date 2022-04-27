@@ -1,7 +1,7 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import { Actions } from "./fight-sequence-components/Actions";
     import type { Batch } from "./fight-sequence-components/Batch";
-    import Button, {Label} from "@smui/button";
     import FightPoints from "./modal/FightPoints.svelte";
 
     export let stack: Batch[];
@@ -19,32 +19,40 @@
     function deleteSequence(){
         console.log("clicked delete sequence!")
     }
+
+    const dispatch = createEventDispatcher();
+
 </script>
 
-<div>
-    {#each stack as batch}
-        <p style="background-color: {batch.colour}"> 
-            {Actions[batch.action]} 
-        </p>
-        <span> &#8594; </span>
-    {/each}
-</div>
-<div class="buttons">
-    <Button class="deleteButton" on:click={() => deleteSequence()}>
-        <Label>Usuń ciąg</Label>
-    </Button>
-    <Button class="pointsButton" on:click={() => openPoints()}>
-        <Label>Zaproponuj punkty</Label>
-    </Button>
-    <FightPoints stack={stack} isOpenModal={isOpenPoints} on:closeModal={closePoints} />
+<div class="container">
+    <div class="actions">
+        {#each stack as batch}
+            <span class="action" style="background-color: {batch.colour}">
+                {Actions[batch.action]}
+            </span>
+            <span> &#8594; </span>
+        {/each}
+    </div>
+
+    <div class="buttons">
+        <button on:click={() => dispatch('clear')}> Usuń ciąg </button>
+        <button on:click={() => dispatch('propose')}> Zaproponuj punkty </button>
+        <FightPoints stack={stack} isOpenModal={isOpenPoints} on:closeModal={closePoints} />
+    </div>
 </div>
 
 <style>
-    div {
+    div.container {
         border-top: 1px dimgray solid;
+        padding: 1em;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        box-sizing: border-box;
+        height: 36vh;
     }
 
-    p {
+    span.action {
         font-size: 1em;
         padding: 0.5em 0.8em;
         border-radius: 1.5em;
@@ -59,26 +67,17 @@
         display: none;
     }
 
-    * :global(Button){
-        width: 40%;
-        height: 3em;
-        border-radius: 2em;
-        color: white;
-        margin: 0 1em;
-    }
-
-    .buttons{
+    div.buttons {
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: row;
+        justify-content: space-evenly;
     }
 
-    * :global(.pointsButton){
-        background-color: #4161FE;
-    }
-
-    * :global(.deleteButton){
-        color: #4161FE;
-        border-color: #4161FE;
+    button {
+        height: 2em;
+        width: 36%;
+        color: var(--blue-fighter);
+        border: 1px currentColor solid;
+        border-radius: 1em;
     }
 </style>
