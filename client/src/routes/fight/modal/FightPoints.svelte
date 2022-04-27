@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
     import { createEventDispatcher } from 'svelte';
     import Button, {Label} from "@smui/button";
+    import {Batch} from "../fight-sequence-components/Batch";
+
+    export let stack: Batch[];
 
     const dispatch = createEventDispatcher();
 
@@ -16,6 +19,7 @@
 
     function confirmPoints(){
         console.log(points);
+        console.log(stack);
         closeModal();
     }
 
@@ -31,7 +35,7 @@
     <p class="pointsTitle">Propozycja wyników</p>
     <p>Sekwencja zdarzeń</p>
     <div class="sequenceDiv">
-        <p>tutaj sekwencja</p>
+        <p>[tutaj sekwencja]</p>
     </div>
     <p>Proponowane punkty</p>
     <div class="pointsDiv">
@@ -56,6 +60,7 @@
         <Button class="bottomButton" id="cancelButton" on:click={closeModal}>
             <Label>Odrzuć</Label>
         </Button>
+        <span class="spacer"></span>
         <Button class="bottomButton" id="confirmButton" on:click={confirmPoints}>
             <Label>Zatwierdź</Label>
         </Button>
@@ -130,6 +135,10 @@
         display: flex;
         align-items: center;
         flex-direction: row;
+    }
+
+    .spacer{
+        flex: 1 1 auto;
     }
 
     * :global(#cancelButton){
