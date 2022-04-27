@@ -2,6 +2,7 @@
     import { createEventDispatcher } from 'svelte';
     import Button, {Label} from "@smui/button";
     import {Batch} from "../fight-sequence-components/Batch";
+    import { Actions } from "../fight-sequence-components/Actions";
 
     export let stack: Batch[];
 
@@ -26,16 +27,21 @@
     function choosePoints(point, fighter){
         points[fighter] = point;
     }
-
-
 </script>
 
 <div id="background" style="--display: {isOpenModal ? 'block' : 'none'};"></div>
 <div id="modal" style="--display: {isOpenModal ? 'block' : 'none'};">
     <p class="pointsTitle">Propozycja wyników</p>
     <p>Sekwencja zdarzeń</p>
-    <div class="sequenceDiv">
-        <p>[tutaj sekwencja]</p>
+    <div class="container">
+        <div class="actions">
+            {#each stack as batch}
+            <span class="action" style="background-color: {batch.colour}">
+                {Actions[batch.action]}
+            </span>
+                <span> &#8594; </span>
+            {/each}
+        </div>
     </div>
     <p>Proponowane punkty</p>
     <div class="pointsDiv">
@@ -93,6 +99,31 @@
         padding: 1em;
     }
 
+    div.container {
+        border-top: 1px dimgray solid;
+        padding: 1em;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        box-sizing: border-box;
+        height: 36vh;
+    }
+
+    span.action {
+        font-size: 1em;
+        padding: 0.5em 0.8em;
+        border-radius: 1.5em;
+        margin: 5px 2px;
+        width: max-content;
+        color: white;
+        display: inline-block;
+        position: relative;
+    }
+
+    span:last-child {
+        display: none;
+    }
+
     p{
         text-align: center;
     }
@@ -120,6 +151,7 @@
         margin: 0 0.5em;
         padding: 0 1em 0 1em;
         border-radius: 0.5em;
+        color: white;
     }
 
     input{
@@ -147,6 +179,7 @@
 
     * :global(#confirmButton){
         background-color: #2F4858;
+        color: white;
     }
     * :global(.bottomButton){
         height: 2.5em;

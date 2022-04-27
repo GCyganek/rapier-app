@@ -9,15 +9,12 @@
     let isOpenPoints = false;
 
     function openPoints() {
+        dispatch('propose');
         isOpenPoints = true;
     }
 
     function closePoints() {
         isOpenPoints = false;
-    }
-
-    function deleteSequence(){
-        console.log("clicked delete sequence!")
     }
 
     const dispatch = createEventDispatcher();
@@ -36,7 +33,7 @@
 
     <div class="buttons">
         <button on:click={() => dispatch('clear')}> Usuń ciąg </button>
-        <button on:click={() => dispatch('propose')}> Zaproponuj punkty </button>
+        <button on:click={() => openPoints()}> Zaproponuj punkty </button>
         <FightPoints stack={stack} isOpenModal={isOpenPoints} on:closeModal={closePoints} />
     </div>
 </div>
