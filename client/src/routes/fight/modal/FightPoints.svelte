@@ -14,6 +14,7 @@
     let points = {};
 
     function closeModal() {
+        points = {};
         isOpenModal = false;
         dispatch('closeModal', { isOpenModal });
     }
@@ -107,6 +108,7 @@
         flex-direction: column;
         box-sizing: border-box;
         height: 36vh;
+        overflow: auto;
     }
 
     span.action {
