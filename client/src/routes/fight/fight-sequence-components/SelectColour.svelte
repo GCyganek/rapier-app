@@ -35,13 +35,13 @@
 </script>
 <div class="container">
     <button class="red"  on:click="{redHandle}" style="min-" >
-        <Icon icon="akar-icons:sword" color="white" width="45" height="45"/>
+        <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
         Atak czerwonego
     </button>
     
     <button class="blue" on:click="{blueHandle}" >
-        <Icon icon="akar-icons:sword" color="white" width="45" height="45" hFlip={true}/>
+        <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
         Atak niebieskiego
     </button>
@@ -58,15 +58,12 @@
     }
 
     button {
-        width: 15vw;
-        min-width: 60px;    
+        width: 46vw; 
         height: 100%;
-        min-height: 50px;
         color: white;
-        font-size: 2vw;
+        font-size: calc(12px + 1.5vw);
         border-radius: 2vw;
-        margin-bottom: 0;
-        margin-top: 0;
+        margin: 0;
     }
     button.red {
         background-color: #FF5F69;

@@ -30,7 +30,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1em;
         font-size: 1.25em;
         width: 50%;
         margin: 0;
@@ -48,6 +47,8 @@
 
     .points {
         font-size: 2em;
+        margin-left: 0.2em;
+        margin-right: 0.2em;
     }
 
     .red {
@@ -64,6 +65,5 @@
 
     span {
         color: white;
-        padding: 0px 5px;
     }
 </style>
