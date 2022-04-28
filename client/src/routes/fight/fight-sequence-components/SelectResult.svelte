@@ -2,10 +2,10 @@
     import Icon from '@iconify/svelte';
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
-import { Actions } from './Actions';
-import { Batch } from './Batch';
-import { Colours } from './Colours';
-import { Components } from './Components';
+    import { Actions } from './Actions';
+    import { Batch } from './Batch';
+    import { Colours } from './Colours';
+    import { Components } from './Components';
 
     const component = get_current_component();
     const svelteDispatch = createEventDispatcher();

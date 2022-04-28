@@ -66,7 +66,6 @@
         box-sizing: border-box;
         height: 27.5vh;
         border-bottom: 2px solid #4161FE;
-        box-sizing: border-box;
-        padding: 1vh 0;
+        padding: 0.5em 0;
     }
 </style>

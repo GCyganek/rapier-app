@@ -78,7 +78,6 @@
 <style>
     div {
         display: flex;
-        height: 7.5vh;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
@@ -97,11 +96,12 @@
 
     div.info {
         background-color:   #333;
+        display:            flex;
+        justify-content:    center;
         height:             6vh;
-        width:              27.8vw;
         border-radius:      .3em;
         text-align:         center;
-        font-size:          2vw;
+        font-size:          2em;
         padding:            1vh 2vw;
         color:              whitesmoke;
         width:              4em;
