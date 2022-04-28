@@ -21,19 +21,22 @@
 
 <style>
     .startDiv {
-        text-align: center;
-        padding: 1em;
-        margin: auto auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-image: url("../resources/fightstart_background_semitransparent.png");
+        background-repeat: repeat;
     }
 
     * :global(.startButton) {
         background-color: #FF5F69;
         color: white;
-        font-size: 20px;
+        font-size: 1.3em;
         font-weight: bold;
-        border-radius: 40px;
-        width: 240px;
-        height: 60px;
+        border-radius: 2em;
+        width: 12em;
+        height: 3em;
     }
     
     * :global(.startButton):active {
