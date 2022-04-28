@@ -30,8 +30,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25em;
+        font-size: 1.5rem;
         width: 50%;
+        height: 100%;
         margin: 0;
     }
 
@@ -46,21 +47,18 @@
     }
 
     .points {
-        font-size: 2em;
-        margin-left: 0.2em;
-        margin-right: 0.2em;
+        font-size: 2rem;
+        padding: 0 1rem;
     }
 
     .red {
         background-color: var(--red-fighter);
         flex-direction: row;
-        padding-right: 25px;
     }
 
     .blue {
         background-color: var(--blue-fighter);
         flex-direction: row-reverse;
-        padding-left: 25px;
     }
 
     span {

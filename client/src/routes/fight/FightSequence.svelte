@@ -15,7 +15,6 @@
     };
 
     let previousComponents: Components[] = [];
-    // let activeComponent = SelectColour;
     
     const clear = () => {
         fightSequence.set([]);
@@ -52,20 +51,17 @@
             ? pop()
             : push(e.detail);
     }
-    
-    // let back = false; ???
 
 </script>
 
 <div class="fightSequence">
-    <svelte:component this={$activeComponent} bind:activeComponent={$activeComponent} on:clicked={logAction} />
+    <svelte:component this={$activeComponent} on:clicked={logAction} />
 </div>
 
 <style>
     div {
         box-sizing: border-box;
-        height: 27.5vh;
         border-bottom: 2px solid #4161FE;
-        padding: 0.5em 0;
+        padding: 0.5rem 0;
     }
 </style>

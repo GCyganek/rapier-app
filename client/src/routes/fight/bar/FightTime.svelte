@@ -6,27 +6,26 @@
     import { createEventDispatcher } from 'svelte';
     import Icon from '@iconify/svelte';
 
-    export let time: number;
-
-    let current = time;
+    let time: number = 0;
     let timeout: NodeJS.Timeout = null;
-    let paused: boolean = true;
+    let paused: boolean = false;
     
     const dispatch = createEventDispatcher();
+    const interval = 1000;
 
-    const preciseTimer = (start: number, last: number) => {
-        const delta = Date.now() - last;
-        current = time - Math.floor((Date.now() - start) / 1000);
+    const preciseTimer = (last: number, delta: number) => {
+        const now = Date.now();
+        delta = delta + (now - last);
+
+        if (delta >= interval) {
+            delta -= interval
+            time += 1;
+        }
         
-        if (current <= 0)
-            return;
-
-        timeout = setTimeout(
-            preciseTimer,
-            Math.max(0, 1000 - delta), 
-            start, Date.now()
-        );
+        timeout = setTimeout(preciseTimer, interval - delta, now, delta);
     }
+
+    preciseTimer(Date.now(), 0);
 
     const showTime = (time: number) => {
         const min = Math.floor(time / 60), 
@@ -50,8 +49,7 @@
             action: "resume"
         });
 
-        time = current;
-        preciseTimer(Date.now(), Date.now());
+        preciseTimer(Date.now(), 0);
         paused = false;
     }
 
@@ -59,18 +57,18 @@
 
 <div>
     <button on:click={() => dispatch('return')}>
-        <Icon icon="bx:left-arrow-circle" color="#2f4858" height="6vh"/>
+        <Icon icon="bx:left-arrow-circle" color="#2f4858" height="2rem"/>
     </button>
 
     <div class="info">
-        {showTime(current)}
+        {showTime(time)}
     </div>
 
     <button class="previous" on:click={paused ? startTimer : pauseTimer}>
         {#if paused}
-            <Icon icon="bx:play-circle" color="#2f4858" height="6vh"/>
+            <Icon icon="bx:play-circle" color="#2f4858" height="2rem"/>
         {:else}
-            <Icon icon="carbon:pause-outline" color="#2f4858" height="6vh"/>
+            <Icon icon="carbon:pause-outline" color="#2f4858" height="2rem"/>
         {/if}
     </button>
 </div>
@@ -85,27 +83,26 @@
     }
 
     button {
-        border-radius:  .5em;
-        box-sizing:     content-box;
-        padding:        0;
-        margin:         5px;
-        height:         6vh;
-        border:         1px #2F4858 solid;
-        width:          6vh;
+        box-sizing: content-box;
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0.5rem;
+        height: 2rem;
+        width: 2rem;
     }
 
     div.info {
-        background-color:   #333;
-        display:            flex;
-        justify-content:    center;
-        height:             6vh;
-        border-radius:      .3em;
-        text-align:         center;
-        font-size:          2em;
-        padding:            1vh 2vw;
-        color:              whitesmoke;
-        width:              4em;
-        box-sizing:         border-box;
+        background-color:#333;
+        display: flex;
+        justify-content: center;
+        height: 2.5rem;
+        border-radius: .3em;
+        text-align: center;
+        font-size: 2rem;
+        color: whitesmoke;
+        width: 8rem;
+        box-sizing: border-box;
     }
 
 </style>
