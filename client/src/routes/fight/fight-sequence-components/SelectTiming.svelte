@@ -44,24 +44,19 @@
     }
 </script>
 
-
-<button class="back" on:click="{stepBack}">
-    <Icon icon="bi:arrow-left-circle" color="#ff5f69" width="30" height="30" />
-</button>
-
 <div class="container">
     <button class="timing"  on:click="{timingAnswer}" >
-        <Icon icon="bi:clock" color="white" width="45" height="45" />
+        <Icon icon="bi:clock" color="white" width="2.5em" height="2.5em" />
         <br>
         W tempo
     </button>
     <button class="late" on:click="{lateAnswer}">
-        <Icon icon="bi:clock-history" color="white" width="45" height="45" />
+        <Icon icon="bi:clock-history" color="white" width="2.5em" height="2.5em" />
         <br>
         Spóźniona
     </button>
     <button class="fail"  on:click="{failAnswer}" >
-        <Icon icon="clarity:no-access-line" color="white" width="45" height="45" />
+        <Icon icon="clarity:no-access-line" color="white" width="2.5em" height="2.5em" />
         <br>
         Nieskuteczna
     </button>
@@ -78,22 +73,13 @@
         align-items: center; 
     }
 
-    button.back {
-        margin-left: 1vw;
-        margin-top: 1vh;
-        display: block;
-    }
-
     button.timing, button.late, button.fail {
-        width: 15vw;
-        min-width: 45px;    
+        width: 30vw;   
         height: 100%;
-        min-height: 35px;
         color: white;
-        font-size: 2vw;
+        font-size: calc(8px + 1.5vw);
         border-radius: 2vw;
-        margin-bottom: 0;
-        margin-top: 0;
+        margin: 0;
     }
 
     button.timing {
