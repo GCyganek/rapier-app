@@ -8,7 +8,7 @@
 - If there are no errors, returned status is `OK`
 - Endpoints source code: `server/src/gateways/judges.gateway.ts`
 
-## `join` (work in progress) 
+## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
 Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players.
@@ -228,3 +228,32 @@ of points of one of the players reaches some value.
 where `conditionName` is enum with values:
 - `TIME_ENDED`
 - `ENOUGH_POINTS`
+
+# Mocked Fight and Players
+
+## `Fight`
+
+| name         | type   | value     |
+|--------------|--------|-----------|
+| id           | string | 'mockup'  |
+| mianJudgeId  | string | 'main'    |
+| redJudgeID   | string | 'red'     |
+| blueJudgeId  | string | 'blue'    |
+| redPlayerId  | string | 'player1' |
+| bluePlayerId | string | 'player2' |
+
+## `Player1`
+
+| name      | type   | value      |
+|-----------|--------|------------|
+| id        | string | 'player1'  |
+| firstName | string | 'Ala'      |
+| lastName  | string | 'Kowalska' |
+
+## `Player2`
+
+| name      | type   | value      |
+|-----------|--------|------------|
+| id        | string | 'player2'  |
+| firstName | string | 'Jan'      |
+| lastName  | string | 'Kowalski' |
