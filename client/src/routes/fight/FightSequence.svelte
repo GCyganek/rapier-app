@@ -64,6 +64,6 @@
 <style>
     div {
         box-sizing: border-box;
-        height: 48vh;
+        height: 24vh;
     }
 </style>

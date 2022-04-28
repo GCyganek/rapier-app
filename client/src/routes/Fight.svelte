@@ -28,6 +28,7 @@
 
 <style>
     div.container {
+        height: 100%;
         display:            flex;
         justify-content:    space-between;
         flex-direction:     column;
