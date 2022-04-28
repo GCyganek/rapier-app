@@ -46,7 +46,7 @@
         justify-content: space-between;
         flex-direction: column;
         box-sizing: border-box;
-        height: 36vh;
+        height: 27.5vh;
     }
 
     span.action {
