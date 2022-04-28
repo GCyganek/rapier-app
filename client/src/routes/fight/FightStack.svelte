@@ -2,8 +2,20 @@
     import { createEventDispatcher } from "svelte";
     import { Actions } from "./fight-sequence-components/Actions";
     import type { Batch } from "./fight-sequence-components/Batch";
+    import FightPoints from "./modal/FightPoints.svelte";
 
     export let stack: Batch[];
+
+    let isOpenPoints = false;
+
+    function openPoints() {
+        dispatch('propose');
+        isOpenPoints = true;
+    }
+
+    function closePoints() {
+        isOpenPoints = false;
+    }
 
     const dispatch = createEventDispatcher();
 
@@ -12,8 +24,8 @@
 <div class="container">
     <div class="actions">
         {#each stack as batch}
-            <span class="action" style="background-color: {batch.colour}"> 
-                {Actions[batch.action]} 
+            <span class="action" style="background-color: {batch.colour}">
+                {Actions[batch.action]}
             </span>
             <span> &#8594; </span>
         {/each}
@@ -21,7 +33,8 @@
 
     <div class="buttons">
         <button on:click={() => dispatch('clear')}> Usuń ciąg </button>
-        <button on:click={() => dispatch('propose')}> Zaproponuj punkty </button>
+        <button on:click={() => openPoints()}> Zaproponuj punkty </button>
+        <FightPoints stack={stack} isOpenModal={isOpenPoints} on:closeModal={closePoints} />
     </div>
 </div>
 
