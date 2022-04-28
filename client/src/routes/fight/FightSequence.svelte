@@ -64,6 +64,9 @@
 <style>
     div {
         box-sizing: border-box;
-        height: 48vh;
+        height: 27.5vh;
+        border-bottom: 2px solid #4161FE;
+        box-sizing: border-box;
+        padding: 1vh 0;
     }
 </style>

@@ -59,16 +59,18 @@
 
 <div>
     <button on:click={() => dispatch('return')}>
-        <Icon icon="fe:arrow-left" height="3em" />
+        <Icon icon="bx:left-arrow-circle" color="#2f4858" height="6vh"/>
     </button>
 
-    <p> {showTime(current)} </p>
+    <div class="info">
+        {showTime(current)}
+    </div>
 
     <button class="previous" on:click={paused ? startTimer : pauseTimer}>
         {#if paused}
-            <Icon icon="fe:play" height="3em" />
+            <Icon icon="bx:play-circle" color="#2f4858" height="6vh"/>
         {:else}
-            <Icon icon="fe:pause" height="3em" />
+            <Icon icon="carbon:pause-outline" color="#2f4858" height="6vh"/>
         {/if}
     </button>
 </div>
@@ -76,10 +78,11 @@
 <style>
     div {
         display: flex;
+        height: 7.5vh;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #333;
+        border-bottom: 2px solid #2F4858;
     }
 
     button {
@@ -87,20 +90,22 @@
         box-sizing:     content-box;
         padding:        0;
         margin:         5px;
-        height:         3em;
-        border:         1px #555 solid;
-        width:          3em;
+        height:         6vh;
+        border:         1px #2F4858 solid;
+        width:          6vh;
     }
 
-    p {
+    div.info {
         background-color:   #333;
+        height:             6vh;
+        width:              27.8vw;
         border-radius:      .3em;
         text-align:         center;
-        font-size:          2em;
-        padding:            .125em;
-        margin:             0;
+        font-size:          2vw;
+        padding:            1vh 2vw;
         color:              whitesmoke;
         width:              4em;
+        box-sizing:         border-box;
     }
 
 </style>

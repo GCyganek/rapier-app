@@ -38,18 +38,14 @@
 
 </script>
 
-<button class="back" on:click="{stepBack}">
-    <Icon icon="bi:arrow-left-circle" color="#ff5f69" width="30" height="30" />
-</button>
-
 <div class="container">
     <button class="attack"  on:click="{attackHandle}" >
-        <Icon icon="akar-icons:sword" color="white" width="45" height="45" />
+        <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" />
         <br>
         Atak
     </button>
     <button class="answer" on:click="{answerHandle}">
-        <Icon icon="akar-icons:double-sword" color="white" width="45" height="45" />
+        <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" />
         <br>
         Odpowiedź
     </button>
@@ -66,19 +62,12 @@
         justify-content: center;
         align-items: center; 
     }
-    button.back {
-        margin-left: 1vw;
-        margin-top: 1vh;
-        display: block;
-    }
 
     button.attack, button.answer {
-        width: 15vw;
-        min-width: 60px;    
+        width: 46vw;  
         height: 100%;
-        min-height: 50px;
         color: white;
-        font-size: 2vw;
+        font-size: calc(12px + 1.5vw);
         border-radius: 2vw;
         margin-bottom: 0;
         margin-top: 0;
