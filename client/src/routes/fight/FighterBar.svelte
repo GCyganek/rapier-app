@@ -1,5 +1,4 @@
 <script lang="ts">
-    import Icon from '@iconify/svelte';
     import FighterInfo, { Fighter } from './bar/FighterInfo.svelte';
     import FightTime from './bar/FightTime.svelte';
 
@@ -15,7 +14,7 @@
     </div>
     
     <div class="timer">
-        <FightTime time={20} on:action on:return />
+        <FightTime on:action on:return />
     </div>
 </div>
 
@@ -29,12 +28,13 @@
         display: flex;
         flex-direction: row;
         position: relative;
-        height: 8.75vh;
+        height: 4rem;
         border-bottom: 2px solid #2F4858;
+        text-align: center;
     }
 
     div.timer {
-        height: 7.5vh;
+        height: 3rem;
     }
 
 </style>

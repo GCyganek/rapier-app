@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import Button, {Label} from "@smui/button";
-    import {Batch} from "../fight-sequence-components/Batch";
+    import Button, { Label } from "@smui/button";
+    import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
 
     export let stack: Batch[];

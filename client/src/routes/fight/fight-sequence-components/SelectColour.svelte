@@ -61,10 +61,11 @@
         width: 46vw; 
         height: 100%;
         color: white;
-        font-size: calc(12px + 1.5vw);
+        font-size: 1.5rem;
         border-radius: 2vw;
         margin: 0;
     }
+    
     button.red {
         background-color: #FF5F69;
         margin-right: 1vw;

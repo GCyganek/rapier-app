@@ -25,7 +25,9 @@
     <div class="actions">
         {#each stack as batch}
             <span class="action" style="background-color: {batch.colour}">
-                {Actions[batch.action]}
+                {
+                    Actions.toHumanReadable(batch.action)
+                }
             </span>
             <span> &#8594; </span>
         {/each}
@@ -33,7 +35,7 @@
 
     <div class="buttons">
         <button on:click={() => dispatch('clear')}> Usuń ciąg </button>
-        <button on:click={() => openPoints()}> Zaproponuj punkty </button>
+        <button class="propose" on:click={() => openPoints()}> Zaproponuj punkty </button>
         <FightPoints stack={stack} isOpenModal={isOpenPoints} on:closeModal={closePoints} />
     </div>
 </div>
@@ -46,13 +48,13 @@
         justify-content: space-between;
         flex-direction: column;
         box-sizing: border-box;
-        height: 27.5vh;
+        height: 20rem;
     }
 
     span.action {
-        font-size: 1em;
-        padding: 0.5em 0.8em;
-        border-radius: 1.5em;
+        font-size: 1rem;
+        padding: 0.3rem 0.5rem;
+        border-radius: 1rem;
         margin: 5px 2px;
         width: max-content;
         color: white;
@@ -68,13 +70,25 @@
         display: flex;
         flex-direction: row;
         justify-content: space-evenly;
+        align-items: center;
+        padding-top: 0.5rem;
     }
 
     button {
-        height: 2em;
-        width: 36%;
+        margin: 0;
+        height: 2rem;
+        width: 42%;
         color: var(--blue-fighter);
         border: 1px currentColor solid;
-        border-radius: 1em;
+        border-radius: 1rem;
+    }
+
+    button.propose {
+        color: white;
+        background-color: var(--blue-fighter);
+    }
+
+    div.actions {
+        overflow: scroll;
     }
 </style>

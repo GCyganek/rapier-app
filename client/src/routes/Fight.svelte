@@ -28,9 +28,11 @@
 
 <style>
     div.container {
-        display:            flex;
-        justify-content:    space-between;
-        flex-direction:     column;
+        height: 100vh;
+        width: 100vw;
+
+        display: grid;
+        grid-template-rows: 7rem auto 7rem 20rem;
         box-sizing:         border-box;
     }
 </style>
