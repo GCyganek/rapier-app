@@ -38,7 +38,9 @@
         <div class="actions">
             {#each stack as batch}
             <span class="action" style="background-color: {batch.colour}">
-                {Actions[batch.action]}
+                {
+                    Actions.toHumanReadable(batch.action)
+                }
             </span>
                 <span> &#8594; </span>
             {/each}
