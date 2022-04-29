@@ -37,13 +37,13 @@
     <button class="red"  on:click="{redHandle}" style="min-" >
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
-        Atak czerwonego
+        Atak
     </button>
     
     <button class="blue" on:click="{blueHandle}" >
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
-        Atak niebieskiego
+        Atak
     </button>
 </div>
 

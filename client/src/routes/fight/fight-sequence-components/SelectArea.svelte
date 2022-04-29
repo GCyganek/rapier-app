@@ -47,17 +47,17 @@
     <button class="head"  on:click="{headHit}" >
         <Icon icon="mdi:head-outline" color="white" width="2.5em" height="2.5em" />
         <br>
-        Trafienie w głowę
+        W głowę
     </button>
     <button class="body" on:click="{bodyHit}">
         <Icon icon="healthicons:body" color="white" width="2.5em" height="2.5em" />
         <br>
-        Trafienie w tułów
+        W Ciało
     </button>
     <button class="hand"  on:click="{handHit}" >
         <Icon icon="akar-icons:hand" color="white" width="2.5em" height="2.5em" />
         <br>
-        Trafienie w rękę
+        W Rękę
     </button>
 </div>
 
