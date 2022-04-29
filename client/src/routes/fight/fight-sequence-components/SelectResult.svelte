@@ -42,12 +42,12 @@
     <button class="succeed"  on:click="{succeedHandle}" >
         <Icon icon="healthicons:yes-outline" color="white" width="2.5em" height="2.5em" />
         <br>
-        Natarcie
+        Udany
     </button>
     <button class="fail" on:click="{failHandle}">
         <Icon icon="clarity:no-access-line" color="white" width="2.5em" height="2.5em" />
         <br>
-        Nieskuteczny
+        Nieudany
     </button>
 </div>
 
