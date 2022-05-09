@@ -8,6 +8,7 @@ import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightImpl } from '../classes/fight.class';
+import { FightDataInterface } from '../interfaces/fight-data.interface';
 
 @Injectable()
 export class FightsService {
@@ -46,6 +47,26 @@ export class FightsService {
         this.fightEndConditionFulfilledObserver,
       );
     }
+  }
+
+  newFightFromData(fightData: FightDataInterface): boolean {
+    const endConditions = new Map<FightEndConditionName, number>();
+    fightData.endConditions.forEach((condition) =>
+      endConditions.set(condition.name, condition.value),
+    );
+
+    const fight = new FightImpl(
+      fightData.id,
+      fightData.mainJudgeId,
+      fightData.redJudgeId,
+      fightData.blueJudgeId,
+      fightData.redPlayerId,
+      fightData.bluePlayerId,
+      endConditions,
+    );
+
+    this.newFight(fight);
+    return true;
   }
 
   getFight(id: string): FightImpl {
