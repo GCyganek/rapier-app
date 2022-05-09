@@ -10,6 +10,7 @@ import { Manager } from 'socket.io-client';
 import { Timer } from '../../src/classes/timer.class';
 import { FightImpl } from '../../src/classes/fight.class';
 import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { FightDataInterface } from '../../src/interfaces/fight-data.interface';
 
 describe('FightsService', () => {
   let app: TestingModule;
@@ -77,6 +78,32 @@ describe('FightsService', () => {
         mockFightEndConditionFulfilledObserver,
       );
       expect(fightService.getFight(fight.id)).not.toBeUndefined();
+    });
+  });
+
+  describe('newFightFromData', () => {
+    it('should create new fight from FightDataInterface', () => {
+      const data: FightDataInterface = {
+        id: 'fight123',
+        mainJudgeId: 'main',
+        redJudgeId: 'red',
+        blueJudgeId: 'blue',
+        redPlayerId: 'red_player',
+        bluePlayerId: 'blue_player',
+        endConditions: [
+          {
+            name: FightEndConditionName.TimeEnded,
+            value: 5,
+          },
+          {
+            name: FightEndConditionName.EnoughPoints,
+            value: 10,
+          },
+        ],
+      };
+
+      fightService.newFightFromData(data);
+      expect(fightService.getFight('fight123')).not.toBeUndefined();
     });
   });
 

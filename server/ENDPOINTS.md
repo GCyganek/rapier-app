@@ -1,3 +1,106 @@
+# Administrator page
+
+- Protocol: **HTTP**
+- URL: `http://localhost:3000`
+- Endpoints source code: `server/src/controllers/admin.controller.ts`
+
+## `load-players`
+
+Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given players in server. 
+JSON should be an array of `Player` interface instances. Endpoint returns ids of successfully added players.
+
+### Method
+`POST`
+
+### Parameters (body)
+| name    | type        |
+|---------|-------------|
+| players | JSON string |
+
+### Response
+| name | type |
+|------|------|
+| -    | JSON |
+
+### Example JSON
+
+```
+[
+  {  
+    "id": "player1",  
+    "firstName": "Janek",
+    "lastName": "Kowalski"
+  },
+  {
+    "id": "player2",
+    "firstName": "Andrzej",
+    "lastName": "Nowak"
+  },
+  {
+    "id": "player3",
+    "firstName": "Marek",
+    "lastName": "Jarek"
+  }
+]
+```
+
+## `load-fights`
+
+Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
+JSON should be an array of `FightData` interface instances. Endpoint returns ids of successfully added fights.
+
+### Method
+`POST`
+
+### Parameters (body)
+| name   | type        |
+|--------|-------------|
+| fights | JSON string |
+
+### Response
+| name | type |
+|------|------|
+| -    | JSON |
+
+### Example JSON
+
+```
+[
+  {
+    "id": "fight1",
+    "mainJudgeId": "main",
+    "redJudgeId": "red",
+    "blueJudgeId": "blue",
+    "redPlayerId": "player1",
+    "bluePlayerId": "player2",
+    "endConditions": [
+      {
+        "name": "TIME_ENDED",
+        "value": "5"
+      },
+      {
+        "name": "ENOUGH_POINTS",
+        "value": "15"
+      }
+    ]
+  },
+  {
+    "id": "fight2",
+    "mainJudgeId": "main_judge",
+    "redJudgeId": "red_judge",
+    "blueJudgeId": "blue_judge",
+    "redPlayerId": "player3",
+    "bluePlayerId": "player2",
+    "endConditions": [
+      {
+        "name": "ENOUGH_POINTS",
+        "value": "10"
+      }
+    ]
+  }
+]
+```
+
 # Judges communication
 
 - Protocol: **WebSockets**
