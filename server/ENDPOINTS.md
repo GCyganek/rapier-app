@@ -104,7 +104,7 @@ JSON should be an array of `FightData` interface instances. Endpoint returns ids
 # Judges communication
 
 - Protocol: **WebSockets**
-- URL: `wss://localhost:3000`
+- URL: `location.host`
 - All parameters are passed by `MessageBody` by default
 - All responses are objects by default
 - If there are any errors, endpoints return `{ status: STATUS_NAME }` object by default
