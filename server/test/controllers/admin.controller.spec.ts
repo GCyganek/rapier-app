@@ -23,6 +23,14 @@ describe('AdminController', () => {
       );
       expect(response).toStrictEqual(['player_1', 'player_2', 'player_3']);
     });
+
+    it('should not overwrite existing players', () => {
+      const adminController = app.get<AdminController>(AdminController);
+      const response = adminController.loadPlayers(
+        '[{"id": "player_1","firstName": "Marek","lastName": "Kowalski"}]',
+      );
+      expect(response).toStrictEqual([]);
+    });
   });
 
   describe('loadFights', () => {
@@ -37,6 +45,16 @@ describe('AdminController', () => {
           '"bluePlayerId": "player2","endConditions": [{"name": "ENOUGH_POINTS","value": "10"}]}]',
       );
       expect(response).toStrictEqual(['fight1', 'fight2']);
+    });
+
+    it('should not overwrite existing fights', () => {
+      const adminController = app.get<AdminController>(AdminController);
+      const response = adminController.loadFights(
+        '[{"id": "fight1","mainJudgeId": "different_id","redJudgeId": "red",' +
+          '"blueJudgeId": "blue","redPlayerId": "player1","bluePlayerId": "player2",' +
+          '"endConditions": []}]',
+      );
+      expect(response).toStrictEqual([]);
     });
   });
 });

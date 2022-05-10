@@ -7,7 +7,8 @@
 ## `load-players`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given players in server. 
-JSON should be an array of `Player` interface instances. Endpoint returns ids of successfully added players.
+JSON should be an array of `Player` interface instances. Endpoint returns ids of successfully added players. 
+Existing players are not updated. 
 
 ### Method
 `POST`
@@ -48,6 +49,7 @@ JSON should be an array of `Player` interface instances. Endpoint returns ids of
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
 JSON should be an array of `FightData` interface instances. Endpoint returns ids of successfully added fights.
+Existing fights are not updated.
 
 ### Method
 `POST`

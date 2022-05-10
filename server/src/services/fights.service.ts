@@ -55,6 +55,10 @@ export class FightsService {
       endConditions.set(condition.name, condition.value),
     );
 
+    if (this.getFight(fightData.id) !== undefined) {
+      return false;
+    }
+
     const fight = new FightImpl(
       fightData.id,
       fightData.mainJudgeId,

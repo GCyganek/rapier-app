@@ -102,8 +102,23 @@ describe('FightsService', () => {
         ],
       };
 
-      fightService.newFightFromData(data);
+      expect(fightService.newFightFromData(data)).toBeTruthy();
       expect(fightService.getFight('fight123')).not.toBeUndefined();
+    });
+
+    it('should not overwrite existing fight', () => {
+      const data: FightDataInterface = {
+        id: 'fight123',
+        mainJudgeId: 'different_id',
+        redJudgeId: 'red',
+        blueJudgeId: 'blue',
+        redPlayerId: 'red_player',
+        bluePlayerId: 'blue_player',
+        endConditions: [],
+      };
+
+      expect(fightService.newFightFromData(data)).toBeFalsy();
+      expect(fightService.getFight('fight123').mainJudgeId).toEqual('main');
     });
   });
 
