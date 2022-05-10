@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import Icon from '@iconify/svelte';
 
     let time: number = 0;
@@ -25,7 +25,9 @@
         timeout = setTimeout(preciseTimer, interval - delta, now, delta);
     }
 
-    preciseTimer(Date.now(), 0);
+    onMount(() => {
+        preciseTimer(Date.now(), 0);
+    });
 
     const showTime = (time: number) => {
         const min = Math.floor(time / 60), 
@@ -36,18 +38,14 @@
     }
     
     const pauseTimer = () => {
-        dispatch('action', {
-            action: "pause"
-        });
+        dispatch('action', 'pause');
             
         timeout = (clearTimeout(timeout), null);
         paused = true;
     }
 
     const startTimer = () => {
-        dispatch('action', {
-            action: "resume"
-        });
+        dispatch('action', 'resume');
 
         preciseTimer(Date.now(), 0);
         paused = false;

@@ -2,10 +2,11 @@
     export type FighterType = "red" | "blue";
 
     export class Fighter {
+        id: string;
         firstName: string;
         lastName: string;
-        points: number;
-    }
+        points: number = 0;
+    };
 </script>
 
 <script lang="ts">
@@ -14,7 +15,7 @@
 </script>
 
 <div class={type}>    
-    <span class="points"> {fighter.points} </span>
+    <span class="points"> {fighter.points ?? 0} </span>
     
     <span>
         {fighter.firstName}
