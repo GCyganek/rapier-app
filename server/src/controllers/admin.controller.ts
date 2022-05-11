@@ -13,14 +13,16 @@ export class AdminController {
   ) {}
 
   @Post('load-players')
-  loadPlayers(@Body('players') playersJson: string): string[] {
+  async loadPlayers(@Body('players') playersJson: string): Promise<string[]> {
     const players: Player[] = JSON.parse(playersJson);
 
     const successful: string[] = [];
-    players.forEach((player) => {
-      if (this.playersService.newPlayer(player) == ResponseStatus.OK)
-        successful.push(player.id);
-    });
+    await Promise.all(
+      players.map(async (player) => {
+        if ((await this.playersService.newPlayer(player)) == ResponseStatus.OK)
+          successful.push(player.id);
+      }),
+    );
 
     return successful;
   }

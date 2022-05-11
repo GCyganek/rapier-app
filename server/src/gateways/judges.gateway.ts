@@ -42,7 +42,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.Join)
-  join(
+  async join(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
@@ -57,8 +57,12 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
-    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id);
-    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id);
+    response.redPlayer = await this.playersService.getPlayer(
+      fight.redPlayer.id,
+    );
+    response.bluePlayer = await this.playersService.getPlayer(
+      fight.bluePlayer.id,
+    );
 
     return client.emit(JudgesSocketEvents.Join, response);
   }
