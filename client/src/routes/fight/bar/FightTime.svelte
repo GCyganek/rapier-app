@@ -5,11 +5,12 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
     import Icon from '@iconify/svelte';
+    import FightEnd from "../modal/FightEnd.svelte";
 
     let time: number = 0;
     let timeout: NodeJS.Timeout = null;
     let paused: boolean = false;
-    
+
     const dispatch = createEventDispatcher();
     const interval = 1000;
 
@@ -21,25 +22,25 @@
             delta -= interval
             time += 1;
         }
-        
+
         timeout = setTimeout(preciseTimer, interval - delta, now, delta);
     }
 
     preciseTimer(Date.now(), 0);
 
     const showTime = (time: number) => {
-        const min = Math.floor(time / 60), 
-        tbs = time % 60,
-        secs = tbs < 10 ? `0${tbs}` : tbs.toString();
-        
+        const min = Math.floor(time / 60),
+            tbs = time % 60,
+            secs = tbs < 10 ? `0${tbs}` : tbs.toString();
+
         return `${min}:${secs}`
     }
-    
+
     const pauseTimer = () => {
         dispatch('action', {
             action: "pause"
         });
-            
+
         timeout = (clearTimeout(timeout), null);
         paused = true;
     }
@@ -51,6 +52,17 @@
 
         preciseTimer(Date.now(), 0);
         paused = false;
+    }
+
+    let isOpenEnd = false;
+
+    function openEnd() {
+        dispatch('end');
+        isOpenEnd = true;
+    }
+
+    function closeEnd() {
+        isOpenEnd = false;
     }
 
 </script>
@@ -66,7 +78,7 @@
 
     <div class="buttonWrapper">
         {#if paused}
-            <button class="stopButton">
+            <button class="stopButton" on:click={() => openEnd()}>
                 <Icon icon="mdi:stop-circle-outline" color="#2f4858" height="2rem"/>
             </button>
         {/if}
@@ -77,6 +89,7 @@
                 <Icon icon="carbon:pause-outline" color="#2f4858" height="2rem"/>
             {/if}
         </button>
+        <FightEnd isOpenModal={isOpenEnd} on:closeModal={closeEnd}/>
     </div>
 </div>
 
