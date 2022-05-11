@@ -48,7 +48,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @ConnectedSocket() client: Socket,
   ) {
     const response: JoinResponse = {
-      status: this.fightsService.addJudge(fightId, judgeId, client),
+      status: await this.fightsService.addJudge(fightId, judgeId, client),
       redPlayer: null,
       bluePlayer: null,
     };
@@ -68,7 +68,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.StartFight)
-  startFight(
+  async startFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
@@ -86,7 +86,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const response: Response = {
-      status: this.fightsService.startFight(fightId),
+      status: await this.fightsService.startFight(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
 
@@ -98,7 +98,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.FinishFight)
-  finishFight(
+  async finishFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
@@ -115,10 +115,10 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    const response: Response = {
-      status: this.fightsService.finishFight(fightId),
-    };
     const fight = this.fightsService.getFight(fightId);
+    const response: Response = {
+      status: await this.fightsService.finishFight(fightId),
+    };
 
     if (response.status != ResponseStatus.OK) {
       return client.emit(JudgesSocketEvents.FinishFight, response);

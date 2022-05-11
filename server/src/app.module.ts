@@ -13,6 +13,7 @@ import { FightSchema, MongoFight } from './schemas/fight.schema';
     MongooseModule.forRoot(process.env.MONGO_DB_URL),
     MongooseModule.forFeature([
       { name: MongoPlayer.name, schema: PlayerSchema },
+      { name: MongoFight.name, schema: FightSchema },
     ]),
   ],
   controllers: [AdminController],

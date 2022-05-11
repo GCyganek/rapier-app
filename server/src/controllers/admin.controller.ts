@@ -28,13 +28,16 @@ export class AdminController {
   }
 
   @Post('load-fights')
-  loadFights(@Body('fights') fightsJson: string): string[] {
+  async loadFights(@Body('fights') fightsJson: string): Promise<string[]> {
     const fights: FightDataInterface[] = JSON.parse(fightsJson);
 
     const successful: string[] = [];
-    fights.forEach((fight) => {
-      if (this.fightsService.newFightFromData(fight)) successful.push(fight.id);
-    });
+    await Promise.all(
+      fights.map(async (fight) => {
+        if (await this.fightsService.newFightFromData(fight))
+          successful.push(fight.id);
+      }),
+    );
 
     return successful;
   }

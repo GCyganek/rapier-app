@@ -7,34 +7,33 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class PlayersService {
-  private readonly players: Map<string, Player> = new Map<string, Player>();
-
   constructor(
     @InjectModel(MongoPlayer.name) private playerModel: Model<PlayerDocument>,
   ) {}
 
-  private async savePlayerToDb(player: Player): Promise<Player> {
+  private async savePlayerToDb(player: Player): Promise<MongoPlayer> {
     const createdPlayer = new this.playerModel(player);
     return createdPlayer.save();
   }
 
   async newPlayer(player: Player): Promise<ResponseStatus> {
-    if (this.isPlayer(player.id)) return ResponseStatus.BadRequest;
+    if (await this.isPlayer(player.id)) return ResponseStatus.BadRequest;
 
     try {
       await this.savePlayerToDb(player);
     } catch (error) {
+      console.error(error);
       return ResponseStatus.InternalServerError;
     }
 
     return ResponseStatus.OK;
   }
 
-  async getPlayer(id: string): Promise<Player> {
+  async getPlayer(id: string): Promise<MongoPlayer> {
     return this.playerModel.findOne({ id: id });
   }
 
   async isPlayer(id: string): Promise<boolean> {
-    return (await this.getPlayer(id)) != undefined;
+    return (await this.getPlayer(id)) !== null;
   }
 }
