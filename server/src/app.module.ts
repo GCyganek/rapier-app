@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './controllers/app.controller';
-import { AppService } from './services/app.service';
+import { AdminController } from './controllers/admin.controller';
 import { FightsService } from './services/fights.service';
 import { JudgesGateway } from './gateways/judges.gateway';
 import { PlayersService } from './services/players.service';
@@ -9,7 +8,7 @@ import 'dotenv/config';
 
 @Module({
   imports: [MongooseModule.forRoot(process.env.MONGO_DB_URL)],
-  controllers: [AppController],
-  providers: [AppService, JudgesGateway, FightsService, PlayersService],
+  controllers: [AdminController],
+  providers: [JudgesGateway, FightsService, PlayersService],
 })
 export class AppModule {}
