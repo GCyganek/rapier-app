@@ -60,6 +60,7 @@
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
         Czerwony
+
     </button>
     
     <button class="draw" on:click="{drawHandle}" disabled={draw}>

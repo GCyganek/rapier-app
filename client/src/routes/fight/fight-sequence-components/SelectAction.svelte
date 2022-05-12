@@ -48,7 +48,7 @@
     <button class="answer" on:click="{answerHandle}" disabled={answerDisabled}>
         <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" />
         <br>
-        Odpowiedź
+        Kontratak
     </button>
 </div>
 
@@ -78,7 +78,7 @@
         margin-right: 1vw;
     }
     button.answer {
-        background-color: #A6A0D6;
+        background-color: #B17280;
         margin-left: 1vw;
     }
 
