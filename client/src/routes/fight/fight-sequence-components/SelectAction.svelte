@@ -16,6 +16,7 @@
     }
 
     let batch = new Batch();
+    export let answerDisabled;
     batch.currentComponent = Components.SelectAction;
 
     const stepBack = () => {
@@ -44,7 +45,7 @@
         <br>
         Atak
     </button>
-    <button class="answer" on:click="{answerHandle}">
+    <button class="answer" on:click="{answerHandle}" disabled={answerDisabled}>
         <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" />
         <br>
         Odpowiedź
@@ -53,7 +54,6 @@
 
 
 <style>
-
     div.container {
         width: 100%;
         height: 100%;
@@ -63,7 +63,7 @@
         align-items: center; 
     }
 
-    button.attack, button.answer {
+    button {
         width: 46vw;  
         height: 100%;
         color: white;
@@ -80,6 +80,10 @@
     button.answer {
         background-color: #A6A0D6;
         margin-left: 1vw;
+    }
+
+    button.answer:disabled {
+        opacity: 0.3;
     }
 
 </style>

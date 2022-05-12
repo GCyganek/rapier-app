@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Icon from '@iconify/svelte';
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
@@ -17,7 +17,7 @@
 
     let batch = new Batch;
     batch.currentComponent = Components.SelectArea;
-    batch.nextComponent = Components.SelectFighter;
+    batch.nextComponent = Components.SelectColour;
 
     const stepBack = () => {
         dispatch('clicked', {});

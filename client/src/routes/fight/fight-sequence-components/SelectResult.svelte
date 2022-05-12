@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Icon from '@iconify/svelte';
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
@@ -32,7 +32,7 @@
     const failHandle = () => {
         batch.action = Actions.FAILURE;
         batch.colour = Colours.GRAY;
-        batch.nextComponent = Components.SelectFighter;
+        batch.nextComponent = Components.SelectColour;
         dispatch('clicked', batch);
     }
 

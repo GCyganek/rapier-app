@@ -32,14 +32,14 @@
     const lateAnswer = () => {
         batch.action = Actions.LATE;
         batch.colour = Colours.GREENY_BLUE_MED;
-        batch.nextComponent = Components.SelectFighter;
+        batch.nextComponent = Components.SelectColour;
         dispatch('clicked', batch);
     }
 
     const failAnswer = () => {
         batch.action = Actions.FAILURE;
         batch.colour = Colours.GREENY_BLUE_LOW;
-        batch.nextComponent = Components.SelectFighter;
+        batch.nextComponent = Components.SelectColour;
         dispatch('clicked', batch);
     }
 </script>
