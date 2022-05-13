@@ -15,7 +15,7 @@ import { FightEndConditionFulfilledObserver } from '../interfaces/observers/figh
 import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
 import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
-import { JoinResponse } from '../interfaces/join-response.interface';
+import { JoinResponse, JudgeRole } from '../interfaces/join-response.interface';
 import { PlayersService } from '../services/players.service';
 import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwarding.interface';
 import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
@@ -47,18 +47,24 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: JoinResponse = {
-      status: this.fightsService.addJudge(fightId, judgeId, client),
-      redPlayer: null,
-      bluePlayer: null,
-    };
-    if (response.status != ResponseStatus.OK) {
-      return client.emit(JudgesSocketEvents.Join, { status: response.status });
+    const status = this.fightsService.addJudge(fightId, judgeId, client);
+    if (status != ResponseStatus.OK) {
+      return client.emit(JudgesSocketEvents.Join, { status: status });
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
-    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id);
-    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id);
+    let role: JudgeRole;
+
+    if (fight.isMainJudge(judgeId)) role = JudgeRole.MainJudge;
+    else if (fight.isRedJudge(judgeId)) role = JudgeRole.RedJudge;
+    else if (fight.isBlueJudge(judgeId)) role = JudgeRole.BlueJudge;
+
+    const response: JoinResponse = {
+      status: status,
+      role: role,
+      redPlayer: this.playersService.getPlayer(fight.redPlayer.id),
+      bluePlayer: this.playersService.getPlayer(fight.bluePlayer.id),
+    };
 
     return client.emit(JudgesSocketEvents.Join, response);
   }

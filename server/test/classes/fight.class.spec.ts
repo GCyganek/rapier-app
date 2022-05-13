@@ -148,6 +148,54 @@ describe('FightImpl', () => {
     });
   });
 
+  describe('isJudge', () => {
+    it('should return true on proper judgeId', () => {
+      expect(fight.isJudge(fight.mainJudge.id)).toBeTruthy();
+      expect(fight.isJudge(fight.redJudge.id)).toBeTruthy();
+      expect(fight.isJudge(fight.blueJudge.id)).toBeTruthy();
+    });
+
+    it('should return false on random judgeId', () => {
+      expect(fight.isJudge('random123')).toBeFalsy();
+    });
+  });
+
+  describe('isMainJudge', () => {
+    it('should return true on main judge judgeId', () => {
+      expect(fight.isMainJudge(fight.mainJudge.id)).toBeTruthy();
+    });
+
+    it('should return false on other judgeIds', () => {
+      expect(fight.isMainJudge(fight.redJudge.id)).toBeFalsy();
+      expect(fight.isMainJudge(fight.blueJudge.id)).toBeFalsy();
+      expect(fight.isMainJudge('random123')).toBeFalsy();
+    });
+  });
+
+  describe('isRedJudge', () => {
+    it('should return true on main red judgeId', () => {
+      expect(fight.isRedJudge(fight.redJudge.id)).toBeTruthy();
+    });
+
+    it('should return false on other judgeIds', () => {
+      expect(fight.isRedJudge(fight.mainJudge.id)).toBeFalsy();
+      expect(fight.isRedJudge(fight.blueJudge.id)).toBeFalsy();
+      expect(fight.isRedJudge('random123')).toBeFalsy();
+    });
+  });
+
+  describe('isBlueJudge', () => {
+    it('should return true on blue judge judgeId', () => {
+      expect(fight.isBlueJudge(fight.blueJudge.id)).toBeTruthy();
+    });
+
+    it('should return false on other judgeIds', () => {
+      expect(fight.isBlueJudge(fight.redJudge.id)).toBeFalsy();
+      expect(fight.isBlueJudge(fight.mainJudge.id)).toBeFalsy();
+      expect(fight.isBlueJudge('random123')).toBeFalsy();
+    });
+  });
+
   describe('startFight', () => {
     it('should start fight and timer when fight with end time condition', () => {
       expect(fight.startFight()).toBeTruthy();

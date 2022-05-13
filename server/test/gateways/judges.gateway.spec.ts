@@ -14,6 +14,7 @@ import { FightImpl } from '../../src/classes/fight.class';
 import { Player } from '../../src/interfaces/player.interface';
 import { PlayersService } from '../../src/services/players.service';
 import { JudgesSocketEvents } from '../../src/interfaces/judges-socket-events.enum';
+import { JudgeRole } from '../../src/interfaces/join-response.interface';
 
 async function createNestApp(...providers): Promise<INestApplication> {
   const testingModule = await Test.createTestingModule({
@@ -98,6 +99,7 @@ describe('JudgesGateway', () => {
       await new Promise<void>((resolve) =>
         ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.role).toBe(JudgeRole.MainJudge);
           expect(data.redPlayer).toStrictEqual(
             playersService.getPlayer(fight.redPlayer.id),
           );
@@ -119,6 +121,7 @@ describe('JudgesGateway', () => {
       await new Promise<void>((resolve) =>
         ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
+          expect(data.role).toBe(JudgeRole.RedJudge);
           expect(data.redPlayer).toStrictEqual(
             playersService.getPlayer(fight.redPlayer.id),
           );

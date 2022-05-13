@@ -92,6 +92,14 @@ export class FightImpl
     return this.mainJudge.id == judgeId;
   }
 
+  isRedJudge(judgeId: string): boolean {
+    return this.redJudge.id == judgeId;
+  }
+
+  isBlueJudge(judgeId: string): boolean {
+    return this.blueJudge.id == judgeId;
+  }
+
   inProgress(): boolean {
     return [FightState.Running, FightState.Paused].includes(this.state);
   }
