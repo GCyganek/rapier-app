@@ -12,6 +12,7 @@
 
     function finishFight(){
         console.log("finish fight!");
+        closeModal();
     }
 
 </script>
