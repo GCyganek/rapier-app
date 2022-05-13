@@ -47,18 +47,18 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: JoinResponse = {
-      status: this.fightsService.addJudge(fightId, judgeId, client),
-      redPlayer: null,
-      bluePlayer: null,
-    };
-    if (response.status != ResponseStatus.OK) {
-      return client.emit(JudgesSocketEvents.Join, { status: response.status });
+    const status = this.fightsService.addJudge(fightId, judgeId, client);
+    if (status != ResponseStatus.OK) {
+      return client.emit(JudgesSocketEvents.Join, { status: status });
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
-    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id);
-    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id);
+    const response: JoinResponse = {
+      status: status,
+      role: fight.getJudgeRole(judgeId),
+      redPlayer: this.playersService.getPlayer(fight.redPlayer.id),
+      bluePlayer: this.playersService.getPlayer(fight.bluePlayer.id),
+    };
 
     return client.emit(JudgesSocketEvents.Join, response);
   }

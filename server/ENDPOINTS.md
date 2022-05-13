@@ -116,7 +116,7 @@ Existing fights are not updated.
 ## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
-Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players.
+Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players and role of the judge.
 Players have no points, there are no events in the events' history, timer is set to zero minutes.
 
 ### Parameters
@@ -126,10 +126,11 @@ Players have no points, there are no events in the events' history, timer is set
 | judgeId | string |
 
 ### Response (send to the judge that called this endpoint)
-| name       | type   |
-|------------|--------|
-| redPlayer  | Player |
-| bluePlayer | Player |
+| name       | type      |
+|------------|-----------|
+| role       | JudgeRole |
+| redPlayer  | Player    |
+| bluePlayer | Player    |
 
 where `Player` is an interface:
 
@@ -138,6 +139,14 @@ where `Player` is an interface:
 | id        | string |
 | firstName | string |
 | lastName  | string |
+
+and `JudgeRole` is an enum:
+
+| name      | value  |
+|-----------|--------|
+| MainJudge | "MAIN" |
+| RedJudge  | "RED"  |
+| BlueJudge | "BLUE" |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist
