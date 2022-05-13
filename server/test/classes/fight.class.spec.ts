@@ -5,6 +5,7 @@ import {
   FightState,
 } from '../../src/interfaces/fight.interface';
 import { FightEndConditionFulfilledObserver } from '../../src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
+import { JudgeRole } from '../../src/interfaces/join-response.interface';
 
 describe('FightImpl', () => {
   let manager: Manager;
@@ -172,27 +173,15 @@ describe('FightImpl', () => {
     });
   });
 
-  describe('isRedJudge', () => {
-    it('should return true on main red judgeId', () => {
-      expect(fight.isRedJudge(fight.redJudge.id)).toBeTruthy();
+  describe('getJudgeRole', () => {
+    it('should return role on proper judgeId', () => {
+      expect(fight.getJudgeRole(fight.mainJudge.id)).toBe(JudgeRole.MainJudge);
+      expect(fight.getJudgeRole(fight.redJudge.id)).toBe(JudgeRole.RedJudge);
+      expect(fight.getJudgeRole(fight.blueJudge.id)).toBe(JudgeRole.BlueJudge);
     });
 
-    it('should return false on other judgeIds', () => {
-      expect(fight.isRedJudge(fight.mainJudge.id)).toBeFalsy();
-      expect(fight.isRedJudge(fight.blueJudge.id)).toBeFalsy();
-      expect(fight.isRedJudge('random123')).toBeFalsy();
-    });
-  });
-
-  describe('isBlueJudge', () => {
-    it('should return true on blue judge judgeId', () => {
-      expect(fight.isBlueJudge(fight.blueJudge.id)).toBeTruthy();
-    });
-
-    it('should return false on other judgeIds', () => {
-      expect(fight.isBlueJudge(fight.redJudge.id)).toBeFalsy();
-      expect(fight.isBlueJudge(fight.mainJudge.id)).toBeFalsy();
-      expect(fight.isBlueJudge('random123')).toBeFalsy();
+    it('should return undefined on random judgeIds', () => {
+      expect(fight.getJudgeRole('random123')).toBeUndefined();
     });
   });
 
