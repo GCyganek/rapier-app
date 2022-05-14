@@ -2,9 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
   FightEndConditionName,
   FightState,
-  JudgeState,
   PlayerState,
-} from 'src/interfaces/fight.interface';
+} from '../../src/interfaces/fight.interface';
 
 export type FightDocument = MongoFight & Document;
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Player } from '../interfaces/player.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoPlayer, PlayerDocument } from 'src/schemas/player.schema';
+import { MongoPlayer, PlayerDocument } from '../../src/schemas/player.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class PlayersService {
   ) {}
 
   private async savePlayerToDb(player: Player): Promise<MongoPlayer> {
-    const createdPlayer = new this.playerModel(player);
-    return createdPlayer.save();
+    const createdPlayer = await this.playerModel.create(player);
+    return createdPlayer;
   }
 
   async newPlayer(player: Player): Promise<ResponseStatus> {
@@ -22,7 +22,6 @@ export class PlayersService {
     try {
       await this.savePlayerToDb(player);
     } catch (error) {
-      console.error(error);
       return ResponseStatus.InternalServerError;
     }
 
@@ -30,7 +29,7 @@ export class PlayersService {
   }
 
   async getPlayer(id: string): Promise<MongoPlayer> {
-    return this.playerModel.findOne({ id: id });
+    return this.playerModel.findOne({ id: id }).exec();
   }
 
   async isPlayer(id: string): Promise<boolean> {

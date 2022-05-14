@@ -4,9 +4,9 @@ import { FightsService } from './services/fights.service';
 import { JudgesGateway } from './gateways/judges.gateway';
 import { PlayersService } from './services/players.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import 'dotenv/config';
 import { MongoPlayer, PlayerSchema } from './schemas/player.schema';
 import { FightSchema, MongoFight } from './schemas/fight.schema';
+import 'dotenv/config';
 
 @Module({
   imports: [

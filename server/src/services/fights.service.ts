@@ -11,7 +11,7 @@ import { FightImpl } from '../classes/fight.class';
 import { FightDataInterface } from '../interfaces/fight-data.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FightDocument, MongoFight } from 'src/schemas/fight.schema';
+import { FightDocument, MongoFight } from '../../src/schemas/fight.schema';
 
 @Injectable()
 export class FightsService {
@@ -23,29 +23,10 @@ export class FightsService {
 
   constructor(
     @InjectModel(MongoFight.name) private fightModel: Model<FightDocument>,
-  ) {
-    const fight = new FightImpl(
-      'mockup',
-      'main',
-      'red',
-      'blue',
-      'player1',
-      'player2',
-      new Map<FightEndConditionName, number>([
-        [FightEndConditionName.EnoughPoints, 5],
-        [FightEndConditionName.TimeEnded, 1],
-      ]),
-    );
-    this.newFight(fight);
-    // this.test();
-  }
-
-  async test() {
-    console.log(await this.getFightFromDb('mockup'));
-  }
+  ) {}
 
   async getFightFromDb(id: string): Promise<MongoFight> {
-    return this.fightModel.findOne({ id: id });
+    return this.fightModel.findOne({ id: id }).exec();
   }
 
   setFightEndConditionFulfilledObserver(
@@ -55,11 +36,15 @@ export class FightsService {
   }
 
   async addNewFightToDb(fight: FightImpl): Promise<MongoFight> {
-    const createdFight = new this.fightModel(fight);
-    return createdFight.save();
+    const createdFight = this.fightModel.create(fight);
+    return createdFight;
   }
 
   async newFight(fight: FightImpl): Promise<boolean> {
+    if ((await this.getFightFromDb(fight.id)) !== null) {
+      return false;
+    }
+
     try {
       await this.addNewFightToDb(fight);
     } catch (error) {
@@ -73,10 +58,6 @@ export class FightsService {
     fightData.endConditions.forEach((condition) =>
       endConditions.set(condition.name, condition.value),
     );
-
-    if (this.getFight(fightData.id) !== undefined) {
-      return false;
-    }
 
     const fight = new FightImpl(
       fightData.id,
@@ -189,15 +170,17 @@ export class FightsService {
   }
 
   async updateFight(fight: FightImpl) {
-    return this.fightModel.updateOne(
-      { id: fight.id },
-      {
-        state: fight.state,
-        redPlayer: fight.redPlayer,
-        bluePlayer: fight.bluePlayer,
-        eventsHistory: fight.eventsHistory as any, // 'as any' just for now
-      },
-    );
+    return this.fightModel
+      .updateOne(
+        { id: fight.id },
+        {
+          state: fight.state,
+          redPlayer: fight.redPlayer,
+          bluePlayer: fight.bluePlayer,
+          eventsHistory: fight.eventsHistory as any, // 'as any' just for now
+        },
+      )
+      .exec();
   }
 
   async finishFight(fightId: string): Promise<ResponseStatus> {
@@ -214,7 +197,6 @@ export class FightsService {
     try {
       await this.updateFight(fight);
     } catch (error) {
-      console.error(error);
       return ResponseStatus.InternalServerError;
     } finally {
       this.fights.delete(fightId);
@@ -291,5 +273,15 @@ export class FightsService {
     }
 
     return ResponseStatus.OK;
+  }
+
+  clearFights() {
+    this.fights.clear();
+  }
+
+  setFigth(fight: FightImpl) {
+    if (this.fights.get(fight.id) === undefined) {
+      this.fights.set(fight.id, fight);
+    }
   }
 }
