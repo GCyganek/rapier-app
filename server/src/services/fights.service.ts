@@ -26,7 +26,7 @@ export class FightsService {
   ) {}
 
   async getFightFromDb(id: string): Promise<MongoFight> {
-    return this.fightModel.findOne({ id: id }).exec();
+    return this.fightModel.findOne({ id: id }, { _id: false }).exec();
   }
 
   setFightEndConditionFulfilledObserver(

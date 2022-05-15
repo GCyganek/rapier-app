@@ -29,7 +29,7 @@ export class PlayersService {
   }
 
   async getPlayer(id: string): Promise<MongoPlayer> {
-    return this.playerModel.findOne({ id: id }).exec();
+    return this.playerModel.findOne({ id: id }, { _id: false }).exec();
   }
 
   async isPlayer(id: string): Promise<boolean> {
