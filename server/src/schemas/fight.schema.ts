@@ -3,7 +3,7 @@ import {
   FightEndConditionName,
   FightState,
   PlayerState,
-} from '../../src/interfaces/fight.interface';
+} from '../interfaces/fight.interface';
 
 export type FightDocument = MongoFight & Document;
 

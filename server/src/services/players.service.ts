@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Player } from '../interfaces/player.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoPlayer, PlayerDocument } from '../../src/schemas/player.schema';
+import { MongoPlayer, PlayerDocument } from '../schemas/player.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
