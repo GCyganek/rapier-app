@@ -1,15 +1,6 @@
-<script lang="ts" context="module">
-    export type FighterType = "red" | "blue";
-
-    export class Fighter {
-        id: string;
-        firstName: string;
-        lastName: string;
-        points: number = 0;
-    };
-</script>
-
 <script lang="ts">
+    import type { Fighter, FighterType } from "model/Fighter";
+
     export let type: FighterType;
     export let fighter: Fighter;
 </script>

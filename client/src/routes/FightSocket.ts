@@ -1,6 +1,8 @@
 import type { DefaultEventsMap } from "@socket.io/component-emitter";
+import type { Response } from "model/Communication";
 import { io, Socket } from "socket.io-client";
-import type { Fighter } from "./fight/bar/FighterInfo.svelte";
+
+export const key: Symbol = Symbol();
 
 export enum Events {
     Join            = 'join',
@@ -13,45 +15,50 @@ export enum Events {
     FightEndConditionFulfilled = 'fightEndConditionFulfilled'
 };
 
-export class JoinResponse {
-    status: string;
-    redPlayer: Fighter;
-    bluePlayer: Fighter;
+namespace FightSocket {
+    export type Listener = (...args: any[]) => void;
 };
 
 export class FightSocket  {
     private socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-    public connection: Promise<JoinResponse>;
 
     constructor(private fightId: string, private judgeId: string) {
         this.socket = io(location.host);
 
-        this.socket.on('connect', () => {
-            this.socket.emit(Events.Join, this.emitArg());
-        });
-        
+        this.socket.on('connect', console.log.bind('Connection established.'));
         this.socket.on('disconnect', console.warn);
         this.socket.on('connect_error', console.error);
+    }
 
-        this.connection = new Promise((resolve, reject) => {
-            this.socket.once(Events.Join, (response) => {
-                response.status !== 'OK' 
+    private promiseFor<T extends Response.Base>(event: Events): Promise<T> {
+        return new Promise((resolve, reject) => {
+            this.socket.once(event, (response: T) => {
+                response.status !== 'OK'
                     ? reject(response.status)
                     : resolve(response);
             });
         });
     }
 
+    join() {
+        this.socket.emit(Events.Join, this.getIds());
+        return this.promiseFor<Response.Join>(Events.Join);
+    }
+
     pauseTimer() {
-        this.socket.emit(Events.PauseTimer, this.emitArg());
+        this.socket.emit(Events.PauseTimer, this.getIds());
     }
 
     resumeTimer() {
-        this.socket.emit(Events.ResumeTimer, this.emitArg());
+        this.socket.emit(Events.ResumeTimer, this.getIds());
     }
 
-    private emitArg() {
+    /// Considering if it is useful
+    on(event: Events, listener: FightSocket.Listener) {
+        this.socket.on(event, listener);
+    }
+
+    private getIds() {
         return { fightId: this.fightId, judgeId: this.judgeId };
     }
-
 }

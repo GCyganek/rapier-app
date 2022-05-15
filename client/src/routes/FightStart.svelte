@@ -1,19 +1,30 @@
 <script lang="ts">
     import Button, { Label } from '@smui/button';
     import Fight from "./Fight.svelte"
+    import { FightSocket, key } from './FightSocket';
+    import { mockedFight } from 'model/MockedFight';
+    import { setContext } from 'svelte';
+
+    let socket = new FightSocket(mockedFight.id, mockedFight.mainJudgeId);
+    setContext(key, socket);
 
     let started = false;
 
     function handleClick() {
         started = true;
     }
+
 </script>
 
 {#if !started}
     <div class="startDiv">
-        <Button class="startButton" on:click={handleClick}>
+        <button on:click={() => started = true} class="startButton">
+            Rozpocznij pojedynek
+        </button>
+
+        <!-- <Button class="startButton" on:click={handleClick}>
             <Label class="label">Rozpocznij pojedynek</Label>
-        </Button>
+        </Button> -->
     </div>
 {:else}
     <Fight/>
@@ -29,17 +40,19 @@
         background-repeat: repeat;
     }
 
-    * :global(.startButton) {
+    /* * :global(.startButton) */
+    .startButton {
         background-color: #FF5F69;
         color: white;
-        font-size: 1.3em;
+        font-size: 2rem;
         font-weight: bold;
         border-radius: 2em;
         width: 12em;
         height: 3em;
     }
     
-    * :global(.startButton):active {
+    /* * :global(.startButton):active */
+    .startButton:active {
         background-color: darkred;
         color: grey;
     }

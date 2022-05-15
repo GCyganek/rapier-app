@@ -1,24 +1,15 @@
 <script lang="ts">
     import type { TimerAction } from "./fight/bar/FightTime.svelte";
-    import { FightSocket } from "./FightSocket";
+    import { FightSocket, key } from "./FightSocket";
 
     import FighterBar from "./fight/FighterBar.svelte";
     import FightSequence, { fightSequence, clear, pop } from "./fight/FightSequence.svelte";
     import FightStack from "./fight/FightStack.svelte";
     import FightSideProposition from "./fight/FightSideProposition.svelte";
+    import { getContext } from "svelte";
     
-    // mocked fight - to replace with newly created fight
-    const fight = {
-        id: 'mockup',
-        mainJudgeId: 'main',
-        redJudgeId: 'red',
-        blueJudgeId: 'blue',
-        redPlayerId: 'player1',
-        bluePlayerId: 'player2'
-    };
-    
-    let socket = new FightSocket(fight.id, fight.mainJudgeId);
-    
+    const socket = getContext(key) as FightSocket;
+
     function timerEventHandler(event: CustomEvent<TimerAction>) {
         switch (event.detail) {
             case 'pause':
@@ -32,7 +23,7 @@
 </script>
 
 <div class="container">
-    {#await socket.connection}
+    {#await socket.join()}
         <!-- Bez styli! -->
         <p> Oczekuję na połączenie... </p>
     
