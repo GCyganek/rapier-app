@@ -5,10 +5,10 @@ import { FightsService } from '../../src/services/fights.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { MongoFight } from '../../src/schemas/fight.schema';
 import { MongoPlayer } from '../../src/schemas/player.schema';
-import { mockMongoFight } from '../services/fights.service.spec';
+import { mockMongoFight } from '../constants/mock-mongo-fight';
 import { FightImpl } from '../../src/classes/fight.class';
-import { mockPlayer } from '../services/players.service.spec';
 import { Model } from 'mongoose';
+import { mockMongoPlayer } from '../constants/mock-mongo-player';
 
 describe('AdminController', () => {
   let app: TestingModule;
@@ -35,8 +35,6 @@ describe('AdminController', () => {
         {
           provide: getModelToken(MongoFight.name),
           useValue: {
-            new: jest.fn().mockResolvedValue(mockFight),
-            constructor: jest.fn().mockResolvedValue(mockFight),
             findOne: jest.fn(),
             updateOne: jest.fn(),
             create: jest.fn(),
@@ -46,8 +44,6 @@ describe('AdminController', () => {
         {
           provide: getModelToken(MongoPlayer.name),
           useValue: {
-            new: jest.fn().mockResolvedValue(mockPlayer),
-            constructor: jest.fn().mockResolvedValue(mockPlayer),
             findOne: jest.fn(),
             create: jest.fn(),
             exec: jest.fn(),
@@ -77,7 +73,7 @@ describe('AdminController', () => {
 
     it('should not overwrite existing players', async () => {
       jest.spyOn(playerModel, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockPlayer), // simulates returning player with "player_1" id instead of null
+        exec: jest.fn().mockResolvedValue(mockMongoPlayer), // simulates returning player with "player_1" id instead of null
       } as any);
 
       const adminController = app.get<AdminController>(AdminController);

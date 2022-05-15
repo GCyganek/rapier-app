@@ -14,21 +14,7 @@ import { FightDataInterface } from '../../src/interfaces/fight-data.interface';
 import { MongoFight } from '../../src/schemas/fight.schema';
 import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
-
-export const mockMongoFight = {
-  id: 'mock',
-  state: FightState.Scheduled,
-  mainJudgeId: 'main',
-  redJudgeId: 'red',
-  blueJudgeId: 'blue',
-  redPlayer: 'redPlayer',
-  bluePlayer: 'bluePlayer',
-  endConditions: new Map<FightEndConditionName, number>([
-    [FightEndConditionName.EnoughPoints, 5],
-    [FightEndConditionName.TimeEnded, 1],
-  ]),
-  eventsHistory: [],
-};
+import { mockMongoFight } from '../constants/mock-mongo-fight';
 
 const mockMongoFighData: FightDataInterface = {
   id: 'mock',
@@ -376,7 +362,7 @@ describe('FightsService', () => {
         ResponseStatus.BadRequest,
       );
 
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
 
     it('should finish running fight', async () => {
@@ -391,7 +377,7 @@ describe('FightsService', () => {
         ResponseStatus.OK,
       );
 
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
 
     it('should finish paused fight', async () => {
@@ -406,7 +392,7 @@ describe('FightsService', () => {
         ResponseStatus.OK,
       );
 
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
 
     it('should end the timer if it was running', async () => {
@@ -424,7 +410,7 @@ describe('FightsService', () => {
       await fightsService.finishFight(mockFight.id);
       expect(fight.timer.timeoutSet()).toBeFalsy();
 
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
 
     it('should leave the timer as ended when it has already ended running earlier', async () => {
@@ -441,7 +427,7 @@ describe('FightsService', () => {
       await fightsService.finishFight(mockFight.id);
       expect(fight.timer.hasTimeEnded()).toBeTruthy();
 
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
   });
 
@@ -504,7 +490,7 @@ describe('FightsService', () => {
     afterAll(() => {
       fight.timer = new Timer(1, mockFight);
       fight.state = FightState.Scheduled;
-      fightsService.setFigth(fight);
+      fightsService.setFight(fight);
     });
 
     it('should pause timer again when it is running', () => {

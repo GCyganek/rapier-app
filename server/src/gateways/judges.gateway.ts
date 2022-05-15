@@ -64,7 +64,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.StartFight)
-  async startFight(
+  startFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
@@ -82,7 +82,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const response: Response = {
-      status: await this.fightsService.startFight(fightId),
+      status: this.fightsService.startFight(fightId),
     };
     const fight = this.fightsService.getFight(fightId);
 

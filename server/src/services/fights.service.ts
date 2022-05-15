@@ -96,6 +96,14 @@ export class FightsService {
     return fight.isMainJudge(judgeId);
   }
 
+  setEndConditionFulfilledObserverToFight(fight: FightImpl) {
+    if (this.fightEndConditionFulfilledObserver) {
+      fight.addFightEndConditionFulfilledObserver(
+        this.fightEndConditionFulfilledObserver,
+      );
+    }
+  }
+
   convertFightDataToFight(fightData: MongoFight) {
     const fight = new FightImpl(
       fightData.id,
@@ -109,11 +117,7 @@ export class FightsService {
 
     this.fights.set(fight.id, fight);
 
-    if (this.fightEndConditionFulfilledObserver) {
-      fight.addFightEndConditionFulfilledObserver(
-        this.fightEndConditionFulfilledObserver,
-      );
-    }
+    this.setEndConditionFulfilledObserverToFight(fight);
 
     return fight;
   }
@@ -279,7 +283,7 @@ export class FightsService {
     this.fights.clear();
   }
 
-  setFigth(fight: FightImpl) {
+  setFight(fight: FightImpl) {
     if (this.fights.get(fight.id) === undefined) {
       this.fights.set(fight.id, fight);
     }
