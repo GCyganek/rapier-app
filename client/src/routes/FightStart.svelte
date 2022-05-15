@@ -4,6 +4,7 @@
     import { FightSocket, key } from './FightSocket';
     import { mockedFight } from 'model/MockedFight';
     import { setContext } from 'svelte';
+    // import CreateFight from './CreateFight.svelte';
 
     let socket = new FightSocket(mockedFight.id, mockedFight.mainJudgeId);
     setContext(key, socket);
@@ -17,6 +18,9 @@
 </script>
 
 {#if !started}
+    <!--  TODO: Fight creation -->
+    <!-- <CreateFight /> -->
+
     <div class="startDiv">
         <button on:click={() => started = true} class="startButton">
             Rozpocznij pojedynek
