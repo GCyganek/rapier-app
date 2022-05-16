@@ -10,17 +10,14 @@ import { Manager } from 'socket.io-client';
 import { Timer } from '../../src/classes/timer.class';
 import { FightImpl } from '../../src/classes/fight.class';
 import { FightEndConditionFulfilledObserver } from 'src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
-import { FightDataInterface } from '../../src/interfaces/fight-data.interface';
+import { FightData } from '../../src/interfaces/fight-data.interface';
 import { MongoFight } from '../../src/schemas/fight.schema';
 import { Model } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { mockMongoFight } from '../constants/mock-mongo-fight';
+import { customAlphabet } from 'nanoid';
 
-const mockMongoFighData: FightDataInterface = {
-  id: 'mock',
-  mainJudgeId: 'main',
-  redJudgeId: 'red',
-  blueJudgeId: 'blue',
+const mockMongoFightData: FightData = {
   redPlayerId: 'redPlayer',
   bluePlayerId: 'bluePlayer',
   endConditions: [
@@ -126,6 +123,33 @@ describe('FightsService', () => {
     });
   });
 
+  describe('generateFightId', () => {
+    it('should generate unique id fight', async () => {
+      jest.spyOn(model, 'findOne').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(null),
+      } as any);
+
+      const nanoid = customAlphabet('0123456789', 7);
+      const id = await fightsService.generateFightId(nanoid);
+
+      expect(id.length).toEqual(7);
+    });
+  });
+
+  describe('generateJudgeIds', () => {
+    it('should generate unique ids for all judges', () => {
+      const nanoid = customAlphabet('0123456789', 7);
+      const ids = fightsService.generateJudgeIds(nanoid);
+
+      expect(ids[0]).not.toStrictEqual(ids[1]);
+      expect(ids[0]).not.toStrictEqual(ids[2]);
+      expect(ids[1]).not.toStrictEqual(ids[2]);
+      expect(ids[0].length).toEqual(7);
+      expect(ids[1].length).toEqual(7);
+      expect(ids[2].length).toEqual(7);
+    });
+  });
+
   describe('newFightFromData', () => {
     it('should create new fight from FightDataInterface', async () => {
       jest.spyOn(model, 'create').mockImplementationOnce(() => {
@@ -137,8 +161,8 @@ describe('FightsService', () => {
       } as any);
 
       expect(
-        await fightsService.newFightFromData(mockMongoFighData),
-      ).toBeTruthy();
+        await fightsService.newFightFromData(mockMongoFightData),
+      ).not.toBeUndefined();
 
       jest.spyOn(model, 'findOne').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(mockMongoFight),
@@ -148,31 +172,14 @@ describe('FightsService', () => {
         await fightsService.getFightFromDb(mockMongoFight.id),
       ).not.toBeUndefined();
     });
-
-    it('should not overwrite existing fight', async () => {
-      const data: FightDataInterface = {
-        id: 'mock',
-        mainJudgeId: 'different_id',
-        redJudgeId: 'red',
-        blueJudgeId: 'blue',
-        redPlayerId: 'redPlayer',
-        bluePlayerId: 'bluePlayer',
-        endConditions: [],
-      };
-
-      jest.spyOn(model, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockMongoFight),
-      } as any);
-
-      expect(await fightsService.newFightFromData(data)).toBeFalsy();
-      expect((await fightsService.getFightFromDb(data.id)).mainJudgeId).toEqual(
-        'main',
-      );
-    });
   });
 
   describe('getFightFromDb', () => {
     it('should find newly created fight', async () => {
+      jest.spyOn(model, 'create').mockImplementationOnce(() => {
+        Promise.resolve(mockFight);
+      });
+
       expect(
         await fightsService.getFightFromDb(mockFight.id),
       ).not.toBeUndefined();

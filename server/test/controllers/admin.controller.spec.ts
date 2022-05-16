@@ -85,7 +85,7 @@ describe('AdminController', () => {
   });
 
   describe('loadFights', () => {
-    it('should return ids of all added fights', async () => {
+    it('should return FightResponse for all added fights', async () => {
       jest.spyOn(fightModel, 'create').mockImplementation(() => {
         Promise.resolve(mockFight); // simulates returning just added fight
       });
@@ -94,30 +94,33 @@ describe('AdminController', () => {
         exec: jest.fn().mockResolvedValue(null), // would return null from database for non-existing fight ids
       } as any);
 
-      const adminController = app.get<AdminController>(AdminController);
-      const response = await adminController.loadFights(
-        '[{"id": "fight1","mainJudgeId": "main","redJudgeId": "red",' +
-          '"blueJudgeId": "blue","redPlayerId": "player1","bluePlayerId": "player2",' +
-          '"endConditions": [{"name": "TIME_ENDED","value": "5"},{"name": "ENOUGH_POINTS",' +
-          '"value": "15"}]},{"id": "fight2","mainJudgeId": "main_judge","redJudgeId": ' +
-          '"red_judge","blueJudgeId": "blue_judge","redPlayerId": "player3",' +
-          '"bluePlayerId": "player2","endConditions": [{"name": "ENOUGH_POINTS","value": "10"}]}]',
-      );
-      expect(response).toStrictEqual(['fight1', 'fight2']);
-    });
-
-    it('should not overwrite existing fights', async () => {
-      jest.spyOn(fightModel, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockFight), // simulates returning fight with "fight1" id instead of null from db
+      jest.spyOn(playerModel, 'findOne').mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockMongoPlayer), // simulates returning player with "player_1" id instead of null
       } as any);
 
       const adminController = app.get<AdminController>(AdminController);
       const response = await adminController.loadFights(
-        '[{"id": "fight1","mainJudgeId": "different_id","redJudgeId": "red",' +
-          '"blueJudgeId": "blue","redPlayerId": "player1","bluePlayerId": "player2",' +
-          '"endConditions": []}]',
+        '[{"redPlayerId": "player1","bluePlayerId": "player1","endConditions": ' +
+          '[{"name": "TIME_ENDED","value": "5"},{"name": "ENOUGH_POINTS","value": "15"}]},' +
+          '{"redPlayerId": "player1","bluePlayerId": "player1","endConditions": ' +
+          '[{"name": "ENOUGH_POINTS","value": "10"}]}]',
       );
-      expect(response).toStrictEqual([]);
+      expect(response.length).toEqual(2);
+      expect(response[0]).not.toBeUndefined();
+      expect(response[1]).not.toBeUndefined();
     });
+  });
+
+  it('should not create fight with random player', async () => {
+    jest.spyOn(playerModel, 'findOne').mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    } as any);
+
+    const adminController = app.get<AdminController>(AdminController);
+    const response = await adminController.loadFights(
+      '[{"redPlayerId":"random_player","bluePlayerId":"player2","endConditions":[]}]',
+    );
+    expect(response.length).toEqual(1);
+    expect(response[0]).toBeUndefined();
   });
 });
