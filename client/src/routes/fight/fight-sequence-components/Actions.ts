@@ -26,4 +26,3 @@ export namespace Actions {
         return actionMap[action];
     }
 }
-

@@ -8,6 +8,10 @@ import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightImpl } from '../classes/fight.class';
+import { FightDataInterface } from '../interfaces/fight-data.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { FightDocument, MongoFight } from '../schemas/fight.schema';
 
 @Injectable()
 export class FightsService {
@@ -17,20 +21,12 @@ export class FightsService {
   >();
   private fightEndConditionFulfilledObserver: FightEndConditionFulfilledObserver;
 
-  constructor() {
-    const fight = new FightImpl(
-      'mockup',
-      'main',
-      'red',
-      'blue',
-      'player1',
-      'player2',
-      new Map<FightEndConditionName, number>([
-        [FightEndConditionName.EnoughPoints, 5],
-        [FightEndConditionName.TimeEnded, 1],
-      ]),
-    );
-    this.newFight(fight);
+  constructor(
+    @InjectModel(MongoFight.name) private fightModel: Model<FightDocument>,
+  ) {}
+
+  async getFightFromDb(id: string): Promise<MongoFight> {
+    return this.fightModel.findOne({ id: id }, { _id: false }).exec();
   }
 
   setFightEndConditionFulfilledObserver(
@@ -39,13 +35,41 @@ export class FightsService {
     this.fightEndConditionFulfilledObserver = observer;
   }
 
-  newFight(fight: FightImpl) {
-    this.fights.set(fight.id, fight);
-    if (this.fightEndConditionFulfilledObserver) {
-      fight.addFightEndConditionFulfilledObserver(
-        this.fightEndConditionFulfilledObserver,
-      );
+  async addNewFightToDb(fight: FightImpl): Promise<MongoFight> {
+    const createdFight = this.fightModel.create(fight);
+    return createdFight;
+  }
+
+  async newFight(fight: FightImpl): Promise<boolean> {
+    if ((await this.getFightFromDb(fight.id)) !== null) {
+      return false;
     }
+
+    try {
+      await this.addNewFightToDb(fight);
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
+
+  async newFightFromData(fightData: FightDataInterface): Promise<boolean> {
+    const endConditions = new Map<FightEndConditionName, number>();
+    fightData.endConditions.forEach((condition) =>
+      endConditions.set(condition.name, condition.value),
+    );
+
+    const fight = new FightImpl(
+      fightData.id,
+      fightData.mainJudgeId,
+      fightData.redJudgeId,
+      fightData.blueJudgeId,
+      fightData.redPlayerId,
+      fightData.bluePlayerId,
+      endConditions,
+    );
+
+    return await this.newFight(fight);
   }
 
   getFight(id: string): FightImpl {
@@ -72,10 +96,50 @@ export class FightsService {
     return fight.isMainJudge(judgeId);
   }
 
-  addJudge(fightId: string, judgeId: string, socket: Socket): ResponseStatus {
-    const fight = this.fights.get(fightId);
+  setEndConditionFulfilledObserverToFight(fight: FightImpl) {
+    if (this.fightEndConditionFulfilledObserver) {
+      fight.addFightEndConditionFulfilledObserver(
+        this.fightEndConditionFulfilledObserver,
+      );
+    }
+  }
 
-    if (fight == undefined) {
+  convertFightDataToFight(fightData: MongoFight) {
+    const fight = new FightImpl(
+      fightData.id,
+      fightData.mainJudgeId,
+      fightData.redJudgeId,
+      fightData.blueJudgeId,
+      fightData.redPlayer.id,
+      fightData.bluePlayer.id,
+      fightData.endConditions,
+    );
+
+    this.fights.set(fight.id, fight);
+
+    this.setEndConditionFulfilledObserverToFight(fight);
+
+    return fight;
+  }
+
+  async addJudge(
+    fightId: string,
+    judgeId: string,
+    socket: Socket,
+  ): Promise<ResponseStatus> {
+    let fight = this.fights.get(fightId);
+
+    if (fight === null || fight === undefined) {
+      const fightData = await this.getFightFromDb(fightId);
+
+      if (fightData === null) {
+        return ResponseStatus.NotFound;
+      }
+
+      fight = this.convertFightDataToFight(fightData);
+    }
+
+    if (fight === null || fight === undefined) {
       return ResponseStatus.NotFound;
     } else if (fight.judgeSocketAlreadyAssigned(judgeId, socket)) {
       return ResponseStatus.BadRequest;
@@ -109,7 +173,21 @@ export class FightsService {
     return ResponseStatus.BadRequest;
   }
 
-  finishFight(fightId: string): ResponseStatus {
+  async updateFight(fight: FightImpl) {
+    return this.fightModel
+      .updateOne(
+        { id: fight.id },
+        {
+          state: fight.state,
+          redPlayer: fight.redPlayer,
+          bluePlayer: fight.bluePlayer,
+          eventsHistory: fight.eventsHistory as any, // 'as any' just for now
+        },
+      )
+      .exec();
+  }
+
+  async finishFight(fightId: string): Promise<ResponseStatus> {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -119,6 +197,15 @@ export class FightsService {
     }
 
     fight.finishFight();
+
+    try {
+      await this.updateFight(fight);
+    } catch (error) {
+      return ResponseStatus.InternalServerError;
+    } finally {
+      this.fights.delete(fightId);
+    }
+
     return ResponseStatus.OK;
   }
 
@@ -190,5 +277,15 @@ export class FightsService {
     }
 
     return ResponseStatus.OK;
+  }
+
+  clearFights() {
+    this.fights.clear();
+  }
+
+  setFight(fight: FightImpl) {
+    if (this.fights.get(fight.id) === undefined) {
+      this.fights.set(fight.id, fight);
+    }
   }
 }

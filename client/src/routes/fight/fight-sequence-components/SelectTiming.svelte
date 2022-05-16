@@ -53,12 +53,12 @@
     <button class="late" on:click="{lateAnswer}">
         <Icon icon="bi:clock-history" color="white" width="2.5em" height="2.5em" />
         <br>
-        Spóźniona
+        Spóźniony
     </button>
     <button class="fail"  on:click="{failAnswer}" >
         <Icon icon="clarity:no-access-line" color="white" width="2.5em" height="2.5em" />
         <br>
-        Nieskuteczna
+        Nieudany
     </button>
 </div>
 

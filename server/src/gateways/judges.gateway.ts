@@ -42,23 +42,23 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.Join)
-  join(
+  async join(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const response: JoinResponse = {
-      status: this.fightsService.addJudge(fightId, judgeId, client),
-      redPlayer: null,
-      bluePlayer: null,
-    };
-    if (response.status != ResponseStatus.OK) {
-      return client.emit(JudgesSocketEvents.Join, { status: response.status });
+    const status = await this.fightsService.addJudge(fightId, judgeId, client);
+    if (status != ResponseStatus.OK) {
+      return client.emit(JudgesSocketEvents.Join, { status: status });
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
-    response.redPlayer = this.playersService.getPlayer(fight.redPlayer.id);
-    response.bluePlayer = this.playersService.getPlayer(fight.bluePlayer.id);
+    const response: JoinResponse = {
+      status: status,
+      role: fight.getJudgeRole(judgeId),
+      redPlayer: await this.playersService.getPlayer(fight.redPlayer.id),
+      bluePlayer: await this.playersService.getPlayer(fight.bluePlayer.id),
+    };
 
     return client.emit(JudgesSocketEvents.Join, response);
   }
@@ -94,7 +94,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   }
 
   @SubscribeMessage(JudgesSocketEvents.FinishFight)
-  finishFight(
+  async finishFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
     @ConnectedSocket() client: Socket,
@@ -111,10 +111,10 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    const response: Response = {
-      status: this.fightsService.finishFight(fightId),
-    };
     const fight = this.fightsService.getFight(fightId);
+    const response: Response = {
+      status: await this.fightsService.finishFight(fightId),
+    };
 
     if (response.status != ResponseStatus.OK) {
       return client.emit(JudgesSocketEvents.FinishFight, response);

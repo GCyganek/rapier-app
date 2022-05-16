@@ -27,12 +27,12 @@ export enum FightState {
   Finished = 'FINISHED',
 }
 
-export interface JudgeState {
+export class JudgeState {
   id: string;
   socket: Socket;
 }
 
-export interface PlayerState {
+export class PlayerState {
   id: string;
   points: number;
 }
