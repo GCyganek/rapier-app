@@ -153,11 +153,11 @@ describe('FightsService', () => {
   describe('newFightFromData', () => {
     it('should create new fight from FightDataInterface', async () => {
       jest.spyOn(model, 'create').mockImplementationOnce(() => {
-        Promise.resolve(mockFight);
+        Promise.resolve(mockMongoFight);
       });
 
       jest.spyOn(model, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValueOnce(null),
+        exec: jest.fn().mockResolvedValue(null),
       } as any);
 
       expect(
@@ -176,9 +176,9 @@ describe('FightsService', () => {
 
   describe('getFightFromDb', () => {
     it('should find newly created fight', async () => {
-      jest.spyOn(model, 'create').mockImplementationOnce(() => {
-        Promise.resolve(mockFight);
-      });
+      jest.spyOn(model, 'findOne').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(null),
+      } as any);
 
       expect(
         await fightsService.getFightFromDb(mockFight.id),
