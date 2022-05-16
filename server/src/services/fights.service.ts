@@ -8,10 +8,11 @@ import { ResponseStatus } from '../interfaces/response.interface';
 import { Event } from '../interfaces/event.interface';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightImpl } from '../classes/fight.class';
-import { FightDataInterface } from '../interfaces/fight-data.interface';
+import { FightData } from '../interfaces/fight-data.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FightDocument, MongoFight } from '../schemas/fight.schema';
+import { customAlphabet } from 'nanoid';
 
 @Injectable()
 export class FightsService {
@@ -36,8 +37,7 @@ export class FightsService {
   }
 
   async addNewFightToDb(fight: FightImpl): Promise<MongoFight> {
-    const createdFight = this.fightModel.create(fight);
-    return createdFight;
+    return this.fightModel.create(fight);
   }
 
   async newFight(fight: FightImpl): Promise<boolean> {
@@ -53,23 +53,56 @@ export class FightsService {
     return true;
   }
 
-  async newFightFromData(fightData: FightDataInterface): Promise<boolean> {
+  generateJudgeIds(nanoid: () => string, n = 3): string[] {
+    const judgeIds = [];
+
+    for (let i = 0; i < n; i++) {
+      let new_id;
+      do {
+        new_id = nanoid();
+      } while (judgeIds.includes(new_id));
+      judgeIds.push(new_id);
+    }
+
+    return judgeIds;
+  }
+
+  async generateFightId(nanoid: () => string): Promise<string> {
+    let new_id;
+    do {
+      new_id = nanoid();
+    } while (
+      this.getFight(new_id) !== undefined ||
+      (await this.getFightFromDb(new_id)) !== null
+    );
+
+    return new_id;
+  }
+
+  async newFightFromData(fightData: FightData): Promise<FightImpl> {
     const endConditions = new Map<FightEndConditionName, number>();
     fightData.endConditions.forEach((condition) =>
       endConditions.set(condition.name, condition.value),
     );
 
+    const nanoid = customAlphabet('0123456789', 7);
+    const judgeIds = this.generateJudgeIds(nanoid);
+
     const fight = new FightImpl(
-      fightData.id,
-      fightData.mainJudgeId,
-      fightData.redJudgeId,
-      fightData.blueJudgeId,
+      await this.generateFightId(nanoid),
+      judgeIds[0],
+      judgeIds[1],
+      judgeIds[2],
       fightData.redPlayerId,
       fightData.bluePlayerId,
       endConditions,
     );
 
-    return await this.newFight(fight);
+    if (await this.newFight(fight)) {
+      return fight;
+    } else {
+      return undefined;
+    }
   }
 
   getFight(id: string): FightImpl {

@@ -3,7 +3,8 @@ import { FightsService } from '../services/fights.service';
 import { PlayersService } from '../services/players.service';
 import { Player } from '../interfaces/player.interface';
 import { ResponseStatus } from '../interfaces/response.interface';
-import { FightDataInterface } from '../interfaces/fight-data.interface';
+import { FightData } from '../interfaces/fight-data.interface';
+import { FightResponse } from '../interfaces/fight-response.interface';
 
 @Controller()
 export class AdminController {
@@ -28,17 +29,36 @@ export class AdminController {
   }
 
   @Post('load-fights')
-  async loadFights(@Body('fights') fightsJson: string): Promise<string[]> {
-    const fights: FightDataInterface[] = JSON.parse(fightsJson);
+  async loadFights(
+    @Body('fights') fightsJson: string,
+  ): Promise<FightResponse[]> {
+    const fights: FightData[] = JSON.parse(fightsJson);
 
-    const successful: string[] = [];
+    const response: FightResponse[] = [];
     await Promise.all(
       fights.map(async (fight) => {
-        if (await this.fightsService.newFightFromData(fight))
-          successful.push(fight.id);
+        if (
+          (await this.playersService.getPlayer(fight.redPlayerId)) == null ||
+          (await this.playersService.getPlayer(fight.bluePlayerId)) == null
+        ) {
+          response.push(undefined);
+          return;
+        }
+
+        const result = await this.fightsService.newFightFromData(fight);
+        if (result !== undefined) {
+          response.push({
+            id: result.id,
+            mainJudgeId: result.mainJudgeId,
+            redJudgeId: result.redJudgeId,
+            blueJudgeId: result.blueJudgeId,
+          });
+        } else {
+          response.push(undefined);
+        }
       }),
     );
 
-    return successful;
+    return response.reverse();
   }
 }
