@@ -7,6 +7,7 @@
     import { Colours } from "./Colours";
     import { Batch } from "./Batch";
     import { Actions } from './Actions';
+    import { draw } from './Store';
 
     const component = get_current_component();
     const svelteDispatch = createEventDispatcher();
@@ -17,10 +18,13 @@
     }
     export let previousAttacker;
     export let answerDisabled;
-    export let draw;
+
+    // Draw case handling
+    let isDraw;
+    draw.subscribe(data => {isDraw = data});
+
     let batch = new Batch;
     batch.currentComponent = Components.SelectColour;
-    batch.nextComponent = Components.SelectAction;
 
     const redHandle = () => {
         if (previousAttacker === "blue") {
@@ -31,6 +35,7 @@
         previousAttacker = "red";
         batch.colour = Colours.RED;
         batch.action = Actions.RED;
+        batch.nextComponent = Components.SelectAction;
         dispatch('clicked', batch);
     }
 
@@ -43,32 +48,34 @@
         previousAttacker = "blue";
         batch.colour = Colours.BLUE;
         batch.action = Actions.BLUE;
+        batch.nextComponent = Components.SelectAction;
         dispatch('clicked', batch);
     }
 
     const drawHandle = () => {
         batch.colour = Colours.GRAY;
         batch.action = Actions.DRAW;
-        draw = true;
+        draw.set(true);
         batch.nextComponent = Components.SelectColour;
         dispatch('clicked', batch);
     }
 
+
 </script>
 <div class="container">
-    <button class="red"  on:click="{redHandle}" disabled={draw}>
+    <button class="red"  on:click="{redHandle}" disabled={isDraw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
         Czerwony
     </button>
     
-    <button class="draw" on:click="{drawHandle}" disabled={draw}>
+    <button class="draw" on:click="{drawHandle}" disabled={isDraw}>
         <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
         Remis
     </button>
 
-    <button class="blue" on:click="{blueHandle}" disabled={draw}>
+    <button class="blue" on:click="{blueHandle}" disabled={isDraw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
         Niebieski
