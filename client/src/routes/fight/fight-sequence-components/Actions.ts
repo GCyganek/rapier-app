@@ -1,9 +1,16 @@
 export enum Actions {
-    RED, BLUE, DRAW,
-    ATTACK, COUNTER_ATTACK,
-    SUCCESS, FAILURE,
-    TIMING, LATE,
-    HEAD, BODY, HAND,
+    RED, 
+    BLUE, 
+    DRAW,
+    ATTACK, 
+    COUNTER_ATTACK,
+    SUCCESS, 
+    FAILURE,
+    TIMING, 
+    LATE,
+    HEAD, 
+    BODY, 
+    HAND
 };
 
 export namespace Actions {
