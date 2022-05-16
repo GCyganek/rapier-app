@@ -1,3 +1,3 @@
 import { writable } from 'svelte/store';
 
-export let draw = writable(false);
+export const draw = writable(false);
