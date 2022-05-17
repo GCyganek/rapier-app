@@ -1,10 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { FightsService } from '../services/fights.service';
 import { PlayersService } from '../services/players.service';
-import { Player } from '../interfaces/player.interface';
-import { ResponseStatus } from '../interfaces/response.interface';
 import { FightData } from '../interfaces/fight-data.interface';
 import { FightResponse } from '../interfaces/fight-response.interface';
+import { PlayerData } from '../interfaces/player-data.interface';
 
 @Controller()
 export class AdminController {
@@ -15,13 +14,15 @@ export class AdminController {
 
   @Post('load-players')
   async loadPlayers(@Body('players') playersJson: string): Promise<string[]> {
-    const players: Player[] = JSON.parse(playersJson);
+    const players: PlayerData[] = JSON.parse(playersJson);
 
     const successful: string[] = [];
     await Promise.all(
       players.map(async (player) => {
-        if ((await this.playersService.newPlayer(player)) == ResponseStatus.OK)
-          successful.push(player.id);
+        const result = await this.playersService.newPlayer(player);
+        if (result !== undefined) {
+          successful.push(result.id);
+        }
       }),
     );
 

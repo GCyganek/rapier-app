@@ -7,8 +7,8 @@
 ## `load-players`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given players in server. 
-JSON should be an array of `Player` interface instances. Endpoint returns ids of successfully added players. 
-Existing players are not updated. 
+JSON should be an array of `PlayerData` interface instances. Server generates unique ids for each player.
+Player id is a 7 digit string. Endpoint returns ids of successfully added players.
 
 ### Method
 `POST`
@@ -28,17 +28,14 @@ Existing players are not updated.
 ```
 [
   {  
-    "id": "player1",  
     "firstName": "Janek",
     "lastName": "Kowalski"
   },
   {
-    "id": "player2",
     "firstName": "Andrzej",
     "lastName": "Nowak"
   },
   {
-    "id": "player3",
     "firstName": "Marek",
     "lastName": "Jarek"
   }
@@ -48,15 +45,15 @@ Existing players are not updated.
 ### Example response JSON
 
 ```
-["player1", "player3"]
+["1593578", "1234567", "9876543"]
 ```
 
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
 JSON should be an array of `FightData` interface instances. Server generates unique ids for each fight and
-unique tokens for judges that participate in this fight. If player with given id doesn't exist, the fight
-will not be created. Endpoint returns ids of successfully added fights and judges tokens.
+unique tokens for judges that participate in this fight. Fight id and tokens are a 7 digit string. 
+If player with given id doesn't exist, the fight will not be created. Endpoint returns ids of successfully added fights and judges tokens.
 
 ### Method
 `POST`

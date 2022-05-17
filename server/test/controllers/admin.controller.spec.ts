@@ -64,23 +64,14 @@ describe('AdminController', () => {
 
       const adminController = app.get<AdminController>(AdminController);
       const response = await adminController.loadPlayers(
-        '[{"id": "player_1","firstName": "Janek","lastName": "Kowalski"},' +
-          '{"id": "player_2","firstName": "Andrzej","lastName": "Nowak"},' +
-          '{"id": "player_3","firstName": "Marek","lastName": "Jarek"}]',
+        '[{"firstName": "Janek","lastName": "Kowalski"},' +
+          '{"firstName": "Andrzej","lastName": "Nowak"},' +
+          '{"firstName": "Marek","lastName": "Jarek"}]',
       );
-      expect(response).toStrictEqual(['player_1', 'player_2', 'player_3']);
-    });
-
-    it('should not overwrite existing players', async () => {
-      jest.spyOn(playerModel, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockMongoPlayer), // simulates returning player with "player_1" id instead of null
-      } as any);
-
-      const adminController = app.get<AdminController>(AdminController);
-      const response = await adminController.loadPlayers(
-        '[{"id": "player_1","firstName": "Marek","lastName": "Kowalski"}]',
-      );
-      expect(response).toStrictEqual([]);
+      expect(response.length).toEqual(3);
+      expect(response[0].length).toEqual(7);
+      expect(response[1].length).toEqual(7);
+      expect(response[2].length).toEqual(7);
     });
   });
 
