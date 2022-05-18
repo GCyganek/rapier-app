@@ -149,6 +149,7 @@ describe('JudgesGateway', () => {
         ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
           expect(data.role).toBe(JudgeRole.MainJudge);
+          expect(data.connected).toHaveLength(0);
           expect(data.redPlayer).toStrictEqual(player1);
           expect(data.bluePlayer).toStrictEqual(player2);
           resolve();
@@ -175,6 +176,7 @@ describe('JudgesGateway', () => {
         ws.on(JudgesSocketEvents.Join, (data) => {
           expect(data.status).toBe(ResponseStatus.OK);
           expect(data.role).toBe(JudgeRole.RedJudge);
+          expect(data.connected).toEqual([JudgeRole.MainJudge]);
           expect(data.redPlayer).toStrictEqual(player1);
           expect(data.bluePlayer).toStrictEqual(player2);
           resolve();
@@ -214,6 +216,59 @@ describe('JudgesGateway', () => {
           resolve();
         }),
       );
+    });
+
+    it('should send updates to connected judges when new judge connects', async ()=>{
+      const dbFight = fightsService.getFight(fight.id);
+      dbFight.mainJudge.socket = null
+      dbFight.redJudge.socket = null
+
+      jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValueOnce(player1),
+      } as any);
+
+      jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValueOnce(player2),
+      } as any);
+
+      ws = io('http://localhost:3001');
+
+      ws.emit(JudgesSocketEvents.Join, {
+        fightId: fight.id,
+        judgeId: fight.mainJudge.id,
+      });
+
+      await new Promise<void>((resolve) =>
+        ws.on(JudgesSocketEvents.Join, (data) => {
+          expect(data.status).toBe(ResponseStatus.OK);
+          resolve();
+        }),
+      );
+
+            jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValueOnce(player1),
+      } as any);
+
+      jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValueOnce(player2),
+      } as any);
+
+      ws.emit(JudgesSocketEvents.Join, {
+        fightId: fight.id,
+        judgeId: fight.redJudge.id,
+      });
+
+      ws.on(JudgesSocketEvents.JudgeJoined, (data) => {
+        expect(data.newJudge).toBe(JudgeRole.RedJudge);
+      })
+
+      await new Promise<void>((resolve) =>
+        ws.on(JudgesSocketEvents.Join, (data) => {
+          expect(data.status).toBe(ResponseStatus.OK);
+          resolve();
+        }),
+      );
+      
     });
 
     afterEach(() => ws.close());
