@@ -7,5 +7,5 @@ export enum JudgesSocketEvents {
   NewEvents = 'newEvents',
   EventsSuggestion = 'eventsSuggestion',
   FightEndConditionFulfilled = 'fightEndConditionFulfilled',
-  JudgeJoined = 'judgeJoined'
+  JudgeJoined = 'judgeJoined',
 }

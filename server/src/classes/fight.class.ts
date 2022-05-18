@@ -102,13 +102,13 @@ export class FightImpl
 
   getConnectedJudgesStatus(): Map<JudgeRole, JudgeState> {
     const statusMap = new Map<JudgeRole, JudgeState>();
-    if (this.mainJudge.socket != null){
+    if (this.mainJudge.socket != null) {
       statusMap.set(JudgeRole.MainJudge, this.mainJudge);
     }
-    if (this,this.redJudge.socket != null){
+    if ((this, this.redJudge.socket != null)) {
       statusMap.set(JudgeRole.RedJudge, this.redJudge);
     }
-    if (this.blueJudge.socket != null){
+    if (this.blueJudge.socket != null) {
       statusMap.set(JudgeRole.BlueJudge, this.blueJudge);
     }
     return statusMap;

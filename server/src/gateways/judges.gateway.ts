@@ -13,7 +13,10 @@ import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
-import { FightEndConditionName, JudgeState } from '../interfaces/fight.interface';
+import {
+  FightEndConditionName,
+  JudgeState,
+} from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
 import { JoinResponse } from '../interfaces/join-response.interface';
 import { PlayersService } from '../services/players.service';
@@ -55,7 +58,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     const fight: FightImpl = this.fightsService.getFight(fightId);
     const role = fight.getJudgeRole(judgeId);
     const connectedJudges = fight.getConnectedJudgesStatus();
-    connectedJudges.delete(role)
+    connectedJudges.delete(role);
 
     const response: JoinResponse = {
       connected: [...connectedJudges.keys()],
@@ -66,7 +69,9 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     };
 
     for (const [judgeType, judgeState] of connectedJudges.entries()) {
-      judgeState.socket.emit(JudgesSocketEvents.JudgeJoined, {newJudge:role});
+      judgeState.socket.emit(JudgesSocketEvents.JudgeJoined, {
+        newJudge: role,
+      });
     }
 
     return client.emit(JudgesSocketEvents.Join, response);

@@ -218,10 +218,10 @@ describe('JudgesGateway', () => {
       );
     });
 
-    it('should send updates to connected judges when new judge connects', async ()=>{
+    it('should send updates to connected judges when new judge connects', async () => {
       const dbFight = fightsService.getFight(fight.id);
-      dbFight.mainJudge.socket = null
-      dbFight.redJudge.socket = null
+      dbFight.mainJudge.socket = null;
+      dbFight.redJudge.socket = null;
 
       jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValueOnce(player1),
@@ -245,7 +245,7 @@ describe('JudgesGateway', () => {
         }),
       );
 
-            jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
+      jest.spyOn(playerModel, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValueOnce(player1),
       } as any);
 
@@ -260,7 +260,7 @@ describe('JudgesGateway', () => {
 
       ws.on(JudgesSocketEvents.JudgeJoined, (data) => {
         expect(data.newJudge).toBe(JudgeRole.RedJudge);
-      })
+      });
 
       await new Promise<void>((resolve) =>
         ws.on(JudgesSocketEvents.Join, (data) => {
@@ -268,7 +268,6 @@ describe('JudgesGateway', () => {
           resolve();
         }),
       );
-      
     });
 
     afterEach(() => ws.close());

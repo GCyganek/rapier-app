@@ -190,36 +190,56 @@ describe('FightImpl', () => {
       fight.blueJudge.socket = null;
       fight.redJudge.socket = null;
       fight.mainJudge.socket = null;
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge)).toBeFalsy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge)).toBeFalsy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge)).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge),
+      ).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge),
+      ).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge),
+      ).toBeFalsy();
     });
 
     it('map should contain only connected judges', () => {
       const socket = manager.socket('/');
       fight.blueJudge.socket = socket as any;
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge)).toBeTruthy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge)).toBeFalsy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge)).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge),
+      ).toBeTruthy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge),
+      ).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge),
+      ).toBeFalsy();
 
       fight.blueJudge.socket = null;
       fight.mainJudge.socket = socket as any;
       fight.redJudge.socket = socket as any;
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge)).toBeFalsy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge)).toBeTruthy();
-      expect(fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge)).toBeTruthy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.BlueJudge),
+      ).toBeFalsy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.MainJudge),
+      ).toBeTruthy();
+      expect(
+        fight.getConnectedJudgesStatus().has(JudgeRole.RedJudge),
+      ).toBeTruthy();
       socket.disconnect();
     });
 
-    
     it('stored value should be connected judge type status', () => {
       const socket = manager.socket('/');
       fight.blueJudge.socket = socket as any;
-      expect(fight.getConnectedJudgesStatus().get(JudgeRole.BlueJudge).socket).toBe(socket);
-      expect(fight.getConnectedJudgesStatus().get(JudgeRole.BlueJudge).id).toBe(fight.blueJudgeId);
+      expect(
+        fight.getConnectedJudgesStatus().get(JudgeRole.BlueJudge).socket,
+      ).toBe(socket);
+      expect(fight.getConnectedJudgesStatus().get(JudgeRole.BlueJudge).id).toBe(
+        fight.blueJudgeId,
+      );
       socket.disconnect();
     });
-
   });
 
   describe('startFight', () => {
