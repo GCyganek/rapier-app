@@ -140,7 +140,7 @@ will not be created. Endpoint returns ids of successfully added fights and judge
 ## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
-Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players and role of the judge.
+Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players, role of the judge and roles of other connected judges. It also send updates to other judges.
 Players have no points, there are no events in the events' history, timer is set to zero minutes.
 
 ### Parameters
@@ -150,11 +150,17 @@ Players have no points, there are no events in the events' history, timer is set
 | judgeId | string |
 
 ### Response (send to the judge that called this endpoint)
-| name       | type      |
-|------------|-----------|
-| role       | JudgeRole |
-| redPlayer  | Player    |
-| bluePlayer | Player    |
+| name       | type        |
+|------------|-------------|
+| role       | JudgeRole   |
+| connected  | JudgeRole[] |
+| redPlayer  | Player      |
+| bluePlayer | Player      |
+
+### Update (send to other connected judges)
+| name       | type        |
+|------------|-------------|
+| newJudge   | JudgeRole   |
 
 where `Player` is an interface:
 
