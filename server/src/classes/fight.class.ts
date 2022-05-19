@@ -105,7 +105,7 @@ export class FightImpl
     if (this.mainJudge.socket != null) {
       statusMap.set(JudgeRole.MainJudge, this.mainJudge);
     }
-    if ((this, this.redJudge.socket != null)) {
+    if (this.redJudge.socket != null) {
       statusMap.set(JudgeRole.RedJudge, this.redJudge);
     }
     if (this.blueJudge.socket != null) {
