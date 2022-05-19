@@ -100,6 +100,20 @@ export class FightImpl
     else return undefined;
   }
 
+  getConnectedJudgesStatus(): Map<JudgeRole, JudgeState> {
+    const statusMap = new Map<JudgeRole, JudgeState>();
+    if (this.mainJudge.socket != null) {
+      statusMap.set(JudgeRole.MainJudge, this.mainJudge);
+    }
+    if (this.redJudge.socket != null) {
+      statusMap.set(JudgeRole.RedJudge, this.redJudge);
+    }
+    if (this.blueJudge.socket != null) {
+      statusMap.set(JudgeRole.BlueJudge, this.blueJudge);
+    }
+    return statusMap;
+  }
+
   inProgress(): boolean {
     return [FightState.Running, FightState.Paused].includes(this.state);
   }
