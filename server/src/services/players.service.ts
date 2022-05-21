@@ -1,38 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { ResponseStatus } from '../interfaces/response.interface';
 import { Player } from '../interfaces/player.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { MongoPlayer, PlayerDocument } from '../schemas/player.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class PlayersService {
-  private readonly players: Map<string, Player> = new Map<string, Player>();
+  constructor(
+    @InjectModel(MongoPlayer.name) private playerModel: Model<PlayerDocument>,
+  ) {}
 
-  constructor() {
-    const player1: Player = {
-      id: 'player1',
-      firstName: 'Ala',
-      lastName: 'Kowalska',
-    };
-    const player2: Player = {
-      id: 'player2',
-      firstName: 'Jan',
-      lastName: 'Kowalski',
-    };
-    this.newPlayer(player1);
-    this.newPlayer(player2);
+  private async savePlayerToDb(player: Player): Promise<MongoPlayer> {
+    const createdPlayer = await this.playerModel.create(player);
+    return createdPlayer;
   }
 
-  newPlayer(player: Player): ResponseStatus {
-    if (this.isPlayer(player.id)) return ResponseStatus.BadRequest;
+  async newPlayer(player: Player): Promise<ResponseStatus> {
+    if (await this.isPlayer(player.id)) return ResponseStatus.BadRequest;
 
-    this.players.set(player.id, player);
+    try {
+      await this.savePlayerToDb(player);
+    } catch (error) {
+      return ResponseStatus.InternalServerError;
+    }
+
     return ResponseStatus.OK;
   }
 
-  getPlayer(id: string): Player {
-    return this.players.get(id);
+  async getPlayer(id: string): Promise<MongoPlayer> {
+    return this.playerModel.findOne({ id: id }, { _id: false }).exec();
   }
 
-  isPlayer(id: string): boolean {
-    return this.players.get(id) != undefined;
+  async isPlayer(id: string): Promise<boolean> {
+    return (await this.getPlayer(id)) !== null;
   }
 }

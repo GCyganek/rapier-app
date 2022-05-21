@@ -11,6 +11,7 @@ import { Socket } from 'socket.io';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
 import { assert } from 'console';
+import { JudgeRole } from '../interfaces/join-response.interface';
 
 export class FightImpl
   implements
@@ -90,6 +91,27 @@ export class FightImpl
 
   isMainJudge(judgeId: string): boolean {
     return this.mainJudge.id == judgeId;
+  }
+
+  getJudgeRole(judgeId: string): JudgeRole {
+    if (this.mainJudge.id == judgeId) return JudgeRole.MainJudge;
+    else if (this.redJudge.id == judgeId) return JudgeRole.RedJudge;
+    else if (this.blueJudge.id == judgeId) return JudgeRole.BlueJudge;
+    else return undefined;
+  }
+
+  getConnectedJudgesStatus(): Map<JudgeRole, JudgeState> {
+    const statusMap = new Map<JudgeRole, JudgeState>();
+    if (this.mainJudge.socket != null) {
+      statusMap.set(JudgeRole.MainJudge, this.mainJudge);
+    }
+    if (this.redJudge.socket != null) {
+      statusMap.set(JudgeRole.RedJudge, this.redJudge);
+    }
+    if (this.blueJudge.socket != null) {
+      statusMap.set(JudgeRole.BlueJudge, this.blueJudge);
+    }
+    return statusMap;
   }
 
   inProgress(): boolean {
