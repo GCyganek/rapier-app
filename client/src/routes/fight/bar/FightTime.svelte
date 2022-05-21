@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import Icon from '@iconify/svelte';
     import FightEnd from "../modal/FightEnd.svelte";
 
@@ -26,29 +26,27 @@
         timeout = setTimeout(preciseTimer, interval - delta, now, delta);
     }
 
-    preciseTimer(Date.now(), 0);
+    onMount(() => {
+        preciseTimer(Date.now(), 0);
+    });
 
     const showTime = (time: number) => {
-        const min = Math.floor(time / 60),
-            tbs = time % 60,
-            secs = tbs < 10 ? `0${tbs}` : tbs.toString();
-
+        const min = Math.floor(time / 60), 
+        tbs = time % 60,
+        secs = tbs < 10 ? `0${tbs}` : tbs.toString();
+        
         return `${min}:${secs}`
     }
 
     const pauseTimer = () => {
-        dispatch('action', {
-            action: "pause"
-        });
-
+        dispatch('action', 'pause');
+            
         timeout = (clearTimeout(timeout), null);
         paused = true;
     }
 
     const startTimer = () => {
-        dispatch('action', {
-            action: "resume"
-        });
+        dispatch('action', 'resume');
 
         preciseTimer(Date.now(), 0);
         paused = false;

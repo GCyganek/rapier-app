@@ -1,20 +1,12 @@
-<script lang="ts" context="module">
-    export type FighterType = "red" | "blue";
-
-    export class Fighter {
-        firstName: string;
-        lastName: string;
-        points: number;
-    }
-</script>
-
 <script lang="ts">
+    import type { Fighter, FighterType } from "model/Fighter";
+
     export let type: FighterType;
     export let fighter: Fighter;
 </script>
 
 <div class={type}>    
-    <span class="points"> {fighter.points} </span>
+    <span class="points"> {fighter.points ?? 0} </span>
     
     <span>
         {fighter.firstName}

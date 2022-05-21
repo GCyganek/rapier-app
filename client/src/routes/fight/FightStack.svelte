@@ -1,7 +1,7 @@
 <script lang="ts">
+    import type { Batch } from "./fight-sequence-components/Batch";
     import { createEventDispatcher } from "svelte";
     import { Actions } from "./fight-sequence-components/Actions";
-    import type { Batch } from "./fight-sequence-components/Batch";
     import FightPoints from "./modal/FightPoints.svelte";
 
     export let stack: Batch[];
