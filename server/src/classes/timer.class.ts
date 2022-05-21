@@ -22,7 +22,10 @@ export class Timer implements FightEndConditionFulfilledPublisher {
     if (this.timeoutId || this.timeEnded) return false;
 
     this.lastTimerStart = Date.now();
-    this.timeoutId = setTimeout(this.notifyTimeEnded, this.remainingMillis);
+    this.timeoutId = setTimeout(
+      this.notifyTimeEnded.bind(this),
+      this.remainingMillis,
+    );
     return true;
   }
 

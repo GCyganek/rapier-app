@@ -54,7 +54,7 @@
 </script>
 
 <div>
-    <button on:click={() => dispatch('return')}>
+    <button class="returnButton" on:click={() => dispatch('return')}>
         <Icon icon="bx:left-arrow-circle" color="#2f4858" height="2rem"/>
     </button>
 
@@ -62,20 +62,27 @@
         {showTime(time)}
     </div>
 
-    <button class="previous" on:click={paused ? startTimer : pauseTimer}>
+    <div class="buttonWrapper">
         {#if paused}
-            <Icon icon="bx:play-circle" color="#2f4858" height="2rem"/>
-        {:else}
-            <Icon icon="carbon:pause-outline" color="#2f4858" height="2rem"/>
+            <button class="stopButton">
+                <Icon icon="mdi:stop-circle-outline" color="#2f4858" height="2rem"/>
+            </button>
         {/if}
-    </button>
+        <button class="previous" on:click={paused ? startTimer : pauseTimer}>
+            {#if paused}
+                <Icon icon="bx:play-circle" color="#2f4858" height="2rem"/>
+            {:else}
+                <Icon icon="carbon:pause-outline" color="#2f4858" height="2rem"/>
+            {/if}
+        </button>
+    </div>
 </div>
 
 <style>
     div {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         border-bottom: 2px solid #2F4858;
     }
@@ -95,6 +102,7 @@
         display: flex;
         justify-content: center;
         height: 2.5rem;
+        margin: 0.2rem 0;
         border-radius: .3em;
         text-align: center;
         font-size: 2rem;
@@ -103,4 +111,17 @@
         box-sizing: border-box;
     }
 
+    div.buttonWrapper{
+        display: flex;
+        flex-direction: row;
+        justify-content: right;
+        border: none;
+        position: absolute;
+        right: 0;
+    }
+
+    .returnButton{
+        position: absolute;
+        left: 0;
+    }
 </style>

@@ -23,7 +23,7 @@ Existing players are not updated.
 |------|------|
 | -    | JSON |
 
-### Example JSON
+### Example request JSON
 
 ```
 [
@@ -45,11 +45,18 @@ Existing players are not updated.
 ]
 ```
 
+### Example response JSON
+
+```
+["player1", "player3"]
+```
+
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
-JSON should be an array of `FightData` interface instances. Endpoint returns ids of successfully added fights.
-Existing fights are not updated.
+JSON should be an array of `FightData` interface instances. Server generates unique ids for each fight and
+unique tokens for judges that participate in this fight. If player with given id doesn't exist, the fight
+will not be created. Endpoint returns ids of successfully added fights and judges tokens.
 
 ### Method
 `POST`
@@ -64,15 +71,11 @@ Existing fights are not updated.
 |------|------|
 | -    | JSON |
 
-### Example JSON
+### Example request JSON
 
 ```
 [
   {
-    "id": "fight1",
-    "mainJudgeId": "main",
-    "redJudgeId": "red",
-    "blueJudgeId": "blue",
     "redPlayerId": "player1",
     "bluePlayerId": "player2",
     "endConditions": [
@@ -87,10 +90,6 @@ Existing fights are not updated.
     ]
   },
   {
-    "id": "fight2",
-    "mainJudgeId": "main_judge",
-    "redJudgeId": "red_judge",
-    "blueJudgeId": "blue_judge",
     "redPlayerId": "player3",
     "bluePlayerId": "player2",
     "endConditions": [
@@ -99,7 +98,32 @@ Existing fights are not updated.
         "value": "10"
       }
     ]
+  },
+  {
+    "redPlayerId": "random_player",
+    "bluePlayerId": "player2",
+    "endConditions": []
   }
+]
+```
+
+### Example response JSON
+
+```
+[
+  {
+    "id": "1234567",
+    "mainJudgeId": "9216543",
+    "redJudgeId": "0964892",
+    "blueJudgeId": "0987654"
+  },
+  {
+    "id": "8975645",
+    "mainJudgeId": "1234567",
+    "redJudgeId": "7777777",
+    "blueJudgeId": "0987654"
+  },
+  null
 ]
 ```
 
@@ -116,7 +140,7 @@ Existing fights are not updated.
 ## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
-Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players.
+Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players, role of the judge and roles of other connected judges. It also send updates to other judges.
 Players have no points, there are no events in the events' history, timer is set to zero minutes.
 
 ### Parameters
@@ -126,10 +150,17 @@ Players have no points, there are no events in the events' history, timer is set
 | judgeId | string |
 
 ### Response (send to the judge that called this endpoint)
-| name       | type   |
-|------------|--------|
-| redPlayer  | Player |
-| bluePlayer | Player |
+| name       | type        |
+|------------|-------------|
+| role       | JudgeRole   |
+| connected  | JudgeRole[] |
+| redPlayer  | Player      |
+| bluePlayer | Player      |
+
+### Update (send to other connected judges)
+| name       | type        |
+|------------|-------------|
+| newJudge   | JudgeRole   |
 
 where `Player` is an interface:
 
@@ -138,6 +169,14 @@ where `Player` is an interface:
 | id        | string |
 | firstName | string |
 | lastName  | string |
+
+and `JudgeRole` is an enum:
+
+| name      | value  |
+|-----------|--------|
+| MainJudge | "MAIN" |
+| RedJudge  | "RED"  |
+| BlueJudge | "BLUE" |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist
