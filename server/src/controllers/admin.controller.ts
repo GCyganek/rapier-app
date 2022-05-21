@@ -22,6 +22,8 @@ export class AdminController {
         const result = await this.playersService.newPlayer(player);
         if (result !== undefined) {
           successful.push(result.id);
+        } else {
+          successful.push(null);
         }
       }),
     );

@@ -8,7 +8,7 @@
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given players in server. 
 JSON should be an array of `PlayerData` interface instances. Server generates unique ids for each player.
-Player id is a 7 digit string. Endpoint returns ids of successfully added players.
+Player id is a 7 digit string. Endpoint returns ids of successfully added players or null if operation failed.
 
 ### Method
 `POST`
@@ -53,7 +53,8 @@ Player id is a 7 digit string. Endpoint returns ids of successfully added player
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
 JSON should be an array of `FightData` interface instances. Server generates unique ids for each fight and
 unique tokens for judges that participate in this fight. Fight id and tokens are a 7 digit string. 
-If player with given id doesn't exist, the fight will not be created. Endpoint returns ids of successfully added fights and judges tokens.
+If player with given id doesn't exist, the fight will not be created. Endpoint returns ids of successfully 
+added fights and judges tokens or null if operation failed.
 
 ### Method
 `POST`
