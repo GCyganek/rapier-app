@@ -1,6 +1,9 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, getContext } from 'svelte';
+    import { FightSocket, key } from '../../FightSocket';
 
+    // const socket = getContext(key) as FightSocket;
+    const socket = getContext(key)();
     const dispatch = createEventDispatcher();
 
     export let isOpenModal;
@@ -11,8 +14,8 @@
     }
 
     function finishFight(){
-        console.log("finish fight!");
         closeModal();
+        socket.finishFight();
     }
 
 </script>
