@@ -1,14 +1,13 @@
 <script lang="ts">
     import type { TimerAction } from "./fight/bar/FightTime.svelte";
-    import { FightSocket, key } from "./FightSocket";
+    import { key } from "./FightSocket";
 
     import FighterBar from "./fight/FighterBar.svelte";
     import FightSequence, { fightSequence, clear, pop } from "./fight/FightSequence.svelte";
     import FightStack from "./fight/FightStack.svelte";
     import FightSideProposition from "./fight/FightSideProposition.svelte";
     import { getContext } from "svelte";
-    
-    // const socket = getContext(key) as FightSocket;
+
     const socket = getContext(key)();
 
     export let redPlayer;

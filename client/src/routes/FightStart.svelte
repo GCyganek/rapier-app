@@ -1,7 +1,7 @@
 <script lang="ts">
     import Fight from "./Fight.svelte"
-    import {Events, FightSocket, key} from './FightSocket';
-    import {getContext, setContext} from 'svelte';
+    import {Events, key} from './FightSocket';
+    import {getContext} from 'svelte';
 
     export let response;
     let socket = getContext(key)();

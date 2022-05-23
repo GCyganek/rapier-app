@@ -1,8 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher, getContext } from 'svelte';
-    import { FightSocket, key } from '../../FightSocket';
+    import { key } from '../../FightSocket';
 
-    // const socket = getContext(key) as FightSocket;
     const socket = getContext(key)();
     const dispatch = createEventDispatcher();
 
