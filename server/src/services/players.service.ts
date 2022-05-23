@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ResponseStatus } from '../interfaces/response.interface';
 import { Player } from '../interfaces/player.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { MongoPlayer, PlayerDocument } from '../schemas/player.schema';
 import { Model } from 'mongoose';
+import { PlayerData } from '../interfaces/player-data.interface';
+import { customAlphabet } from 'nanoid';
 
 @Injectable()
 export class PlayersService {
@@ -12,20 +13,35 @@ export class PlayersService {
   ) {}
 
   private async savePlayerToDb(player: Player): Promise<MongoPlayer> {
-    const createdPlayer = await this.playerModel.create(player);
-    return createdPlayer;
+    return await this.playerModel.create(player);
   }
 
-  async newPlayer(player: Player): Promise<ResponseStatus> {
-    if (await this.isPlayer(player.id)) return ResponseStatus.BadRequest;
+  async generatePlayerId(nanoid: () => string): Promise<string> {
+    let new_id;
+    do {
+      new_id = nanoid();
+    } while ((await this.getPlayer(new_id)) !== null);
+
+    return new_id;
+  }
+
+  async newPlayer(playerData: PlayerData): Promise<Player> {
+    const nanoid = customAlphabet('0123456789', 7);
+    const playerId = await this.generatePlayerId(nanoid);
+
+    const player: Player = {
+      id: playerId,
+      firstName: playerData.firstName,
+      lastName: playerData.lastName,
+    };
 
     try {
       await this.savePlayerToDb(player);
     } catch (error) {
-      return ResponseStatus.InternalServerError;
+      return undefined;
     }
 
-    return ResponseStatus.OK;
+    return player;
   }
 
   async getPlayer(id: string): Promise<MongoPlayer> {

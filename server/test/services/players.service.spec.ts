@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ResponseStatus } from '../../src/interfaces/response.interface';
 import { PlayersService } from '../../src/services/players.service';
 import { Player } from '../../src/interfaces/player.interface';
 import { getModelToken } from '@nestjs/mongoose';
 import { MongoPlayer } from '../../src/schemas/player.schema';
 import { Model } from 'mongoose';
 import { mockMongoPlayer } from '../constants/mock-mongo-player';
+import { customAlphabet } from 'nanoid';
 
 describe('PlayersService', () => {
   let playersService: PlayersService;
@@ -36,6 +36,19 @@ describe('PlayersService', () => {
     expect(playersService).toBeDefined();
   });
 
+  describe('generatePlayerId', () => {
+    it('should generate unique id fight', async () => {
+      jest.spyOn(model, 'findOne').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(null),
+      } as any);
+
+      const nanoid = customAlphabet('0123456789', 7);
+      const id = await playersService.generatePlayerId(nanoid);
+
+      expect(id.length).toEqual(7);
+    });
+  });
+
   describe('newPlayer', () => {
     it('should create new player', async () => {
       jest.spyOn(model, 'create').mockImplementationOnce(() => {
@@ -46,48 +59,32 @@ describe('PlayersService', () => {
         exec: jest.fn().mockResolvedValueOnce(null),
       } as any);
 
-      expect(await playersService.newPlayer(mockMongoPlayer)).toBe(
-        ResponseStatus.OK,
-      );
+      const player = await playersService.newPlayer(mockMongoPlayer);
+      expect(player).not.toBeUndefined();
+      expect(player.id.length).toEqual(7);
 
       jest.spyOn(model, 'findOne').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(mockMongoPlayer),
       } as any);
 
-      expect(await playersService.getPlayer(mockMongoPlayer.id)).toStrictEqual(
-        mockMongoPlayer,
-      );
-    });
+      expect(
+        (await playersService.getPlayer(player.id)).firstName,
+      ).toStrictEqual(mockMongoPlayer.firstName);
 
-    it('should not create player with duplicated id', async () => {
       jest.spyOn(model, 'findOne').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(mockMongoPlayer),
       } as any);
 
-      jest.spyOn(model, 'create').mockImplementationOnce(() => {
-        Promise.resolve(mockMongoPlayer);
-      });
-
-      expect(await playersService.newPlayer(mockMongoPlayer)).toBe(
-        ResponseStatus.BadRequest,
-      );
+      expect(
+        (await playersService.getPlayer(player.id)).lastName,
+      ).toStrictEqual(mockMongoPlayer.lastName);
     });
   });
 
   describe('getPlayer', () => {
-    it('should return existing player', async () => {
-      jest.spyOn(model, 'findOne').mockReturnValue({
-        exec: jest.fn().mockResolvedValueOnce(mockMongoPlayer),
-      } as any);
-
-      expect(await playersService.getPlayer(mockMongoPlayer.id)).toStrictEqual(
-        mockMongoPlayer,
-      );
-    });
-
     it('should not find invalid player', async () => {
       const player: Player = {
-        id: '546543231546548',
+        id: 'random_id_1234',
         lastName: 'kowalska',
         firstName: 'Maria',
       };
