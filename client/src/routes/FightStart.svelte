@@ -1,38 +1,59 @@
 <script lang="ts">
-    import Button, { Label } from '@smui/button';
     import Fight from "./Fight.svelte"
-    import { FightSocket, key } from './FightSocket';
-    import { mockedFight } from 'model/MockedFight';
-    import { setContext } from 'svelte';
-    // import CreateFight from './CreateFight.svelte';
+    import {Events, key} from './FightSocket';
+    import {getContext} from 'svelte';
 
-    let socket = new FightSocket(mockedFight.id, mockedFight.mainJudgeId);
-    setContext(key, socket);
+    export let response;
+    let socket = getContext(key)();
 
-    let started = false;
+
+    enum FightState{
+        waiting,
+        started,
+        finished,
+    }
+    let fightState = FightState.waiting;
+
+    socket.on(Events.FinishFight, () => {
+        fightState = FightState.finished;
+    });
+
+    socket.on(Events.StartFight, () => {
+        fightState = FightState.started;
+    });
+
 
     function handleClick() {
-        started = true;
+        socket.startFight();
     }
 
 </script>
 
-{#if !started}
+
+{#if fightState === FightState.waiting}
     <!--  TODO: Fight creation -->
     <!-- <CreateFight /> -->
-
-    <div class="startDiv">
-        <button on:click={() => started = true} class="startButton">
-            Rozpocznij pojedynek
-        </button>
-
-        <!-- <Button class="startButton" on:click={handleClick}>
-            <Label class="label">Rozpocznij pojedynek</Label>
-        </Button> -->
-    </div>
-{:else}
-    <Fight/>
+    {#if response.role === "MAIN"}
+        <div class="startDiv">
+            <button on:click={handleClick} class="startButton">
+                Rozpocznij pojedynek
+            </button>
+        </div>
+    {:else}
+        <div class="startDiv">
+            <button class="startButton">
+                Czekanie na rozpoczęcie spotkania...
+            </button>
+        </div>
+    {/if}
+{:else if fightState === FightState.finished}
+    <!--    TODO: Fight summary-->
+    <p>Finished fight!</p>
+{:else if fightState === FightState.started}
+    <Fight redPlayer={response.redPlayer} bluePlayer={response.bluePlayer}/>
 {/if}
+
+
 
 <style>
     .startDiv {
@@ -44,7 +65,6 @@
         background-repeat: repeat;
     }
 
-    /* * :global(.startButton) */
     .startButton {
         background-color: #FF5F69;
         color: white;
@@ -54,8 +74,7 @@
         width: 12em;
         height: 3em;
     }
-    
-    /* * :global(.startButton):active */
+
     .startButton:active {
         background-color: darkred;
         color: grey;
