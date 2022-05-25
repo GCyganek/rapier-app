@@ -1,5 +1,6 @@
 <script lang="ts">
-    import FighterInfo, { Fighter } from './bar/FighterInfo.svelte';
+    import type { Fighter } from 'model/Fighter';
+    import FighterInfo from './bar/FighterInfo.svelte';
     import FightTime from './bar/FightTime.svelte';
 
     export let red: Fighter;

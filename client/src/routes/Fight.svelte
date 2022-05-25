@@ -1,50 +1,66 @@
 <script lang="ts">
-    import type { TimerAction } from "./fight/bar/FightTime.svelte";
-    import { key } from "./FightSocket";
+  import type { TimerAction } from './fight/bar/FightTime.svelte';
+  import { FightSocket, key } from './FightSocket';
+  import FightStack from './fight/FightStack.svelte';
+  import FightSideProposition from './fight/FightSideProposition.svelte';
+  import { getContext } from 'svelte';
+  import type { Fighter } from 'model/Fighter';
+  import FighterBar from './fight/FighterBar.svelte';
+  import FightSequence, {
+    fightSequence,
+    clear,
+    pop,
+  } from './fight/FightSequence.svelte';
+  import type { Response } from 'model/Communication';
 
-    import FighterBar from "./fight/FighterBar.svelte";
-    import FightSequence, { fightSequence, clear, pop } from "./fight/FightSequence.svelte";
-    import FightStack from "./fight/FightStack.svelte";
-    import FightSideProposition from "./fight/FightSideProposition.svelte";
-    import { getContext } from "svelte";
+  const socket = (getContext(key) as () => FightSocket)();
 
-    const socket = getContext(key)();
+  export let redPlayer: Fighter;
+  export let bluePlayer: Fighter;
+  export let role: Response.JudgeRole;
 
-    export let redPlayer;
-    export let bluePlayer;
+  function timerEventHandler(event: CustomEvent<TimerAction>) {
+    switch (event.detail) {
+      case 'pause':
+        return socket.pauseTimer();
 
-    function timerEventHandler(event: CustomEvent<TimerAction>) {
-        switch (event.detail) {
-            case 'pause':
-                return socket.pauseTimer();
-
-            case 'resume':
-                return socket.resumeTimer();
-        }
+      case 'resume':
+        return socket.resumeTimer();
     }
-
+  }
 </script>
 
-<div class="container">
-        <FighterBar
-            red={redPlayer}
-            blue={bluePlayer}
-            on:action={timerEventHandler}
-            on:return={pop} />
+<div class={role === 'MAIN' ? 'container-main' : 'container-side'}>
+  <FighterBar
+    red={redPlayer}
+    blue={bluePlayer}
+    on:action={timerEventHandler}
+    on:return={pop}
+  />
 
-        <FightSequence />
-        <FightSideProposition/>
-        <FightStack stack={$fightSequence} on:clear={clear} />
+  <FightSequence />
 
+  {#if role === 'MAIN'}
+    <FightSideProposition />
+  {/if}
+  <FightStack stack={$fightSequence} on:clear={clear} />
 </div>
 
 <style>
-    div.container {
-        height: 100vh;
-        width: 100vw;
+  div.container-main,
+  div.container-side {
+    height: 100vh;
+    width: 100vw;
 
-        display: grid;
-        grid-template-rows: 7rem auto 7rem 20rem;
-        box-sizing:         border-box;
-    }
+    display: grid;
+    box-sizing: border-box;
+  }
+
+  div.container-main {
+    grid-template-rows: 7rem auto 7rem 20rem;
+  }
+
+  div.container-side {
+    grid-template-rows: 7rem auto 20rem;
+  }
 </style>
