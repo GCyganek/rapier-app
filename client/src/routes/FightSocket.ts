@@ -68,12 +68,14 @@ export class FightSocket {
     return this.#newEvents;
   }
 
-  private promiseFor<T extends Response.Base>(event: Events, action: (a: T) => void = null): Promise<T> {
+  private promiseFor<T extends Response.Base>(
+    event: Events,
+    action: (a: T) => void = null,
+  ): Promise<T> {
     return new Promise((resolve, reject) => {
       this.socket.once(event, (response: T) => {
-        if (action !== null)
-            action(response);
-        
+        if (action !== null) action(response);
+
         response.status !== 'OK' ? reject(response.status) : resolve(response);
       });
     });
@@ -81,20 +83,23 @@ export class FightSocket {
 
   join() {
     this.socket.emit(Events.Join, this.getIds());
-    return this.promiseFor<Response.Join>(Events.Join, r => this.role = r.role);
+    return this.promiseFor<Response.Join>(
+      Events.Join,
+      (r) => (this.role = r.role),
+    );
   }
 
   startFight() {
     if (this.role === 'MAIN')
-        this.socket.emit(Events.StartFight, this.getIds());
-    
+      this.socket.emit(Events.StartFight, this.getIds());
+
     return this.promiseFor<Response.Base>(Events.StartFight);
   }
 
   finishFight() {
     if (this.role === 'MAIN')
-        this.socket.emit(Events.FinishFight, this.getIds());
-    
+      this.socket.emit(Events.FinishFight, this.getIds());
+
     return this.promiseFor<Response.Base>(Events.FinishFight);
   }
 
