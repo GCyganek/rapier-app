@@ -3,7 +3,7 @@ import type { Fighter } from "./Fighter";
 export namespace Response {
     export type Color = "RED" | "BLUE";
     export type JudgeRole = "MAIN" | Color;
-    export type Status = 
+    export type Status =
         "OK" | "BAD_REQUEST" | "UNAUTHORIZED" | "NOT_FOUND" | "NOT_READY";
 
     export class Base {

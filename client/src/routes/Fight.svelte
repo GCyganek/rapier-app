@@ -34,6 +34,7 @@
   <FighterBar
     red={redPlayer}
     blue={bluePlayer}
+    {role}
     on:action={timerEventHandler}
     on:return={pop}
   />
