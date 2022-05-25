@@ -3,7 +3,7 @@ import type { Response } from 'model/Communication';
 import { io, Socket } from 'socket.io-client';
 import { Writable, writable } from 'svelte/store';
 
-export const key: Symbol = Symbol();
+export const key = Symbol();
 
 export enum Events {
   Join = 'join',
