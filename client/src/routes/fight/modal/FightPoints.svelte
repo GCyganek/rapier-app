@@ -22,10 +22,10 @@
     }
 
     function confirmPoints(){
-        console.log(points);
-        console.log(stack);
-        // socket.sendNewEvents(points);
-        closeModal();
+        if (points["red"] != null && points["blue"] != null){
+            socket.sendEvents(points, stack);
+            closeModal();
+        }
     }
 
     function choosePoints(point, fighter){
@@ -53,19 +53,19 @@
     <div class="pointsDiv">
         <div class="pointDiv">
             {#each possiblePoints as point}
-                <Button class="pointButton" style="background-color: var(--blue-fighter)" on:click={() => choosePoints(point.valueOf(), "blue")}>
-                    <Label>{point}</Label>
-                </Button>
-            {/each}
-            <input type="number" style="background-color: var(--blue-fighter);" bind:value={points["blue"]}>
-        </div>
-        <div class="pointDiv">
-            {#each possiblePoints as point}
                 <Button class="pointButton" style="background-color: var(--red-fighter)" on:click={() => choosePoints(point.valueOf(), "red")}>
                     <Label>{point}</Label>
                 </Button>
             {/each}
             <input type="number" style="background-color: var(--red-fighter);" bind:value={points["red"]}>
+        </div>
+        <div class="pointDiv">
+            {#each possiblePoints as point}
+                <Button class="pointButton" style="background-color: var(--blue-fighter)" on:click={() => choosePoints(point.valueOf(), "blue")}>
+                    <Label>{point}</Label>
+                </Button>
+            {/each}
+            <input type="number" style="background-color: var(--blue-fighter);" bind:value={points["blue"]}>
         </div>
     </div>
     <div class="buttonDiv">
