@@ -1,10 +1,6 @@
 import { FightEndConditionName } from './fight.interface';
 
-export interface FightDataInterface {
-  id: string;
-  mainJudgeId: string;
-  redJudgeId: string;
-  blueJudgeId: string;
+export interface FightData {
   redPlayerId: string;
   bluePlayerId: string;
   endConditions: FightEndCondition[];

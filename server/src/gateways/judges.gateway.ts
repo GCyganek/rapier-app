@@ -53,12 +53,23 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const fight: FightImpl = this.fightsService.getFight(fightId);
+    const role = fight.getJudgeRole(judgeId);
+    const connectedJudges = fight.getConnectedJudgesStatus();
+    connectedJudges.delete(role);
+
     const response: JoinResponse = {
+      connected: [...connectedJudges.keys()],
       status: status,
       role: fight.getJudgeRole(judgeId),
       redPlayer: await this.playersService.getPlayer(fight.redPlayer.id),
       bluePlayer: await this.playersService.getPlayer(fight.bluePlayer.id),
     };
+
+    for (const [, judgeState] of connectedJudges.entries()) {
+      judgeState.socket.emit(JudgesSocketEvents.JudgeJoined, {
+        newJudge: role,
+      });
+    }
 
     return client.emit(JudgesSocketEvents.Join, response);
   }

@@ -7,8 +7,8 @@
 ## `load-players`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given players in server. 
-JSON should be an array of `Player` interface instances. Endpoint returns ids of successfully added players. 
-Existing players are not updated. 
+JSON should be an array of `PlayerData` interface instances. Server generates unique ids for each player.
+Player id is a 7 digit string. Endpoint returns ids of successfully added players or null if operation failed.
 
 ### Method
 `POST`
@@ -23,33 +23,38 @@ Existing players are not updated.
 |------|------|
 | -    | JSON |
 
-### Example JSON
+### Example request JSON
 
 ```
 [
   {  
-    "id": "player1",  
     "firstName": "Janek",
     "lastName": "Kowalski"
   },
   {
-    "id": "player2",
     "firstName": "Andrzej",
     "lastName": "Nowak"
   },
   {
-    "id": "player3",
     "firstName": "Marek",
     "lastName": "Jarek"
   }
 ]
 ```
 
+### Example response JSON
+
+```
+["1593578", "1234567", "9876543"]
+```
+
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server. 
-JSON should be an array of `FightData` interface instances. Endpoint returns ids of successfully added fights.
-Existing fights are not updated.
+JSON should be an array of `FightData` interface instances. Server generates unique ids for each fight and
+unique tokens for judges that participate in this fight. Fight id and tokens are a 7 digit string. 
+If player with given id doesn't exist, the fight will not be created. Endpoint returns ids of successfully 
+added fights and judges tokens or null if operation failed.
 
 ### Method
 `POST`
@@ -64,15 +69,11 @@ Existing fights are not updated.
 |------|------|
 | -    | JSON |
 
-### Example JSON
+### Example request JSON
 
 ```
 [
   {
-    "id": "fight1",
-    "mainJudgeId": "main",
-    "redJudgeId": "red",
-    "blueJudgeId": "blue",
     "redPlayerId": "player1",
     "bluePlayerId": "player2",
     "endConditions": [
@@ -87,10 +88,6 @@ Existing fights are not updated.
     ]
   },
   {
-    "id": "fight2",
-    "mainJudgeId": "main_judge",
-    "redJudgeId": "red_judge",
-    "blueJudgeId": "blue_judge",
     "redPlayerId": "player3",
     "bluePlayerId": "player2",
     "endConditions": [
@@ -99,7 +96,32 @@ Existing fights are not updated.
         "value": "10"
       }
     ]
+  },
+  {
+    "redPlayerId": "random_player",
+    "bluePlayerId": "player2",
+    "endConditions": []
   }
+]
+```
+
+### Example response JSON
+
+```
+[
+  {
+    "id": "1234567",
+    "mainJudgeId": "9216543",
+    "redJudgeId": "0964892",
+    "blueJudgeId": "0987654"
+  },
+  {
+    "id": "8975645",
+    "mainJudgeId": "1234567",
+    "redJudgeId": "7777777",
+    "blueJudgeId": "0987654"
+  },
+  null
 ]
 ```
 
@@ -116,7 +138,7 @@ Existing fights are not updated.
 ## `join` 
 
 Endpoint for judges to join the fight. Only previously selected judges can join the fight (they are identified by their ID).
-Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players and role of the judge.
+Endpoint checks if judge is allowed to join this fight, saves its socket and returns information about players, role of the judge and roles of other connected judges. It also send updates to other judges.
 Players have no points, there are no events in the events' history, timer is set to zero minutes.
 
 ### Parameters
@@ -126,11 +148,17 @@ Players have no points, there are no events in the events' history, timer is set
 | judgeId | string |
 
 ### Response (send to the judge that called this endpoint)
-| name       | type      |
-|------------|-----------|
-| role       | JudgeRole |
-| redPlayer  | Player    |
-| bluePlayer | Player    |
+| name       | type        |
+|------------|-------------|
+| role       | JudgeRole   |
+| connected  | JudgeRole[] |
+| redPlayer  | Player      |
+| bluePlayer | Player      |
+
+### Update (send to other connected judges)
+| name       | type        |
+|------------|-------------|
+| newJudge   | JudgeRole   |
 
 where `Player` is an interface:
 
