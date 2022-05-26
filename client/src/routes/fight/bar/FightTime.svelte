@@ -3,18 +3,13 @@
 </script>
 
 <script lang="ts">
-<<<<<<< HEAD
   import { createEventDispatcher, getContext, onMount } from 'svelte';
   import { emptySeq } from '../fight-sequence-components/Store';
   import Icon from '@iconify/svelte';
   import FightEnd from '../modal/FightEnd.svelte';
   import type { Response } from 'model/Communication';
   import { Events, FightSocket, key } from 'routes/FightSocket';
-=======
-    import { createEventDispatcher } from 'svelte';
-    import { emptySeq } from '../fight-sequence-components/Store';
-    import Icon from '@iconify/svelte';
->>>>>>> 5114ab9 (Fixed according to comments)
+
 
   let time: number = 0;
   let timeout: NodeJS.Timeout = null;
