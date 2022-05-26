@@ -120,7 +120,7 @@ export class FightImpl
 
   startFight(): boolean {
     if (this.timer) {
-      if (this.timer.resumeTimer()) {
+      if (this.timer.resumeTimer(Date.now())) {
         this.state = FightState.Running;
         return true;
       }
@@ -138,9 +138,12 @@ export class FightImpl
     this.state = FightState.Finished;
   }
 
-  resumeFight(): boolean {
+  resumeFight(exactPauseTimeInMillis: number): boolean {
     if (this.timer) {
-      if (this.timer.hasTimeEnded() || this.timer.resumeTimer()) {
+      if (
+        this.timer.hasTimeEnded() ||
+        this.timer.resumeTimer(exactPauseTimeInMillis)
+      ) {
         this.state = FightState.Running;
         return true;
       }

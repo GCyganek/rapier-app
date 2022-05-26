@@ -18,10 +18,10 @@ export class Timer implements FightEndConditionFulfilledPublisher {
     this.remainingMillis = timeInMinutes * Timer.MILLISECONDS_IN_MINUTE;
   }
 
-  resumeTimer(): boolean {
+  resumeTimer(exactTimeInMillis: number): boolean {
     if (this.timeoutId || this.timeEnded) return false;
 
-    this.lastTimerStart = Date.now();
+    this.lastTimerStart = exactTimeInMillis;
     this.timeoutId = setTimeout(
       this.notifyTimeEnded.bind(this),
       this.remainingMillis,
@@ -29,12 +29,12 @@ export class Timer implements FightEndConditionFulfilledPublisher {
     return true;
   }
 
-  pauseTimer(exactPauseTimeInMillis: number): boolean {
+  pauseTimer(exactTimeInMillis: number): boolean {
     if (this.timeoutId == null || this.timeEnded) return false;
 
     clearTimeout(this.timeoutId);
     this.timeoutId = null;
-    this.remainingMillis -= exactPauseTimeInMillis - this.lastTimerStart;
+    this.remainingMillis -= exactTimeInMillis - this.lastTimerStart;
     return true;
   }
 

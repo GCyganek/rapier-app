@@ -470,12 +470,13 @@ describe('JudgesGateway', () => {
 
       it('not main judge should not resume timer when it was paused before timer ended', async () => {
         dbFight.state = FightState.Paused;
-        const exactPauseTimeInMillis = Date.now();
-        dbFight.timer.pauseTimer(exactPauseTimeInMillis);
+        const exactTimeInMillis = Date.now();
+        dbFight.timer.pauseTimer(exactTimeInMillis);
 
         wsRed.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
@@ -488,12 +489,13 @@ describe('JudgesGateway', () => {
 
       it('main judge should resume timer when it was paused before timer ended', async () => {
         dbFight.state = FightState.Paused;
-        const exactPauseTimeInMillis = Date.now();
-        dbFight.timer.pauseTimer(exactPauseTimeInMillis);
+        const exactTimeInMillis = Date.now();
+        dbFight.timer.pauseTimer(exactTimeInMillis);
 
         wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
@@ -508,10 +510,12 @@ describe('JudgesGateway', () => {
 
       it('timer should not be resumed again when it is already running', async () => {
         dbFight.state = FightState.Running;
+        const exactTimeInMillis = Date.now();
 
         wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
@@ -525,10 +529,12 @@ describe('JudgesGateway', () => {
       it('fight should be resumed even if fight time has already ended', async () => {
         dbFight.timer.endTimer();
         dbFight.state = FightState.Paused;
+        const exactTimeInMillis = Date.now();
 
         wsMain.emit(JudgesSocketEvents.ResumeTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
@@ -559,12 +565,12 @@ describe('JudgesGateway', () => {
 
       it('not main judge should not pause timer when it is running before timer ended', async () => {
         dbFight.state = FightState.Running;
-        const exactPauseTimeInMillis = Date.now();
+        const exactTimeInMillis = Date.now();
 
         wsRed.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.redJudge.id,
-          exactPauseTimeInMillis: exactPauseTimeInMillis,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
@@ -578,19 +584,19 @@ describe('JudgesGateway', () => {
       it('main judge should pause timer when it is running before timer ended', async () => {
         dbFight.state = FightState.Running;
         dbFight.timer.resumeTimer();
-        const exactPauseTimeInMillis = Date.now();
+        const exactTimeInMillis = Date.now();
 
         wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
-          exactPauseTimeInMillis: exactPauseTimeInMillis,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
             ws.on(JudgesSocketEvents.PauseTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
-              expect(data.exactPauseTimeInMillis).toBe(exactPauseTimeInMillis);
+              expect(data.exactTimeInMillis).toBe(exactTimeInMillis);
               resolve();
             }),
           );
@@ -599,13 +605,13 @@ describe('JudgesGateway', () => {
 
       it('timer should not be paused again when it is already paused', async () => {
         dbFight.state = FightState.Paused;
-        const exactPauseTimeInMillis = Date.now();
-        dbFight.timer.pauseTimer(exactPauseTimeInMillis);
+        const exactTimeInMillis = Date.now();
+        dbFight.timer.pauseTimer(exactTimeInMillis);
 
         wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
-          exactPauseTimeInMillis: exactPauseTimeInMillis,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         await new Promise<void>((resolve) =>
@@ -619,19 +625,19 @@ describe('JudgesGateway', () => {
       it('fight should be paused even if fight time has already ended', async () => {
         dbFight.state = FightState.Running;
         dbFight.timer.endTimer();
-        const exactPauseTimeInMillis = Date.now();
+        const exactTimeInMillis = Date.now();
 
         wsMain.emit(JudgesSocketEvents.PauseTimer, {
           fightId: fight.id,
           judgeId: fight.mainJudge.id,
-          exactPauseTimeInMillis: exactPauseTimeInMillis,
+          exactTimeInMillis: exactTimeInMillis,
         });
 
         for (const ws of [wsMain, wsRed, wsBlue]) {
           await new Promise<void>((resolve) =>
             ws.on(JudgesSocketEvents.PauseTimer, (data) => {
               expect(data.status).toBe(ResponseStatus.OK);
-              expect(data.exactPauseTimeInMillis).toBe(exactPauseTimeInMillis);
+              expect(data.exactTimeInMillis).toBe(exactTimeInMillis);
               resolve();
             }),
           );

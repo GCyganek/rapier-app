@@ -270,13 +270,17 @@ describe('FightImpl', () => {
 
   describe('resumeFight', () => {
     it('should resume fight and timer when fight with end time condition', () => {
-      expect(fight.resumeFight()).toBeTruthy();
+      const exactTimeInMillis = Date.now();
+      expect(fight.resumeFight(exactTimeInMillis)).toBeTruthy();
       expect(fight.timer.timeoutSet()).toBeTruthy();
       expect(fight.state).toBe(FightState.Running);
     });
 
     it('should resume fight with no end time condition', () => {
-      expect(fightWithoutEndConditions.resumeFight()).toBeTruthy();
+      const exactTimeInMillis = Date.now();
+      expect(
+        fightWithoutEndConditions.resumeFight(exactTimeInMillis),
+      ).toBeTruthy();
       expect(fightWithoutEndConditions.state).toBe(FightState.Running);
     });
   });

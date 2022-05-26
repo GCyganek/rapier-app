@@ -29,26 +29,30 @@ describe('Timer', () => {
 
   describe('resumeTimer', () => {
     it('should start running when it was not already started', () => {
-      expect(timer.resumeTimer()).toBeTruthy();
+      const exactTimeInMillis = Date.now();
+      expect(timer.resumeTimer(exactTimeInMillis)).toBeTruthy();
       expect(timer.timeoutSet()).toBeTruthy();
     });
 
     it('should return false after trying to resume timer if it is already running', () => {
-      timer.resumeTimer();
-      expect(timer.resumeTimer()).toBeFalsy();
+      const exactTimeInMillis = Date.now();
+      timer.resumeTimer(exactTimeInMillis);
+      expect(timer.resumeTimer(exactTimeInMillis)).toBeFalsy();
       expect(timer.timeoutSet()).toBeTruthy();
     });
 
     it('should not resume if time has already ended', () => {
       timer.endTimer();
-      expect(timer.resumeTimer()).toBeFalsy();
+      const exactTimeInMillis = Date.now();
+      expect(timer.resumeTimer(exactTimeInMillis)).toBeFalsy();
       expect(timer.timeoutSet()).toBeFalsy();
     });
   });
 
   describe('pauseTimer', () => {
     it('should pause timer when it is running and time has not ended yet', () => {
-      timer.resumeTimer();
+      const exactTimeInMillis = Date.now();
+      timer.resumeTimer(exactTimeInMillis);
       expect(timer.timeoutSet()).toBeTruthy();
       expect(timer.pauseTimer(Date.now())).toBeTruthy();
       expect(timer.timeoutSet()).toBeFalsy();
@@ -69,7 +73,8 @@ describe('Timer', () => {
 
   describe('endTimer', () => {
     it('should end timer when it is running', () => {
-      timer.resumeTimer();
+      const exactTimeInMillis = Date.now();
+      timer.resumeTimer(exactTimeInMillis);
       expect(timer.timeoutSet()).toBeTruthy();
       expect(timer.hasTimeEnded()).toBeFalsy();
       timer.endTimer();
