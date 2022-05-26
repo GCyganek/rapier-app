@@ -3,10 +3,22 @@
   import type { Fighter } from 'model/Fighter';
   import FighterInfo from './bar/FighterInfo.svelte';
   import FightTime from './bar/FightTime.svelte';
+  import {getContext} from "svelte";
+  import {Events, FightSocket, key} from "../FightSocket";
 
   export let red: Fighter;
   export let blue: Fighter;
   export let role: Response.JudgeRole;
+
+  const socket = (getContext(key) as () => FightSocket)();
+
+  socket.on(Events.NewEvents, (response : Response.NewEvent) => {
+    if (response["status"] == "OK") {
+        red.points = response.redPlayer.points;
+        blue.points = response.bluePlayer.points;
+    }
+  });
+
 </script>
 
 <div class="container">

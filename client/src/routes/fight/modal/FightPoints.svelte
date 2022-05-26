@@ -1,13 +1,15 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import {createEventDispatcher, getContext} from 'svelte';
     import Button, { Label } from "@smui/button";
     import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
+    import {FightSocket, key} from "../../FightSocket";
     import { clear } from '../FightSequence.svelte';
 
     export let stack: Batch[];
 
     const dispatch = createEventDispatcher();
+    const socket = (getContext(key) as () => FightSocket)();
 
     export let isOpenModal;
 
@@ -21,10 +23,12 @@
     }
 
     function confirmPoints(){
-        console.log(points);
-        console.log(stack);
-        clear();
-        closeModal();
+        if (points["red"] != null && points["blue"] != null){
+            socket.sendEvents(points);
+            clear();
+            closeModal();
+
+        }
     }
 
     function choosePoints(point, fighter){
@@ -52,19 +56,19 @@
     <div class="pointsDiv">
         <div class="pointDiv">
             {#each possiblePoints as point}
-                <Button class="pointButton" style="background-color: var(--blue-fighter)" on:click={() => choosePoints(point.valueOf(), "blue")}>
-                    <Label>{point}</Label>
-                </Button>
-            {/each}
-            <input type="number" style="background-color: var(--blue-fighter);" bind:value={points["blue"]}>
-        </div>
-        <div class="pointDiv">
-            {#each possiblePoints as point}
                 <Button class="pointButton" style="background-color: var(--red-fighter)" on:click={() => choosePoints(point.valueOf(), "red")}>
                     <Label>{point}</Label>
                 </Button>
             {/each}
             <input type="number" style="background-color: var(--red-fighter);" bind:value={points["red"]}>
+        </div>
+        <div class="pointDiv">
+            {#each possiblePoints as point}
+                <Button class="pointButton" style="background-color: var(--blue-fighter)" on:click={() => choosePoints(point.valueOf(), "blue")}>
+                    <Label>{point}</Label>
+                </Button>
+            {/each}
+            <input type="number" style="background-color: var(--blue-fighter);" bind:value={points["blue"]}>
         </div>
     </div>
     <div class="buttonDiv">
