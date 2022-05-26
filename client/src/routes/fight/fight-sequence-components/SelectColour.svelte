@@ -19,10 +19,6 @@
     export let previousAttacker;
     export let answerDisabled;
 
-    // Draw case handling
-    let isDraw;
-    draw.subscribe(data => {isDraw = data});
-
     let batch = new Batch;
     batch.currentComponent = Components.SelectColour;
 
@@ -63,19 +59,19 @@
 
 </script>
 <div class="container">
-    <button class="red"  on:click="{redHandle}" disabled={isDraw}>
+    <button class="red"  on:click="{redHandle}" disabled={$draw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
         Czerwony
     </button>
     
-    <button class="draw" on:click="{drawHandle}" disabled={isDraw}>
+    <button class="draw" on:click="{drawHandle}" disabled={$draw}>
         <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
         Remis
     </button>
 
-    <button class="blue" on:click="{blueHandle}" disabled={isDraw}>
+    <button class="blue" on:click="{blueHandle}" disabled={$draw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
         Niebieski
@@ -89,6 +85,8 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center; 
     }
@@ -97,28 +95,31 @@
         width: 30vw;   
         height: 100%;
         color: white;
-        font-size: calc(8px + 1.5vw);
+        font-size: clamp(12px, 1.875vw, 46px);
         border-radius: 2vw;
+        flex: 1;
         margin: 0;
+        cursor: pointer;
     }
 
     button.red {
-        background-color: #FF5F69;
-        margin-right: 1vw;
+        background-color: var(--red-fighter);
     }
 
     button.blue {
-        background-color: #4161FE;
-        margin-left: 1vw;
-        margin-right: 1vw;
+        background-color: var(--blue-fighter);
     }
 
     button.draw {
-        background-color: #A6A0D6;
-        margin-left: 1vw;
+        background-color: var(--clr-btn-draw);
     }
 
     button:disabled {
         opacity: 0.5;
     }
+
+    button:disabled:hover {
+        cursor: not-allowed;
+    }
+
 </style>

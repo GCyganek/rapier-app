@@ -4,6 +4,7 @@
 
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
+    import { emptySeq } from '../fight-sequence-components/Store';
     import Icon from '@iconify/svelte';
 
     let time: number = 0;
@@ -56,7 +57,7 @@
 </script>
 
 <div>
-    <button class="returnButton" on:click={() => dispatch('return')}>
+    <button class="returnButton" on:click={() => dispatch('return')} hidden={$emptySeq}>
         <Icon icon="bx:left-arrow-circle" color="#2f4858" height="2rem"/>
     </button>
 

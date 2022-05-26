@@ -69,6 +69,8 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center; 
     }
@@ -77,24 +79,22 @@
         width: 30vw;   
         height: 100%;
         color: white;
-        font-size: calc(8px + 1.5vw);
+        font-size: clamp(12px, 1.875vw, 46px);
         border-radius: 2vw;
+        flex: 1;
         margin: 0;
+        cursor: pointer;
     }
 
     button.timing {
-        background-color: #039590;
-        margin-right: 1vw;
+        background-color: var(--tmg-btn-timing);
     }
 
     button.late {
-        background-color: #4BBC8E;
-        margin-left: 1vw;
-        margin-right: 1vw;
+        background-color: var(--tmg-btn-late);
     }
 
     button.fail {
-        background-color: #9BDE7E;
-        margin-left: 1vw;
+        background-color: var(--tmg-btn-fail);
     }
 </style>

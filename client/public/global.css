@@ -1,6 +1,17 @@
 :root {
   --red-fighter: rgb(255, 95, 105);
   --blue-fighter: rgb(65, 97, 254);
+  --clr-btn-draw: rgb(166, 160, 214);
+  --act-btn-attack: rgb(47, 72, 88);
+  --act-btn-answer: rgb(177, 114, 128);
+  --rst-btn-succeed: rgb(0, 151, 102);
+  --rst-btn-fail: rgb(166, 160, 214);
+  --tmg-btn-fail: rgb(155, 222, 126);
+  --tmg-btn-late: rgb(75, 188, 142);
+  --tmg-btn-timing: rgb(3, 149, 144);
+  --area-btn-head: rgb(227, 112, 135);
+  --area-btn-body: rgb(255, 136, 106); 
+  --area-btn-hand: rgb(255, 195, 84);
   font-size: 18px;
 }
 

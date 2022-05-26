@@ -19,10 +19,6 @@
     export let answerDisabled;
     batch.currentComponent = Components.SelectAction;
 
-    const stepBack = () => {
-        dispatch('clicked', {});
-    }
-
     const attackHandle = () => {
         batch.nextComponent = Components.SelectResult;
         batch.action = Actions.ATTACK;
@@ -59,6 +55,8 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center; 
     }
@@ -67,23 +65,27 @@
         width: 46vw;  
         height: 100%;
         color: white;
-        font-size: calc(12px + 1.5vw);
+        font-size: clamp(16px, 2.1vw, 54px);
         border-radius: 2vw;
+        flex: 1;
         margin-bottom: 0;
         margin-top: 0;
+        cursor: pointer;
     }
 
     button.attack {
-        background-color: #2F4858;
-        margin-right: 1vw;
+        background-color: var(--act-btn-attack);
     }
     button.answer {
-        background-color: #B17280;
-        margin-left: 1vw;
+        background-color: var(--act-btn-answer);
     }
 
     button.answer:disabled {
         opacity: 0.3;
+    }
+
+    button.answer:disabled:hover {
+        cursor: not-allowed;
     }
 
 </style>

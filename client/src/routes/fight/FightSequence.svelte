@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
     import { writable, Writable } from 'svelte/store';
-    import { draw } from './fight-sequence-components/Store';
+    import { draw, emptySeq } from './fight-sequence-components/Store';
     import type { Batch } from './fight-sequence-components/Batch';
 
     const fightSequence: Writable<Batch[]> = writable([]);
@@ -32,6 +32,7 @@
 
         // clear draw case
         draw.set(false);
+        emptySeq.set(true);
     }
 
     const pop = () => {
@@ -41,6 +42,7 @@
         previousAttacker = attackersHistory.at(-1);
         if (attackersHistory.length === 0) {
             previousAttacker = undefined;
+            emptySeq.set(true);
         }
         draw.set(false);
     }
@@ -49,6 +51,7 @@
         previousComponents.push(batch.currentComponent);
         activeComponent.set(options[batch.nextComponent]);
         fightSequence.update(fs => [...fs, batch]);
+        emptySeq.set(false);
     }
 
     export { fightSequence, clear, pop };
