@@ -10,14 +10,13 @@
   import type { Response } from 'model/Communication';
   import { Events, FightSocket, key } from 'routes/FightSocket';
 
+  export let role: Response.JudgeRole;
 
-  let time: number = 0;
+  let time = 0;
   let timeout: NodeJS.Timeout = null;
-  let paused: boolean = false;
+  let paused = false;
 
   const socket = (getContext(key) as () => FightSocket)();
-
-  export let role: Response.JudgeRole;
 
   const dispatch = createEventDispatcher();
   const interval = 1000;
@@ -47,21 +46,27 @@
   };
 
   const pause = () => {
-    dispatch('action', 'pause');
+    if (role === 'MAIN') socket.pauseTimer(time).then();
 
     timeout = (clearTimeout(timeout), null);
     paused = true;
   };
 
   const resume = () => {
-    dispatch('action', 'resume');
+    if (role === 'MAIN') socket.resumeTimer();
 
     preciseTimer(Date.now(), 0);
     paused = false;
   };
 
-  socket.on(Events.PauseTimer, pause);
-  socket.on(Events.ResumeTimer, resume);
+  if (role !== 'MAIN') {
+    socket.on(Events.PauseTimer, (data: Response.Timer) => {
+      time = data.exactPauseTimeInMillis;
+      pause();
+    });
+
+    socket.on(Events.ResumeTimer, resume);
+  }
 
   let isOpenEnd = false;
 

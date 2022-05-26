@@ -6,7 +6,7 @@
   let fightId = '';
   let judgeId = '';
   let socket: FightSocket;
-  
+
   setContext(key, () => socket);
 
   function enterData() {
@@ -46,12 +46,12 @@
     background-repeat: repeat;
   }
 
-  input{
+  input {
     border: 1px black solid;
     width: 9em;
     font-size: 2rem;
   }
-  button{
+  button {
     border: 1px black solid;
     font-size: 2rem;
   }
