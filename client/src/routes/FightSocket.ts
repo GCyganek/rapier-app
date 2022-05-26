@@ -115,7 +115,8 @@ export class FightSocket {
     let eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
-      events: events,
+      //TODO EVENTS
+      events: null,
       redPlayerPoints: points["red"],
       bluePlayerPoints: points["blue"]
     }
