@@ -254,17 +254,20 @@ Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between
 
 Endpoint to resume fight. Only main judge is allowed to resume fight. Endpoint makes sure that it is called by main judge,
 resumes fight (changes fight state to `RUNNING` and resumes timer) and sends message to all judges.
+Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between judges and server.
 
 ### Parameters
 | name                   | type   |
 |------------------------|--------|
 | fightId                | string |
 | judgeId                | string |
+| exactPauseTimeInMillis | number |
 
 ### Response (send to all judges)
 | name                   | type   |
 |------------------------|--------|
 | status                 | string |
+| exactPauseTimeInMillis | number |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist

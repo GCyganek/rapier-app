@@ -8,7 +8,7 @@ import {
 import { Socket } from 'socket.io';
 import { FightsService } from '../services/fights.service';
 import { Response, ResponseStatus } from '../interfaces/response.interface';
-import { PauseTimerResponse } from '../interfaces/pause-timer-response.interface';
+import { TimerResponse } from '../interfaces/timer-response.interface';
 import { Event } from '../interfaces/event.interface';
 import { NewEventsResponse } from '../interfaces/new-events-response';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
@@ -138,6 +138,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   resumeTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
+    @MessageBody('exactTimeInMillis') exactTimeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -152,8 +153,9 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    const response: Response = {
-      status: this.fightsService.resumeTimer(fightId),
+    const response: TimerResponse = {
+      status: this.fightsService.resumeTimer(fightId, exactTimeInMillis),
+      exactTimeInMillis: exactTimeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 
@@ -168,7 +170,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   pauseTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('exactPauseTimeInMillis') exactPauseTimeInMillis: number,
+    @MessageBody('exactTimeInMillis') exactTimeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -183,9 +185,9 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    const response: PauseTimerResponse = {
-      status: this.fightsService.pauseTimer(fightId, exactPauseTimeInMillis),
-      exactPauseTimeInMillis: exactPauseTimeInMillis,
+    const response: TimerResponse = {
+      status: this.fightsService.pauseTimer(fightId, exactTimeInMillis),
+      exactTimeInMillis: exactTimeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 

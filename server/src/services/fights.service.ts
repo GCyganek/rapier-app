@@ -242,7 +242,7 @@ export class FightsService {
     return ResponseStatus.OK;
   }
 
-  resumeTimer(fightId: string): ResponseStatus {
+  resumeTimer(fightId: string, exactTimeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -251,13 +251,13 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.resumeFight()) {
+    if (fight.resumeFight(exactTimeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
   }
 
-  pauseTimer(fightId: string, exactPauseTimeInMillis: number): ResponseStatus {
+  pauseTimer(fightId: string, exactTimeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -266,7 +266,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.pauseFight(exactPauseTimeInMillis)) {
+    if (fight.pauseFight(exactTimeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
