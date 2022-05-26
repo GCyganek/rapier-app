@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
-    import { writable, Writable } from 'svelte/store';
+    import type { Writable } from 'svelte/store';
+    import { writable } from 'svelte/store';
     import type { Batch } from './fight-sequence-components/Batch';
 
     const fightSequence: Writable<Batch[]> = writable([]);
