@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Icon from '@iconify/svelte';
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
@@ -17,11 +17,7 @@
 
     let batch = new Batch;
     batch.currentComponent = Components.SelectArea;
-    batch.nextComponent = Components.SelectFighter;
-
-    const stepBack = () => {
-        dispatch('clicked', {});
-    }
+    batch.nextComponent = Components.SelectColour;
 
     const headHit = () => {
         batch.action = Actions.HEAD;
@@ -68,6 +64,8 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center; 
     }
@@ -76,24 +74,22 @@
         width: 30vw;  
         height: 100%;
         color: white;
-        font-size:calc(8px + 1.5vw);
+        font-size: clamp(12px, 1.875vw, 46px);
         border-radius: 2vw;
+        flex: 1;
         margin: 0;
+        cursor: pointer;
     }
 
     button.head {
-        background-color: #E37087;
-        margin-right: 1vw;
+        background-color: var(--area-btn-head);
     }
 
     button.body {
-        background-color: #FF886A;
-        margin-left: 1vw;
-        margin-right: 1vw;
+        background-color: var(--area-btn-body);
     }
 
     button.hand {
-        background-color: #FFC453;
-        margin-left: 1vw;
+        background-color: var(--area-btn-hand);
     }
 </style>

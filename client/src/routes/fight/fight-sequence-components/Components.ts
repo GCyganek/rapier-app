@@ -3,6 +3,5 @@ export enum Components {
   SelectTiming,
   SelectArea,
   SelectColour,
-  SelectFighter,
   SelectResult,
 }

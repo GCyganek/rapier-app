@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Icon from '@iconify/svelte';
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
@@ -18,9 +18,6 @@
     let batch = new Batch;
     batch.currentComponent = Components.SelectResult;
 
-    const stepBack = () => {
-        dispatch('clicked', {});
-    }
 
     const succeedHandle = () => {
         batch.action = Actions.SUCCESS;
@@ -32,7 +29,7 @@
     const failHandle = () => {
         batch.action = Actions.FAILURE;
         batch.colour = Colours.GRAY;
-        batch.nextComponent = Components.SelectFighter;
+        batch.nextComponent = Components.SelectColour;
         dispatch('clicked', batch);
     }
 
@@ -58,6 +55,8 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center;
     }
@@ -65,19 +64,20 @@
         width: 46vw;  
         height: 100%;
         color: white;
-        font-size: calc(12px + 1.5vw);
+        font-size: clamp(16px, 2.1vw, 54px);
         border-radius: 2vw;
+        flex: 1;
         margin: 0;
+        cursor: pointer;
     }
 
     button.succeed {
-        background-color: #009766;
-        margin-right: 1vw;
+        background-color: var(--rst-btn-succeed);
     }
 
     button.fail {
-        background-color: #A6A0D6;
-        margin-left: 1vw;
+        background-color: var(--rst-btn-fail);
     }
+    
 
 </style>

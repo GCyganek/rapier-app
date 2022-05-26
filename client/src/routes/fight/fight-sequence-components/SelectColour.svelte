@@ -7,6 +7,7 @@
     import { Colours } from "./Colours";
     import { Batch } from "./Batch";
     import { Actions } from './Actions';
+    import { draw } from './Store';
 
     const component = get_current_component();
     const svelteDispatch = createEventDispatcher();
@@ -15,36 +16,67 @@
         svelteDispatch(name, detail)
         component.dispatchEvent && component.dispatchEvent(new CustomEvent(name, { detail }))
     }
+    export let previousAttacker;
+    export let answerDisabled;
 
     let batch = new Batch;
     batch.currentComponent = Components.SelectColour;
-    batch.nextComponent = Components.SelectResult;
 
     const redHandle = () => {
+        if (previousAttacker === "blue") {
+            answerDisabled = false;
+        } else {
+            answerDisabled = true;
+        }
+        previousAttacker = "red";
         batch.colour = Colours.RED;
-        batch.action = Actions.ATTACK;
+        batch.action = Actions.RED;
+        batch.nextComponent = Components.SelectAction;
         dispatch('clicked', batch);
     }
 
     const blueHandle = () => {
+        if (previousAttacker === "red") {
+            answerDisabled = false;    
+        } else {
+            answerDisabled = true;
+        }
+        previousAttacker = "blue";
         batch.colour = Colours.BLUE;
-        batch.action = Actions.ATTACK;
+        batch.action = Actions.BLUE;
+        batch.nextComponent = Components.SelectAction;
         dispatch('clicked', batch);
     }
 
+    const drawHandle = () => {
+        batch.colour = Colours.GRAY;
+        batch.action = Actions.DRAW;
+        draw.set(true);
+        batch.nextComponent = Components.SelectColour;
+        dispatch('clicked', batch);
+    }
+
+
 </script>
 <div class="container">
-    <button class="red"  on:click="{redHandle}" style="min-" >
+    <button class="red"  on:click="{redHandle}" disabled={$draw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em"/>
         <br>
-        Atak
+        Czerwony
     </button>
     
-    <button class="blue" on:click="{blueHandle}" >
+    <button class="draw" on:click="{drawHandle}" disabled={$draw}>
+        <Icon icon="akar-icons:double-sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
+        <br>
+        Remis
+    </button>
+
+    <button class="blue" on:click="{blueHandle}" disabled={$draw}>
         <Icon icon="akar-icons:sword" color="white" width="2.5em" height="2.5em" hFlip={true}/>
         <br>
-        Atak
+        Niebieski
     </button>
+
 </div>
 
 <style>
@@ -53,26 +85,41 @@
         height: 100%;
         margin: auto auto;
         display: flex;
+        flex-direction: row;
+        gap: 1vw;
         justify-content: center;
         align-items: center; 
     }
 
     button {
-        width: 46vw; 
+        width: 30vw;   
         height: 100%;
         color: white;
-        font-size: 1.5rem;
+        font-size: clamp(12px, 1.875vw, 46px);
         border-radius: 2vw;
+        flex: 1;
         margin: 0;
+        cursor: pointer;
     }
-    
+
     button.red {
-        background-color: #FF5F69;
-        margin-right: 1vw;
+        background-color: var(--red-fighter);
     }
 
     button.blue {
-        background-color: #4161FE;
-        margin-left: 1vw;
+        background-color: var(--blue-fighter);
     }
+
+    button.draw {
+        background-color: var(--clr-btn-draw);
+    }
+
+    button:disabled {
+        opacity: 0.5;
+    }
+
+    button:disabled:hover {
+        cursor: not-allowed;
+    }
+
 </style>

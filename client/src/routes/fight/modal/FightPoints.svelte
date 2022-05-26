@@ -3,6 +3,7 @@
     import Button, { Label } from "@smui/button";
     import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
+    import { clear } from '../FightSequence.svelte';
 
     export let stack: Batch[];
 
@@ -22,6 +23,7 @@
     function confirmPoints(){
         console.log(points);
         console.log(stack);
+        clear();
         closeModal();
     }
 

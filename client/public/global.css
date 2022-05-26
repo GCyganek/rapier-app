@@ -1,86 +1,102 @@
 :root {
-	--red-fighter: rgb(255, 95, 105);
-	--blue-fighter: rgb(65, 97, 254);
-	font-size: 18px;
+  --red-fighter: rgb(255, 95, 105);
+  --blue-fighter: rgb(65, 97, 254);
+  --clr-btn-draw: rgb(166, 160, 214);
+  --act-btn-attack: rgb(47, 72, 88);
+  --act-btn-answer: rgb(177, 114, 128);
+  --rst-btn-succeed: rgb(0, 151, 102);
+  --rst-btn-fail: rgb(166, 160, 214);
+  --tmg-btn-fail: rgb(155, 222, 126);
+  --tmg-btn-late: rgb(75, 188, 142);
+  --tmg-btn-timing: rgb(3, 149, 144);
+  --area-btn-head: rgb(227, 112, 135);
+  --area-btn-body: rgb(255, 136, 106); 
+  --area-btn-hand: rgb(255, 195, 84);
+  font-size: 18px;
 }
 
 @media (max-width: 960px) {
-	:root {
-		font-size: 18px;
-	}
+  :root {
+    font-size: 18px;
+  }
 }
 
 @media (max-width: 720px) {
-	:root {
-		font-size: 16px;
-	}
+  :root {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 440px) {
-	:root {
-		font-size: 14px;
-	}
+  :root {
+    font-size: 14px;
+  }
 }
 
-html, body {
-	position: relative;
-	width: 100%;
-	height: 100%;
+html,
+body {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 body {
-	color: #333;
-	margin: 0;
-	box-sizing: border-box;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: #333;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
 
 a {
-	color: rgb(0, 100, 200);
-	text-decoration: none;
+  color: rgb(0, 100, 200);
+  text-decoration: none;
 }
 
 a:hover {
-	text-decoration: underline;
+  text-decoration: underline;
 }
 
 a:visited {
-	color: rgb(0,80,160);
+  color: rgb(0, 80, 160);
 }
 
 label {
-	display: block;
+  display: block;
 }
 
-input, button, select, textarea {
-	font-family: inherit;
-	font-size: inherit;
-	/* -webkit-padding: 0.4em 0; */
-	/* padding: 0.4em; */
-	margin: 0 0 0.5em 0;
-	box-sizing: border-box;
-	border: 1px solid #ccc;
-	border-radius: 2px;
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  /* -webkit-padding: 0.4em 0; */
+  /* padding: 0.4em; */
+  margin: 0 0 0.5em 0;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 2px;
 }
 
 input:disabled {
-	color: #ccc;
+  color: #ccc;
 }
 
 button {
-	color: #333;
-	background-color: #f4f4f4;
-	outline: none;
+  color: #333;
+  background-color: #f4f4f4;
+  outline: none;
 }
 
 button:disabled {
-	color: #999;
+  color: #999;
 }
 
 button:not(:disabled):active {
-	background-color: #ddd;
+  background-color: #ddd;
 }
 
 button:focus {
-	border-color: #666;
+  border-color: #666;
 }
