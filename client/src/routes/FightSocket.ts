@@ -111,8 +111,8 @@ export class FightSocket {
     this.socket.emit(Events.ResumeTimer, this.getIds());
   }
 
-  sendEvents(points, events) {
-    let eventsParameters = {
+  sendEvents(points) {
+    const eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
       //TODO EVENTS
