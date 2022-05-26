@@ -4,6 +4,7 @@
     import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
     import {FightSocket, key} from "../../FightSocket";
+    import { clear } from '../FightSequence.svelte';
 
     export let stack: Batch[];
 
@@ -24,7 +25,9 @@
     function confirmPoints(){
         if (points["red"] != null && points["blue"] != null){
             socket.sendEvents(points, stack);
+            clear();
             closeModal();
+
         }
     }
 

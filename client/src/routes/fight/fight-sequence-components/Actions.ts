@@ -1,6 +1,7 @@
 export enum Actions {
   RED,
   BLUE,
+  DRAW,
   ATTACK,
   COUNTER_ATTACK,
   SUCCESS,
@@ -16,6 +17,7 @@ export namespace Actions {
   const actionMap = {
     [Actions.RED]: 'Czerwony',
     [Actions.BLUE]: 'Niebieski',
+    [Actions.DRAW]: 'Remis',
     [Actions.ATTACK]: 'Atak',
     [Actions.COUNTER_ATTACK]: 'Kontratak',
     [Actions.SUCCESS]: 'Udany',
