@@ -19,9 +19,11 @@
 </script>
 
 {#if !enteredData}
-  <input bind:value={fightId} placeholder="Wprowadź fightID" /><br />
-  <input bind:value={judgeId} placeholder="Wprowadź judgeID" /><br />
-  <button on:click={enterData}> Wejdź </button>
+  <div class="login">
+    <input bind:value={fightId} placeholder="Wprowadź fightID" /><br />
+    <input bind:value={judgeId} placeholder="Wprowadź judgeID" /><br />
+    <button on:click={enterData}> Wejdź </button>
+  </div>
 {:else}
   {#await socket.join()}
     <!-- Bez styli! -->
@@ -32,3 +34,25 @@
     <p>Error: {err}</p>
   {/await}
 {/if}
+
+<style>
+  div.login {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('../resources/fightstart_background_semitransparent.png');
+    background-repeat: repeat;
+  }
+
+  input{
+    border: 1px black solid;
+    width: 9em;
+    font-size: 2rem;
+  }
+  button{
+    border: 1px black solid;
+    font-size: 2rem;
+  }
+</style>
