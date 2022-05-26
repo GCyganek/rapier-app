@@ -20,8 +20,15 @@
 
 {#if !enteredData}
   <div class="login">
-    <input bind:value={fightId} placeholder="ID walki" />
-    <input bind:value={judgeId} placeholder="ID sędziego" />
+    <fieldset>
+      <legend>Identyfikator walki</legend>
+      <input bind:value={fightId}/>
+    </fieldset>
+    <fieldset>
+      <legend>Identyfikator sędziego</legend>
+      <input bind:value={judgeId}/>
+    </fieldset>
+
     <button on:click={enterData}> Wejdź </button>
   </div>
 {:else}
@@ -39,6 +46,7 @@
   div.login {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -54,5 +62,9 @@
   button{
     border: 1px black solid;
     font-size: 2rem;
+  }
+  fieldset{
+    background-color: rgba(255, 255, 255, 0.7);
+
   }
 </style>
