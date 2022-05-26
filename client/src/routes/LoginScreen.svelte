@@ -20,8 +20,8 @@
 
 {#if !enteredData}
   <div class="login">
-    <input bind:value={fightId} placeholder="Wprowadź fightID" /><br />
-    <input bind:value={judgeId} placeholder="Wprowadź judgeID" /><br />
+    <input bind:value={fightId} placeholder="ID walki" />
+    <input bind:value={judgeId} placeholder="ID sędziego" />
     <button on:click={enterData}> Wejdź </button>
   </div>
 {:else}

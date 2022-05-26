@@ -1,26 +1,20 @@
 <script lang="ts">
     import {getContext} from "svelte";
     import {FightSocket, key} from "../../FightSocket";
-    import LoginScreen from "../../LoginScreen.svelte";
 
     const socket = (getContext(key) as () => FightSocket)();
 
     let left = false;
 
     function leave(){
-        //TODO close socket?
-        left = true;
+        window.location.reload();
     }
 </script>
 
-{#if !left}
-    <div class="summary">
-        <p>Walka zakończona!</p>
-        <button on:click={leave}>Wyjdź</button>
-    </div>
-{:else}
-    <LoginScreen/>
-{/if}
+<div class="summary">
+    <p>Walka zakończona!</p>
+    <button on:click={leave}>Wyjdź</button>
+</div>
 
 <style>
     div.summary {
