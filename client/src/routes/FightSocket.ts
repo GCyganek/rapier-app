@@ -111,6 +111,19 @@ export class FightSocket {
     this.socket.emit(Events.ResumeTimer, this.getIds());
   }
 
+  sendNewEvents(points){
+    let newEventsParameters = {
+      fightId: this.fightId,
+      judgeId: this.judgeId,
+      //TODO events?
+      events: null,
+      redPlayerPoints: points["red"],
+      bluePlayerPoints: points["blue"]
+    }
+    if (this.role === 'MAIN')
+      this.socket.emit(Events.NewEvents, newEventsParameters);
+  }
+
   on(event: Events, listener: FightSocket.Listener) {
     this.socket.on(event, listener);
   }

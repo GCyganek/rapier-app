@@ -1,12 +1,14 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import {createEventDispatcher, getContext} from 'svelte';
     import Button, { Label } from "@smui/button";
     import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
+    import {FightSocket, key} from "../../FightSocket";
 
     export let stack: Batch[];
 
     const dispatch = createEventDispatcher();
+    const socket = (getContext(key) as () => FightSocket)();
 
     export let isOpenModal;
 
@@ -22,6 +24,7 @@
     function confirmPoints(){
         console.log(points);
         console.log(stack);
+        // socket.sendNewEvents(points);
         closeModal();
     }
 
