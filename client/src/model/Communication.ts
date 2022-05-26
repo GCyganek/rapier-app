@@ -20,7 +20,7 @@ export namespace Response {
     role: JudgeRole;
   }
 
-  export class Pause extends Base {
+  export class Timer extends Base {
     exactPauseTimeInMillis: number;
   }
 
