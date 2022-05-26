@@ -28,7 +28,7 @@
   </div>
 
   <div class="timer">
-    <FightTime {role} on:action on:return />
+    <FightTime {role} on:return />
   </div>
 </div>
 

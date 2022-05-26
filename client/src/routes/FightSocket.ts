@@ -1,7 +1,8 @@
 import type { DefaultEventsMap } from '@socket.io/component-emitter';
 import type { Response } from 'model/Communication';
+import type { Writable } from 'svelte/store';
 import { io, Socket } from 'socket.io-client';
-import { Writable, writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 export const key = Symbol();
 
@@ -81,6 +82,10 @@ export class FightSocket {
     });
   }
 
+  close() {
+    this.socket.close();
+  }
+
   join() {
     this.socket.emit(Events.Join, this.getIds());
     return this.promiseFor<Response.Join>(
@@ -103,12 +108,24 @@ export class FightSocket {
     return this.promiseFor<Response.Base>(Events.FinishFight);
   }
 
-  pauseTimer() {
-    this.socket.emit(Events.PauseTimer, this.getIds());
+  pauseTimer(at: number) {
+    if (this.role === 'MAIN')
+      this.socket.emit(Events.PauseTimer, {
+        exactPauseTimeInMillis: at,
+        ...this.getIds(),
+      });
+
+    return this.promiseFor<Response.Timer>(Events.PauseTimer);
   }
 
   resumeTimer() {
-    this.socket.emit(Events.ResumeTimer, this.getIds());
+    if (this.role === 'MAIN')
+      this.socket.emit(Events.ResumeTimer, {
+        exactPauseTimeInMillis: Date.now(),
+        ...this.getIds(),
+      });
+
+    return this.promiseFor<Response.Timer>(Events.ResumeTimer);
   }
 
   sendEvents(points) {

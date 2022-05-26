@@ -18,26 +18,10 @@
   export let redPlayer: Fighter;
   export let bluePlayer: Fighter;
   export let role: Response.JudgeRole;
-
-  function timerEventHandler(event: CustomEvent<TimerAction>) {
-    switch (event.detail) {
-      case 'pause':
-        return socket.pauseTimer();
-
-      case 'resume':
-        return socket.resumeTimer();
-    }
-  }
 </script>
 
 <div class={role === 'MAIN' ? 'container-main' : 'container-side'}>
-  <FighterBar
-    red={redPlayer}
-    blue={bluePlayer}
-    {role}
-    on:action={timerEventHandler}
-    on:return={pop}
-  />
+  <FighterBar red={redPlayer} blue={bluePlayer} {role} on:return={pop} />
 
   <FightSequence />
 

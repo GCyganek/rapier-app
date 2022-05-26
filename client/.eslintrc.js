@@ -4,16 +4,23 @@ module.exports = {
     project: 'tsconfig.json',
     tsconfigRootDir: __dirname,
     sourceType: 'module',
+    extraFileExtensions: ['.svelte'],
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['svelte3', '@typescript-eslint/eslint-plugin'],
+  overrides: [
+    {
+      files: ['*.svelte'],
+      processor: 'svelte3/svelte3',
+    },
+  ],
   extends: [
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
   ],
   root: true,
   env: {
-    node: true,
-    jest: true,
+    es6: true,
+    browser: true,
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
@@ -22,5 +29,8 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
+  },
+  settings: {
+    'svelte3/typescript': () => require('typescript'),
   },
 };
