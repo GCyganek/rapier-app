@@ -65,6 +65,12 @@ export class FightSocket {
     return [this.#redSuggestion, this.#blueSuggestion];
   }
 
+  awaitEndCondition() {
+    return this.promiseFor<Response.EndCondition>(
+      Events.FightEndConditionFulfilled,
+    );
+  }
+
   get newEvents() {
     return this.#newEvents;
   }
