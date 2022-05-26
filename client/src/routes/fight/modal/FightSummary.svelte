@@ -4,8 +4,6 @@
 
     const socket = (getContext(key) as () => FightSocket)();
 
-    let left = false;
-
     function leave(){
         window.location.reload();
     }
