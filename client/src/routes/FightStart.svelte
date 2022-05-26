@@ -3,6 +3,7 @@
   import { Events, FightSocket, key } from './FightSocket';
   import { getContext } from 'svelte';
   import type { Response } from 'model/Communication';
+  import FightSummary from "./fight/modal/FightSummary.svelte";
 
   export let response: Response.Join;
   const socket = (getContext(key) as () => FightSocket)();
@@ -15,12 +16,16 @@
 
   let fightState = FightState.Waiting;
 
-  socket.on(Events.FinishFight, () => {
-    fightState = FightState.Finished;
+  socket.on(Events.FinishFight, (response : Response.Status) => {
+    if (response["status"] == "OK") {
+      fightState = FightState.Finished;
+    }
   });
 
-  socket.on(Events.StartFight, () => {
-    fightState = FightState.Started;
+  socket.on(Events.StartFight, (response : Response.Status) => {
+    if (response["status"] == "OK") {
+      fightState = FightState.Started;
+    }
   });
 
   function handleClick() {
@@ -39,13 +44,14 @@
       </button>
     </div>
   {:else}
-    <div class="start">Oczekiwanie na rozpoczęcie spotkania...</div>
+    <div class="start">
+      <p>Oczekiwanie na rozpoczęcie spotkania...</p>
+    </div>
   {/if}
 {:else if fightState === FightState.Started}
   <Fight {...response} />
 {:else if fightState === FightState.Finished}
-  <!--    TODO: Fight summary-->
-  <p>Finished fight!</p>
+  <FightSummary/>
 {/if}
 
 <style>
@@ -71,5 +77,12 @@
   .startButton:active {
     background-color: darkred;
     color: grey;
+  }
+
+  p{
+    font-size: 2rem;
+    font-weight: bold;
+    -webkit-text-stroke: 0.05rem white;
+    text-align: center;
   }
 </style>
