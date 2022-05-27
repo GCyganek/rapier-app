@@ -185,18 +185,20 @@ and `JudgeRole` is an enum:
 
 Endpoint to start fight. Only main judge is allowed to start fight. Endpoint makes sure that 
 it is called by main judge, starts fight (changes fight state to `RUNNING` and starts timer) and 
-sends message to all judges.
+sends message to all judges. Parameter `timeInMillis` is used to synchronize timer and time between judges and server.
 
 ### Parameters
-| name    | type   |
-|---------|--------|
-| fightId | string |
-| judgeId | string |
+| name         | type   |
+|--------------|--------|
+| fightId      | string |
+| judgeId      | string |
+| timeInMillis | number |
 
 ### Response (send to all judges)
-| name       | type   |
-|------------|--------|
-| status     | string |
+| name         | type   |
+|--------------|--------|
+| status       | string |
+| timeInMillis | number |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist
@@ -230,20 +232,20 @@ and sends message to all judges.
 
 Endpoint to pause fight. Only main judge is allowed to pause fight. Endpoint makes sure that it is called by main judge, 
 pauses fight (changes fight state to `PAUSED` and pauses timer) and sends message to all judges.
-Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between judges and server.
+Parameter `timeInMillis` is used to synchronize timer and time between judges and server.
 
 ### Parameters
-| name                   | type   |
-|------------------------|--------|
-| fightId                | string |
-| judgeId                | string |
-| exactPauseTimeInMillis | number |
+| name         | type   |
+|--------------|--------|
+| fightId      | string |
+| judgeId      | string |
+| timeInMillis | number |
 
 ### Response (send to all judges)
-| name                   | type   |
-|------------------------|--------|
-| status                 | string |
-| exactPauseTimeInMillis | number |
+| name         | type   |
+|--------------|--------|
+| status       | string |
+| timeInMillis | number |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist
@@ -254,20 +256,20 @@ Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between
 
 Endpoint to resume fight. Only main judge is allowed to resume fight. Endpoint makes sure that it is called by main judge,
 resumes fight (changes fight state to `RUNNING` and resumes timer) and sends message to all judges.
-Parameter `exactPauseTimeInMillis` is used to synchronize timer and time between judges and server.
+Parameter `timeInMillis` is used to synchronize timer and time between judges and server.
 
 ### Parameters
-| name                   | type   |
-|------------------------|--------|
-| fightId                | string |
-| judgeId                | string |
-| exactPauseTimeInMillis | number |
+| name         | type   |
+|--------------|--------|
+| fightId      | string |
+| judgeId      | string |
+| timeInMillis | number |
 
 ### Response (send to all judges)
-| name                   | type   |
-|------------------------|--------|
-| status                 | string |
-| exactPauseTimeInMillis | number |
+| name         | type   |
+|--------------|--------|
+| status       | string |
+| timeInMillis | number |
 
 ### Error codes
 - `NOT_FOUND` - fight with given fightId doesn't exist

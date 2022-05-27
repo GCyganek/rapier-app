@@ -250,7 +250,8 @@ describe('FightsService', () => {
     });
 
     it('should not start random fight', () => {
-      expect(fightsService.startFight('test 123')).toBe(
+      const timeInMillis = Date.now();
+      expect(fightsService.startFight('test 123', timeInMillis)).toBe(
         ResponseStatus.NotFound,
       );
     });
@@ -278,7 +279,8 @@ describe('FightsService', () => {
         socket as any,
       );
 
-      expect(fightsService.startFight(mockFight.id)).toBe(
+      const timeInMillis = Date.now();
+      expect(fightsService.startFight(mockFight.id, timeInMillis)).toBe(
         ResponseStatus.NotReady,
       );
     });
@@ -292,12 +294,16 @@ describe('FightsService', () => {
         socket as any,
       );
 
-      expect(fightsService.startFight(mockFight.id)).toBe(ResponseStatus.OK);
+      const timeInMillis = Date.now();
+      expect(fightsService.startFight(mockFight.id, timeInMillis)).toBe(
+        ResponseStatus.OK,
+      );
     });
 
     it('should not start not running fight', () => {
       mockFight.state = FightState.Finished;
-      expect(fightsService.startFight(mockFight.id)).toBe(
+      const timeInMillis = Date.now();
+      expect(fightsService.startFight(mockFight.id, timeInMillis)).toBe(
         ResponseStatus.BadRequest,
       );
     });
@@ -411,8 +417,9 @@ describe('FightsService', () => {
 
       fight.timer = new Timer(1, mockFight);
       fight.state = FightState.Scheduled;
+      const timeInMillis = Date.now();
 
-      fightsService.startFight(mockFight.id);
+      fightsService.startFight(mockFight.id, timeInMillis);
       expect(fight.timer.timeoutSet()).toBeTruthy();
       await fightsService.finishFight(mockFight.id);
       expect(fight.timer.timeoutSet()).toBeFalsy();
@@ -425,8 +432,9 @@ describe('FightsService', () => {
 
       fight.state = FightState.Scheduled;
       fight.timer = new Timer(1, mockFight);
+      const timeInMillis = Date.now();
 
-      fightsService.startFight(mockFight.id);
+      fightsService.startFight(mockFight.id, timeInMillis);
       expect(fight.timer.hasTimeEnded()).toBeFalsy();
 
       fight.timer.endTimer();
@@ -453,10 +461,10 @@ describe('FightsService', () => {
 
     it('should resume timer again when it was paused', () => {
       fight.state = FightState.Scheduled;
-      const exactTimeInMillis = Date.now();
-      fightsService.startFight(mockFight.id);
+      const timeInMillis = Date.now();
+      fightsService.startFight(mockFight.id, timeInMillis);
       fightsService.pauseTimer(mockFight.id, Date.now());
-      expect(fightsService.resumeTimer(mockFight.id, exactTimeInMillis)).toBe(
+      expect(fightsService.resumeTimer(mockFight.id, timeInMillis)).toBe(
         ResponseStatus.OK,
       );
       expect(fight.state).toBe(FightState.Running);
@@ -465,11 +473,11 @@ describe('FightsService', () => {
 
     it('should resume timer again when it was paused after fight time has already passed', () => {
       fight.state = FightState.Scheduled;
-      const exactTimeInMillis = Date.now();
-      fightsService.startFight(mockFight.id);
+      const timeInMillis = Date.now();
+      fightsService.startFight(mockFight.id, timeInMillis);
       fightsService.pauseTimer(mockFight.id, Date.now());
       fight.timer.endTimer();
-      expect(fightsService.resumeTimer(mockFight.id, exactTimeInMillis)).toBe(
+      expect(fightsService.resumeTimer(mockFight.id, timeInMillis)).toBe(
         ResponseStatus.OK,
       );
       expect(fight.state).toBe(FightState.Running);
@@ -478,9 +486,11 @@ describe('FightsService', () => {
 
     it('should return bad request when fight is in running state', () => {
       fight.state = FightState.Scheduled;
-      const exactTimeInMillis = Date.now();
-      expect(fightsService.startFight(mockFight.id)).toBe(ResponseStatus.OK);
-      expect(fightsService.resumeTimer(mockFight.id, exactTimeInMillis)).toBe(
+      const timeInMillis = Date.now();
+      expect(fightsService.startFight(mockFight.id, timeInMillis)).toBe(
+        ResponseStatus.OK,
+      );
+      expect(fightsService.resumeTimer(mockFight.id, timeInMillis)).toBe(
         ResponseStatus.BadRequest,
       );
     });
@@ -489,12 +499,13 @@ describe('FightsService', () => {
   describe('pauseTimer', () => {
     jest.useFakeTimers();
     let fight;
+    const timeInMillis = Date.now();
 
     beforeEach(() => {
       fight = fightsService.getFight(mockFight.id);
       fight.timer = new Timer(1, mockFight);
       fight.state = FightState.Scheduled;
-      fightsService.startFight(mockFight.id);
+      fightsService.startFight(mockFight.id, timeInMillis);
     });
 
     afterEach(() => {

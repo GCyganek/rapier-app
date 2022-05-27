@@ -78,6 +78,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   startFight(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
+    @MessageBody('timeInMillis') timeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -92,8 +93,9 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    const response: Response = {
-      status: this.fightsService.startFight(fightId),
+    const response: TimerResponse = {
+      status: this.fightsService.startFight(fightId, timeInMillis),
+      timeInMillis: timeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 
@@ -138,7 +140,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   resumeTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('exactTimeInMillis') exactTimeInMillis: number,
+    @MessageBody('timeInMillis') timeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -154,8 +156,8 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const response: TimerResponse = {
-      status: this.fightsService.resumeTimer(fightId, exactTimeInMillis),
-      exactTimeInMillis: exactTimeInMillis,
+      status: this.fightsService.resumeTimer(fightId, timeInMillis),
+      timeInMillis: timeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 
@@ -170,7 +172,7 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
   pauseTimer(
     @MessageBody('fightId') fightId: string,
     @MessageBody('judgeId') judgeId: string,
-    @MessageBody('exactTimeInMillis') exactTimeInMillis: number,
+    @MessageBody('timeInMillis') timeInMillis: number,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.fightsService.getFight(fightId)) {
@@ -186,8 +188,8 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
     }
 
     const response: TimerResponse = {
-      status: this.fightsService.pauseTimer(fightId, exactTimeInMillis),
-      exactTimeInMillis: exactTimeInMillis,
+      status: this.fightsService.pauseTimer(fightId, timeInMillis),
+      timeInMillis: timeInMillis,
     };
     const fight = this.fightsService.getFight(fightId);
 
