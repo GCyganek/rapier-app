@@ -21,7 +21,7 @@ export namespace Response {
   }
 
   export class Timer extends Base {
-    exactPauseTimeInMillis: number;
+    timeInMillis: number;
   }
 
   export class FightEvent {

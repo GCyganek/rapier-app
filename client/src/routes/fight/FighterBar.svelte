@@ -9,6 +9,7 @@
   export let red: Fighter;
   export let blue: Fighter;
   export let role: Response.JudgeRole;
+  export let start: number;
 
   const socket = (getContext(key) as () => FightSocket)();
 
@@ -28,7 +29,7 @@
   </div>
 
   <div class="timer">
-    <FightTime {role} on:return />
+    <FightTime {role} {start} on:return />
   </div>
 </div>
 

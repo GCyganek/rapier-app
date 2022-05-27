@@ -38,6 +38,19 @@ export class FightSocket {
     this.#newEvents = writable();
   }
 
+  private promiseFor<T extends Response.Base>(
+    event: Events,
+    action: (a: T) => void = null,
+  ): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.socket.once(event, (response: T) => {
+        if (action !== null) action(response);
+
+        response.status !== 'OK' ? reject(response.status) : resolve(response);
+      });
+    });
+  }
+
   awaitNewEvents() {
     if (!this.socket.hasListeners(Events.NewEvents)) {
       this.socket.on(Events.NewEvents, (response: Response.NewEvent) => {
@@ -75,19 +88,6 @@ export class FightSocket {
     return this.#newEvents;
   }
 
-  private promiseFor<T extends Response.Base>(
-    event: Events,
-    action: (a: T) => void = null,
-  ): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.socket.once(event, (response: T) => {
-        if (action !== null) action(response);
-
-        response.status !== 'OK' ? reject(response.status) : resolve(response);
-      });
-    });
-  }
-
   close() {
     this.socket.close();
   }
@@ -100,11 +100,14 @@ export class FightSocket {
     );
   }
 
-  startFight() {
+  startFight(at: number) {
     if (this.role === 'MAIN')
-      this.socket.emit(Events.StartFight, this.getIds());
+      this.socket.emit(Events.StartFight, {
+        ...this.getIds(),
+        timeInMillis: at
+      });
 
-    return this.promiseFor<Response.Base>(Events.StartFight);
+    return this.promiseFor<Response.Timer>(Events.StartFight);
   }
 
   finishFight() {
@@ -117,24 +120,24 @@ export class FightSocket {
   pauseTimer(at: number) {
     if (this.role === 'MAIN')
       this.socket.emit(Events.PauseTimer, {
-        exactPauseTimeInMillis: at,
+        timeInMillis: at,
         ...this.getIds(),
       });
 
     return this.promiseFor<Response.Timer>(Events.PauseTimer);
   }
 
-  resumeTimer() {
+  resumeTimer(at: number) {
     if (this.role === 'MAIN')
       this.socket.emit(Events.ResumeTimer, {
-        exactPauseTimeInMillis: Date.now(),
+        timeInMillis: at,
         ...this.getIds(),
       });
 
     return this.promiseFor<Response.Timer>(Events.ResumeTimer);
   }
 
-  sendEvents(points) {
+  sendEvents(points: { [x: string]: any; }) {
     const eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
