@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { FightSocket, key } from './FightSocket';
   import FightStack from './fight/FightStack.svelte';
   import FightSideProposition from './fight/FightSideProposition.svelte';
-  import { getContext } from 'svelte';
   import type { Fighter } from 'model/Fighter';
   import FighterBar from './fight/FighterBar.svelte';
   import FightSequence, {
@@ -15,10 +13,11 @@
   export let redPlayer: Fighter;
   export let bluePlayer: Fighter;
   export let role: Response.JudgeRole;
+  export let start: number;
 </script>
 
 <div class={role === 'MAIN' ? 'container-main' : 'container-side'}>
-  <FighterBar red={redPlayer} blue={bluePlayer} {role} on:return={pop} />
+  <FighterBar red={redPlayer} blue={bluePlayer} {role} {start} on:return={pop} />
 
   <FightSequence />
 

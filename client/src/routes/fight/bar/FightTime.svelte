@@ -1,44 +1,25 @@
-<script lang="ts" context="module">
-  export type TimerAction = 'pause' | 'resume';
-</script>
-
 <script lang="ts">
-  import { createEventDispatcher, getContext, onMount } from 'svelte';
+  import { createEventDispatcher, getContext } from 'svelte';
   import { emptySeq } from '../fight-sequence-components/Store';
   import Icon from '@iconify/svelte';
   import FightEnd from '../modal/FightEnd.svelte';
   import type { Response } from 'model/Communication';
   import { Events, FightSocket, key } from 'routes/FightSocket';
+  import { PreciseTimer } from 'model/Timer';
 
   export let role: Response.JudgeRole;
+  export let start: number;
 
-  let time = 0;
-  let timeout: NodeJS.Timeout = null;
-  let paused = false;
   let endCondition = false;
+  let timer = new PreciseTimer(start);
+  const time = timer.time;
+  const paused = timer.paused;
 
   const socket = (getContext(key) as () => FightSocket)();
 
   const dispatch = createEventDispatcher();
-  const interval = 1000;
 
   socket.awaitEndCondition().then(() => (endCondition = true));
-
-  const preciseTimer = (last: number, delta: number) => {
-    const now = Date.now();
-    delta = delta + (now - last);
-
-    if (delta >= interval) {
-      delta -= interval;
-      time += 1;
-    }
-
-    timeout = setTimeout(preciseTimer, interval - delta, now, delta);
-  };
-
-  onMount(() => {
-    preciseTimer(Date.now(), 0);
-  });
 
   const showTime = (time: number) => {
     const min = Math.floor(time / 60),
@@ -49,26 +30,24 @@
   };
 
   const pause = () => {
-    if (role === 'MAIN') socket.pauseTimer(time).then();
-
-    timeout = (clearTimeout(timeout), null);
-    paused = true;
+    if (role === 'MAIN') {
+      socket
+        .pauseTimer(Date.now())
+        .then((res) => timer.pause(res.timeInMillis));
+    }
   };
 
   const resume = () => {
-    if (role === 'MAIN') socket.resumeTimer();
-
-    preciseTimer(Date.now(), 0);
-    paused = false;
+    if (role === 'MAIN') {
+      socket
+        .resumeTimer(Date.now())
+        .then((res) => timer.resume(res.timeInMillis));
+    }
   };
 
   if (role !== 'MAIN') {
-    socket.on(Events.PauseTimer, (data: Response.Timer) => {
-      time = data.exactPauseTimeInMillis;
-      pause();
-    });
-
-    socket.on(Events.ResumeTimer, resume);
+    socket.on(Events.PauseTimer, (res) => timer.pause(res.timeInMillis));
+    socket.on(Events.ResumeTimer, (res) => timer.resume(res.timeInMillis));
   }
 
   let isOpenEnd = false;
@@ -96,19 +75,19 @@
     class="info"
     style="background-color: {endCondition ? '#8f1d21' : '#333'};"
   >
-    {showTime(time)}
+    {showTime($time)}
   </div>
 
   <div class="buttonWrapper">
     {#if role === 'MAIN'}
-      {#if paused}
+      {#if $paused}
         <button class="stopButton" on:click={() => openEnd()}>
           <Icon icon="mdi:stop-circle-outline" color="#2f4858" height="2rem" />
         </button>
       {/if}
 
-      <button class="previous" on:click={paused ? resume : pause}>
-        {#if paused}
+      <button class="previous" on:click={$paused ? resume : pause}>
+        {#if $paused}
           <Icon icon="bx:play-circle" color="#2f4858" height="2rem" />
         {:else}
           <Icon icon="carbon:pause-outline" color="#2f4858" height="2rem" />

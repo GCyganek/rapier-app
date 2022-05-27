@@ -6,6 +6,8 @@
   import FightSummary from './fight/modal/FightSummary.svelte';
 
   export let response: Response.Join;
+  let startPointSync = 0;
+
   const socket = (getContext(key) as () => FightSocket)();
 
   enum FightState {
@@ -22,14 +24,15 @@
     }
   });
 
-  socket.on(Events.StartFight, (response: Response.Status) => {
-    if (response['status'] == 'OK') {
+  socket.on(Events.StartFight, (res) => {
+    if (response.status === 'OK') {
       fightState = FightState.Started;
+      startPointSync = res.timeInMillis;
     }
   });
 
   function handleClick() {
-    socket.startFight();
+    socket.startFight(Date.now());
   }
 </script>
 
@@ -49,7 +52,7 @@
     </div>
   {/if}
 {:else if fightState === FightState.Started}
-  <Fight {...response} />
+  <Fight {...response} start={startPointSync} />
 {:else if fightState === FightState.Finished}
   <FightSummary />
 {/if}
