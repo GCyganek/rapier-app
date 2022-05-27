@@ -244,13 +244,15 @@ describe('FightImpl', () => {
 
   describe('startFight', () => {
     it('should start fight and timer when fight with end time condition', () => {
-      expect(fight.startFight()).toBeTruthy();
+      const timeInMillis = Date.now();
+      expect(fight.startFight(timeInMillis)).toBeTruthy();
       expect(fight.timer.timeoutSet).toBeTruthy();
       expect(fight.state).toBe(FightState.Running);
     });
 
     it('should start fight with no end time condition', () => {
-      expect(fightWithoutEndConditions.startFight()).toBeTruthy();
+      const timeInMillis = Date.now();
+      expect(fightWithoutEndConditions.startFight(timeInMillis)).toBeTruthy();
       expect(fightWithoutEndConditions.state).toBe(FightState.Running);
     });
   });
@@ -270,17 +272,15 @@ describe('FightImpl', () => {
 
   describe('resumeFight', () => {
     it('should resume fight and timer when fight with end time condition', () => {
-      const exactTimeInMillis = Date.now();
-      expect(fight.resumeFight(exactTimeInMillis)).toBeTruthy();
+      const timeInMillis = Date.now();
+      expect(fight.resumeFight(timeInMillis)).toBeTruthy();
       expect(fight.timer.timeoutSet()).toBeTruthy();
       expect(fight.state).toBe(FightState.Running);
     });
 
     it('should resume fight with no end time condition', () => {
-      const exactTimeInMillis = Date.now();
-      expect(
-        fightWithoutEndConditions.resumeFight(exactTimeInMillis),
-      ).toBeTruthy();
+      const timeInMillis = Date.now();
+      expect(fightWithoutEndConditions.resumeFight(timeInMillis)).toBeTruthy();
       expect(fightWithoutEndConditions.state).toBe(FightState.Running);
     });
   });

@@ -118,9 +118,9 @@ export class FightImpl
     return [FightState.Running, FightState.Paused].includes(this.state);
   }
 
-  startFight(): boolean {
+  startFight(timeInMillis: number): boolean {
     if (this.timer) {
-      if (this.timer.resumeTimer(Date.now())) {
+      if (this.timer.resumeTimer(timeInMillis)) {
         this.state = FightState.Running;
         return true;
       }
@@ -138,12 +138,9 @@ export class FightImpl
     this.state = FightState.Finished;
   }
 
-  resumeFight(exactPauseTimeInMillis: number): boolean {
+  resumeFight(timeInMillis: number): boolean {
     if (this.timer) {
-      if (
-        this.timer.hasTimeEnded() ||
-        this.timer.resumeTimer(exactPauseTimeInMillis)
-      ) {
+      if (this.timer.hasTimeEnded() || this.timer.resumeTimer(timeInMillis)) {
         this.state = FightState.Running;
         return true;
       }
@@ -153,12 +150,9 @@ export class FightImpl
     return true;
   }
 
-  pauseFight(exactPauseTimeInMillis: number): boolean {
+  pauseFight(timeInMillis: number): boolean {
     if (this.timer) {
-      if (
-        this.timer.hasTimeEnded() ||
-        this.timer.pauseTimer(exactPauseTimeInMillis)
-      ) {
+      if (this.timer.hasTimeEnded() || this.timer.pauseTimer(timeInMillis)) {
         this.state = FightState.Paused;
         return true;
       }

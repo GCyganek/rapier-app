@@ -189,7 +189,7 @@ export class FightsService {
     return ResponseStatus.OK;
   }
 
-  startFight(fightId: string): ResponseStatus {
+  startFight(fightId: string, timeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -200,7 +200,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.startFight()) {
+    if (fight.startFight(timeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
@@ -242,7 +242,7 @@ export class FightsService {
     return ResponseStatus.OK;
   }
 
-  resumeTimer(fightId: string, exactTimeInMillis: number): ResponseStatus {
+  resumeTimer(fightId: string, timeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -251,13 +251,13 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.resumeFight(exactTimeInMillis)) {
+    if (fight.resumeFight(timeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
   }
 
-  pauseTimer(fightId: string, exactTimeInMillis: number): ResponseStatus {
+  pauseTimer(fightId: string, timeInMillis: number): ResponseStatus {
     const fight = this.fights.get(fightId);
 
     if (fight == undefined) {
@@ -266,7 +266,7 @@ export class FightsService {
       return ResponseStatus.BadRequest;
     }
 
-    if (fight.pauseFight(exactTimeInMillis)) {
+    if (fight.pauseFight(timeInMillis)) {
       return ResponseStatus.OK;
     }
     return ResponseStatus.BadRequest;
