@@ -104,7 +104,7 @@ export class FightSocket {
     if (this.role === 'MAIN')
       this.socket.emit(Events.StartFight, {
         ...this.getIds(),
-        timeInMillis: at
+        timeInMillis: at,
       });
 
     return this.promiseFor<Response.Timer>(Events.StartFight);
@@ -137,7 +137,7 @@ export class FightSocket {
     return this.promiseFor<Response.Timer>(Events.ResumeTimer);
   }
 
-  sendEvents(points: { [x: string]: any; }) {
+  sendEvents(points: { [x: string]: any }) {
     const eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
