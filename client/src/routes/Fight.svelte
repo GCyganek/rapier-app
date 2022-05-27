@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { TimerAction } from './fight/bar/FightTime.svelte';
   import { FightSocket, key } from './FightSocket';
   import FightStack from './fight/FightStack.svelte';
   import FightSideProposition from './fight/FightSideProposition.svelte';
@@ -12,8 +11,6 @@
     pop,
   } from './fight/FightSequence.svelte';
   import type { Response } from 'model/Communication';
-
-  const socket = (getContext(key) as () => FightSocket)();
 
   export let redPlayer: Fighter;
   export let bluePlayer: Fighter;

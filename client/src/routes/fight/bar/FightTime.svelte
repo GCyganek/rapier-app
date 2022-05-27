@@ -15,11 +15,14 @@
   let time = 0;
   let timeout: NodeJS.Timeout = null;
   let paused = false;
+  let endCondition = false;
 
   const socket = (getContext(key) as () => FightSocket)();
 
   const dispatch = createEventDispatcher();
   const interval = 1000;
+
+  socket.awaitEndCondition().then(() => (endCondition = true));
 
   const preciseTimer = (last: number, delta: number) => {
     const now = Date.now();
@@ -81,11 +84,18 @@
 </script>
 
 <div>
-    <button class="returnButton" on:click={() => dispatch('return')} hidden={$emptySeq}>
-        <Icon icon="bx:left-arrow-circle" color="#2f4858" height="2rem"/>
-    </button>
+  <button
+    class="returnButton"
+    on:click={() => dispatch('return')}
+    hidden={$emptySeq}
+  >
+    <Icon icon="bx:left-arrow-circle" color="#2f4858" height="2rem" />
+  </button>
 
-  <div class="info">
+  <div
+    class="info"
+    style="background-color: {endCondition ? '#8f1d21' : '#333'};"
+  >
     {showTime(time)}
   </div>
 
