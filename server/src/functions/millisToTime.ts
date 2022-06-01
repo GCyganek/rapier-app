@@ -11,6 +11,7 @@ export default function millisToTime(timeInMillis: number): string {
   hours %= 60;
   hours %= 24; // fight shouldn't really last as long as to go beyond 24 hours lol
 
-  return `${padToTwoDigits(hours)}:${padToTwoDigits(minutes)}:
-    ${padToTwoDigits(seconds)}`;
+  return `${padToTwoDigits(hours)}:${padToTwoDigits(minutes)}:${padToTwoDigits(
+    seconds,
+  )}`;
 }
