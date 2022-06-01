@@ -13,6 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FightDocument, MongoFight } from '../schemas/fight.schema';
 import { customAlphabet } from 'nanoid';
+import 'dotenv/config';
 
 @Injectable()
 export class FightsService {
@@ -169,6 +170,11 @@ export class FightsService {
         return ResponseStatus.NotFound;
       }
 
+      if (['test', 'prod'].includes(process.env.NODE_ENV)) {
+        if (fightData.state === FightState.Finished) {
+          return ResponseStatus.FightFinished;
+        }
+      }
       fight = this.convertFightDataToFight(fightData);
     }
 
