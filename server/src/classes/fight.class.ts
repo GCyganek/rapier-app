@@ -10,10 +10,9 @@ import { Timer } from './timer.class';
 import { Socket } from 'socket.io';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
-import { assert, time } from 'console';
+import { assert } from 'console';
 import { JudgeRole } from '../interfaces/join-response.interface';
 import millisToTime from '../functions/millisToTime';
-import e from 'express';
 
 export class FightImpl
   implements

@@ -8,7 +8,7 @@ export default function millisToTime(timeInMillis: number): string {
   let hours = Math.floor(minutes / 60);
 
   seconds %= 60;
-  hours %= 60;
+  minutes %= 60;
   hours %= 24; // fight shouldn't really last as long as to go beyond 24 hours lol
 
   return `${padToTwoDigits(hours)}:${padToTwoDigits(minutes)}:${padToTwoDigits(
