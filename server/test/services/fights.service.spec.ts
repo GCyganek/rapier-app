@@ -217,6 +217,22 @@ describe('FightsService', () => {
       ).toBe(ResponseStatus.NotFound);
     });
 
+    it('should not be able to join finished fight', async () => {
+      mockFight.state = FightState.Finished;
+      jest.spyOn(model, 'findOne').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValueOnce(mockFight),
+      } as any);
+
+      expect(
+        await fightsService.addJudge(
+          mockFight.id,
+          mockFight.mainJudge.id,
+          null,
+        ),
+      ).toBe(ResponseStatus.FightFinished);
+      mockFight.state = FightState.Scheduled;
+    });
+
     it('red judge should be able to join fight and save his/her socket', async () => {
       jest.spyOn(model, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(mockMongoFight),
