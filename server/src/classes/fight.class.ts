@@ -10,8 +10,10 @@ import { Timer } from './timer.class';
 import { Socket } from 'socket.io';
 import { FightEndConditionFulfilledObserver } from '../interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
-import { assert } from 'console';
+import { assert, time } from 'console';
 import { JudgeRole } from '../interfaces/join-response.interface';
+import millisToTime from '../functions/millisToTime';
+import e from 'express';
 
 export class FightImpl
   implements
@@ -30,6 +32,12 @@ export class FightImpl
 
   private fightEndAlreadyNotified;
   readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[];
+
+  startedAt: string;
+  finishedAt: string;
+  duration: string;
+  private currentDurationInMillis: number;
+  private lastFightResume: number;
 
   constructor(
     readonly id: string,
@@ -59,6 +67,8 @@ export class FightImpl
 
     this.fightEndAlreadyNotified = false;
     this.fightEndConditionFulfilledObservers = [];
+
+    this.startedAt = new Date().toString();
   }
 
   judgeSocketAlreadyAssigned(judgeId: string, socket: Socket): boolean {
@@ -118,16 +128,21 @@ export class FightImpl
     return [FightState.Running, FightState.Paused].includes(this.state);
   }
 
+  resumeTimerIfExists(timeInMillis: number): boolean {
+    return this.timer
+      ? this.timer.hasTimeEnded() || this.timer.resumeTimer(timeInMillis)
+      : true;
+  }
+
   startFight(timeInMillis: number): boolean {
-    if (this.timer) {
-      if (this.timer.resumeTimer(timeInMillis)) {
-        this.state = FightState.Running;
-        return true;
-      }
-      return false;
+    const result = this.resumeTimerIfExists(timeInMillis);
+    if (result) {
+      this.currentDurationInMillis = 0;
+      this.lastFightResume = timeInMillis;
+      this.state = FightState.Running;
+      return true;
     }
-    this.state = FightState.Running;
-    return true;
+    return false;
   }
 
   finishFight(): void {
@@ -135,31 +150,43 @@ export class FightImpl
       this.timer.endTimer();
     }
 
+    const now = new Date();
+    this.finishedAt = now.toString();
+
+    if (this.state !== FightState.Paused) {
+      this.currentDurationInMillis +=
+        now.getMilliseconds() - this.lastFightResume; // could change that if frontent would send precise end time
+    }
+
+    this.duration = millisToTime(this.currentDurationInMillis);
+
     this.state = FightState.Finished;
   }
 
   resumeFight(timeInMillis: number): boolean {
-    if (this.timer) {
-      if (this.timer.hasTimeEnded() || this.timer.resumeTimer(timeInMillis)) {
-        this.state = FightState.Running;
-        return true;
-      }
-      return false;
+    const result = this.resumeTimerIfExists(timeInMillis);
+    if (result) {
+      this.state = FightState.Running;
+      this.lastFightResume = timeInMillis;
+      return true;
     }
-    this.state = FightState.Running;
-    return true;
+    return false;
+  }
+
+  pauseTimerIfExists(timeInMillis: number): boolean {
+    return this.timer
+      ? this.timer.hasTimeEnded() || this.timer.pauseTimer(timeInMillis)
+      : true;
   }
 
   pauseFight(timeInMillis: number): boolean {
-    if (this.timer) {
-      if (this.timer.hasTimeEnded() || this.timer.pauseTimer(timeInMillis)) {
-        this.state = FightState.Paused;
-        return true;
-      }
-      return false;
+    const result = this.pauseTimerIfExists(timeInMillis);
+    if (result) {
+      this.currentDurationInMillis += timeInMillis - this.lastFightResume;
+      this.state = FightState.Paused;
+      return true;
     }
-    this.state = FightState.Paused;
-    return true;
+    return false;
   }
 
   addNewEvents(
