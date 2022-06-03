@@ -32,9 +32,9 @@ export class FightImpl
   private fightEndAlreadyNotified;
   readonly fightEndConditionFulfilledObservers: FightEndConditionFulfilledObserver[];
 
-  startedAt: string;
-  finishedAt: string;
-  duration: string;
+  startedAt: number;
+  finishedAt: number;
+  duration: number;
   private currentDurationInMillis: number;
   private lastFightResume: number;
 
@@ -67,7 +67,7 @@ export class FightImpl
     this.fightEndAlreadyNotified = false;
     this.fightEndConditionFulfilledObservers = [];
 
-    this.startedAt = new Date().toString();
+    this.startedAt = new Date().valueOf();
   }
 
   judgeSocketAlreadyAssigned(judgeId: string, socket: Socket): boolean {
@@ -150,14 +150,14 @@ export class FightImpl
     }
 
     const now = new Date();
-    this.finishedAt = now.toString();
+    this.finishedAt = now.valueOf();
 
     if (this.state !== FightState.Paused) {
       this.currentDurationInMillis +=
         now.getMilliseconds() - this.lastFightResume; // could change that if frontent would send precise end time
     }
 
-    this.duration = millisToTime(this.currentDurationInMillis);
+    this.duration = this.currentDurationInMillis;
 
     this.state = FightState.Finished;
   }

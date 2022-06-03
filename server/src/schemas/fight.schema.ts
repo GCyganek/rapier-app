@@ -37,13 +37,16 @@ export class MongoFight {
   eventsHistory: Event[];
 
   @Prop()
-  startedAt: string;
+  startedAt: number;
 
   @Prop()
-  finishedAt: string;
+  finishedAt: number;
 
   @Prop()
-  fightDuration: string;
+  fightDuration: number;
+
+  @Prop()
+  scheduledStartTime: number;
 }
 
 export const FightSchema = SchemaFactory.createForClass(MongoFight);
