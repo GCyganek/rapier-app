@@ -172,6 +172,7 @@
         border: 0.1em solid black;
         text-align: center;
         color: white;
+        -moz-appearance: textfield;
     }
 
 
@@ -199,6 +200,7 @@
         padding: 0 1em 0 1em;
         border-radius: 2em;
     }
+
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
         -webkit-appearance: none;
