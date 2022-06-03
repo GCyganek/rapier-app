@@ -35,6 +35,18 @@ export class MongoFight {
 
   @Prop()
   eventsHistory: Event[];
+
+  @Prop()
+  startedAt: number;
+
+  @Prop()
+  finishedAt: number;
+
+  @Prop()
+  fightDuration: number;
+
+  @Prop()
+  scheduledStartTime: number;
 }
 
 export const FightSchema = SchemaFactory.createForClass(MongoFight);

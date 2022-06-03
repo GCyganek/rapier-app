@@ -220,7 +220,10 @@ export class FightsService {
           state: fight.state,
           redPlayer: fight.redPlayer,
           bluePlayer: fight.bluePlayer,
-          eventsHistory: fight.eventsHistory as any, // 'as any' just for now
+          eventsHistory: fight.eventsHistory as any,
+          startedAt: fight.startedAt,
+          finishedAt: fight.finishedAt,
+          fightDuration: fight.duration,
         },
       )
       .exec();
