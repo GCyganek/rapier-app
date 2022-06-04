@@ -78,10 +78,6 @@ export class FightSocket {
       }
     };
 
-<<<<<<< HEAD
-    // if (!this.socket.hasListeners(Events.EventsSuggestion))
-=======
->>>>>>> c0268b5 (Final commit)
     this.socket.on(Events.EventsSuggestion, listener);
 
     return [this.#redSuggestion, this.#blueSuggestion];
