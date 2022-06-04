@@ -25,8 +25,6 @@
     function confirmPoints(){
         if (points["red"] != null && points["blue"] != null){
             socket.sendEvents(points, stack);
-            console.log(points);
-            console.log(stack);
             clear();
             closeModal();
         }

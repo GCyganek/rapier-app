@@ -58,7 +58,6 @@ export class FightSocket {
     if (!this.socket.hasListeners(Events.NewEvents)) {
       this.socket.on(Events.NewEvents, (response: Response.NewEvent) => {
         this.#newEvents.set(response);
-        console.log(response);
       });
     }
 
@@ -69,11 +68,9 @@ export class FightSocket {
     const listener = (response: Response.Suggestion) => {
       switch (response.judgeColor.toUpperCase()) {
         case 'RED':
-          console.log(response);
           return this.#redSuggestion.set(response);
 
         case 'BLUE':
-          console.log(response);
           return this.#blueSuggestion.set(response);
       }
     };
