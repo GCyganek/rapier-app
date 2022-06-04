@@ -3,6 +3,7 @@ import type { Response } from 'model/Communication';
 import type { Writable } from 'svelte/store';
 import { io, Socket } from 'socket.io-client';
 import { writable } from 'svelte/store';
+import type { Batch } from './fight/fight-sequence-components/Batch';
 
 export const key = Symbol();
 
@@ -36,6 +37,8 @@ export class FightSocket {
     this.socket.on('disconnect', console.warn);
     this.socket.on('connect_error', console.error);
     this.#newEvents = writable();
+    this.#redSuggestion = writable();
+    this.#blueSuggestion = writable();
   }
 
   private promiseFor<T extends Response.Base>(
@@ -55,6 +58,7 @@ export class FightSocket {
     if (!this.socket.hasListeners(Events.NewEvents)) {
       this.socket.on(Events.NewEvents, (response: Response.NewEvent) => {
         this.#newEvents.set(response);
+        console.log(response);
       });
     }
 
@@ -63,17 +67,19 @@ export class FightSocket {
 
   awaitSuggestions() {
     const listener = (response: Response.Suggestion) => {
-      switch (response.judgeColor) {
+      switch (response.judgeColor.toUpperCase()) {
         case 'RED':
+          console.log(response);
           return this.#redSuggestion.set(response);
 
         case 'BLUE':
+          console.log(response);
           return this.#blueSuggestion.set(response);
       }
     };
 
-    if (this.socket.hasListeners(Events.EventsSuggestion))
-      this.socket.on(Events.EventsSuggestion, listener);
+    // if (!this.socket.hasListeners(Events.EventsSuggestion))
+    this.socket.on(Events.EventsSuggestion, listener);
 
     return [this.#redSuggestion, this.#blueSuggestion];
   }
@@ -137,18 +143,20 @@ export class FightSocket {
     return this.promiseFor<Response.Timer>(Events.ResumeTimer);
   }
 
-  sendEvents(points: { [x: string]: any }) {
+  sendEvents(points: { [x: string]: any }, stack: Batch[]) {
     const eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
       //TODO EVENTS
-      events: null,
+      events: stack,
       redPlayerPoints: points['red'],
       bluePlayerPoints: points['blue'],
     };
     if (this.role === 'MAIN')
       this.socket.emit(Events.NewEvents, eventsParameters);
-    else this.socket.emit(Events.EventsSuggestion, eventsParameters);
+    else {
+      this.socket.emit(Events.EventsSuggestion, eventsParameters);
+    }
   }
 
   on(event: Events, listener: FightSocket.Listener) {

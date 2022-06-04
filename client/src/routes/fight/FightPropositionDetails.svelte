@@ -1,18 +1,33 @@
 <script lang="ts">
+    import { Label } from "@smui/button";
+    import { createEventDispatcher } from "svelte";
+    import Button from "@smui/button/src/Button.svelte";
     import type { Response } from "model/Communication";
- 
+    import FightSuggestion from "./modal/FightSuggestion.svelte";
+
+    const dispatch = createEventDispatcher();
     export let suggestion: Response.Suggestion;
+    let isOpenModal = false;
+
+    function openModal(suggestion) {
+        dispatch("suggestion");
+        isOpenModal = true;
+    }
+
+    function closeModal() {
+        isOpenModal = false;
+        suggestion = undefined;
+    }
 </script>
 
-{#if suggestion}
+{#if suggestion!==undefined}
     <div class={suggestion.judgeColor.toLowerCase()}>
-        <span class="red-points"> 
-            {suggestion.redPlayerPoints}
-        </span>
-        
-        <span class="blue-points">
-            {suggestion.bluePlayerPoints}
-        </span>
+        <button class="suggestion" 
+                style="background-color: {suggestion.judgeColor.toLowerCase()==="red" ? 'var(--red-fighter)' : 'var(--blue-fighter)'}" 
+                on:click={() => openModal(suggestion)}>
+                Czerwony: {suggestion.redPlayerPoints}, Niebieski: {suggestion.bluePlayerPoints}
+        </button>
+        <FightSuggestion suggestion={suggestion} isOpenModal={isOpenModal} on:closeModal={closeModal} />
     </div>
 {:else}
     <div>
@@ -21,16 +36,14 @@
 {/if}
 
 <style>
-    div.red {
-        border: 1px var(--red-fighter) solid;
+    div.red, div.blue {
+        width: 100%;
     }
 
-    div.blue {
-        border: 1px var(--blue-fighter) solid;
-    }
-
-    span {
+    button.suggestion {
+        width: 100%;
         padding: .125rem .5rem;
+        border-radius: 0.25em;
         color: white;
         text-align: center;
     }

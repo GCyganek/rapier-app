@@ -1,4 +1,5 @@
 import type { Fighter } from './Fighter';
+import type { Batch } from 'routes/fight/fight-sequence-components/Batch';
 
 export namespace Response {
   export type Color = 'RED' | 'BLUE';
@@ -42,7 +43,7 @@ export namespace Response {
 
   export class Suggestion extends Base {
     judgeColor: Color;
-    events: FightEvent[];
+    events: Batch[];
     redPlayerPoints: number;
     bluePlayerPoints: number;
   }

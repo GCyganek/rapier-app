@@ -1,49 +1,41 @@
 <script lang="ts">
     import {createEventDispatcher, getContext} from 'svelte';
     import Button, { Label } from "@smui/button";
-    import type { Batch } from "../fight-sequence-components/Batch";
     import { Actions } from "../fight-sequence-components/Actions";
     import {FightSocket, key} from "../../FightSocket";
-    import { clear } from '../FightSequence.svelte';
+    import type { Response } from "model/Communication";
 
-    export let stack: Batch[];
+    export let suggestion: Response.Suggestion;
 
     const dispatch = createEventDispatcher();
     const socket = (getContext(key) as () => FightSocket)();
 
-    export let isOpenModal;
+    export let isOpenModal: boolean;
 
-    let possiblePoints = [0, 1, 2, 3];
     let points = {};
+    points["red"] = suggestion.redPlayerPoints;
+    points["blue"] = suggestion.bluePlayerPoints;
 
     function closeModal() {
-        points = {};
         isOpenModal = false;
         dispatch('closeModal', { isOpenModal });
     }
 
-    function confirmPoints(){
-        if (points["red"] != null && points["blue"] != null){
-            socket.sendEvents(points, stack);
-            console.log(points);
-            console.log(stack);
-            clear();
-            closeModal();
-        }
+    function confirmSuggestion(){
+        socket.sendEvents(points, suggestion.events);
+        closeModal();
     }
 
-    function choosePoints(point, fighter){
-        points[fighter] = point;
-    }
 </script>
 
 <div id="background" style="--display: {isOpenModal ? 'block' : 'none'};"></div>
 <div id="modal" style="--display: {isOpenModal ? 'block' : 'none'};">
-    <p class="pointsTitle">Propozycja wyników</p>
+    <p class="pointsTitle" 
+        style="{suggestion.judgeColor.toLowerCase()==="red" ? 'var(--red-fighter)' : 'var(--blue-fighter)'}">Propozycja wyników</p>
     <p>Sekwencja zdarzeń</p>
     <div class="container">
         <div class="actions">
-            {#each stack as batch}
+            {#each suggestion.events as batch}
             <span class="action" style="background-color: {batch.colour}">
                 {
                     Actions.toHumanReadable(batch.action)
@@ -55,21 +47,14 @@
     </div>
     <p>Proponowane punkty</p>
     <div class="pointsDiv">
-        <div class="pointDiv">
-            {#each possiblePoints as point}
-                <Button class="pointButton" style="background-color: var(--red-fighter)" on:click={() => choosePoints(point.valueOf(), "red")}>
-                    <Label>{point}</Label>
-                </Button>
-            {/each}
-            <input type="number" style="background-color: var(--red-fighter);" bind:value={points["red"]}>
+        <div class="redDiv">
+            <p>Czerwony</p>
+            <p>{suggestion.redPlayerPoints}</p>
         </div>
-        <div class="pointDiv">
-            {#each possiblePoints as point}
-                <Button class="pointButton" style="background-color: var(--blue-fighter)" on:click={() => choosePoints(point.valueOf(), "blue")}>
-                    <Label>{point}</Label>
-                </Button>
-            {/each}
-            <input type="number" style="background-color: var(--blue-fighter);" bind:value={points["blue"]}>
+        <p>:</p>
+        <div class="blueDiv">
+            <p>{suggestion.bluePlayerPoints}</p>
+            <p>Niebieski</p>
         </div>
     </div>
     <div class="buttonDiv">
@@ -77,7 +62,7 @@
             <Label>Odrzuć</Label>
         </Button>
         <span class="spacer"></span>
-        <Button class="bottomButton" id="confirmButton" on:click={confirmPoints}>
+        <Button class="bottomButton" id="confirmButton" on:click={confirmSuggestion}>
             <Label>Zatwierdź</Label>
         </Button>
     </div>
@@ -147,14 +132,28 @@
     .pointsDiv{
         display: flex;
         align-items: center;
-        flex-direction: column;
+        justify-content: center;
         margin: 0.25em;
     }
-    .pointDiv{
+
+    .pointsDiv div{
+        color: white;
+        flex: 1;
         display: flex;
-        align-items: center;
-        flex-direction: row;
-        margin: 0.25em;
+        justify-content: space-between;
+        padding: 0.25em;
+    }
+
+    .redDiv {
+        background-color: var(--red-fighter);
+        border-top-left-radius: 1em;
+        border-bottom-left-radius: 1em;
+    }
+
+    .blueDiv {
+        background-color: var(--blue-fighter);
+        border-top-right-radius: 1em;
+        border-bottom-right-radius: 1em;
     }
 
     * :global(.pointButton){
@@ -164,17 +163,6 @@
         border-radius: 0.5em;
         color: white;
     }
-
-    input[type="number"]{
-        height: 2.5em;
-        width: 2.5em;
-        margin: 0 0.5em;
-        border-radius: 0.5em;
-        border: 0.1em solid black;
-        text-align: center;
-        color: white;
-    }
-
 
     .buttonDiv{
         display: flex;
@@ -199,10 +187,5 @@
         margin: 0 0.5em;
         padding: 0 1em 0 1em;
         border-radius: 2em;
-    }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
     }
 </style>
