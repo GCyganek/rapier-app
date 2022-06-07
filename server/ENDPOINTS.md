@@ -51,6 +51,45 @@ Player id is a 7 digit string. Endpoint returns ids of successfully added player
 ["1593578", "1234567", "9876543"]
 ```
 
+## `get-players`
+
+Endpoint returns JSON with an array of all existing players.
+
+### Method
+
+`GET`
+
+### Parameters (body)
+
+empty
+
+### Response
+
+| name | type |
+| ---- | ---- |
+| -    | JSON |
+
+### Example response JSON
+
+```
+[
+    {
+        "lastName": "Kowalski",
+        "firstName": "Janek",
+        "id": "player1"
+    },
+    {
+        "lastName": "Nowak",
+        "firstName": "Andrzej",
+        "id": "player2"
+    },
+    {
+        "lastName": "Jarek",
+        "firstName": "Marek",
+        "id": "player4"
+    }
+]
+```
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server.
