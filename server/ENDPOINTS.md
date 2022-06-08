@@ -358,10 +358,17 @@ proposal and sends message containing proposal to this endpoint).
 
 where `Event` is an interface:
 
-| name        | type   |
-| ----------- | ------ |
-| id          | string |
-| playerColor | string |
+| name        | type        |
+| ----------- |-------------|
+| id          | string      |
+| playerColor | PlayerColor |
+
+and `PlayerColor` is an enum:
+
+| name | value  |
+| ---- | ------ |
+| Red  | "RED"  |
+| Blue | "BLUE" |
 
 where `id` is the identifier of the selected event (for example, an action "Attack -> Successful -> Head strike"
 can be identified by `id = 'ashs'`).
@@ -420,12 +427,19 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 
 ### Response (send to the main judge)
 
-| name             | type    |
-| ---------------- | ------- |
-| judgeColor       | string  |
-| events           | Event[] |
-| redPlayerPoints  | number  |
-| bluePlayerPoints | number  |
+| name             | type      |
+| ---------------- |-----------|
+| judgeColor       | JudgeRole |
+| events           | Event[]   |
+| redPlayerPoints  | number    |
+| bluePlayerPoints | number    |
+
+and `JudgeRole` is an enum:
+
+| name      | value  |
+|-----------| ------ |
+| RedJudge  | "RED"  |
+| BlueJudge | "BLUE" |
 
 ## `fightEndConditionFulfilled`
 
@@ -443,32 +457,3 @@ where `conditionName` is enum with values:
 
 - `TIME_ENDED`
 - `ENOUGH_POINTS`
-
-# Mocked Fight and Players
-
-## `Fight`
-
-| name         | type   | value     |
-| ------------ | ------ | --------- |
-| id           | string | 'mockup'  |
-| mianJudgeId  | string | 'main'    |
-| redJudgeID   | string | 'red'     |
-| blueJudgeId  | string | 'blue'    |
-| redPlayerId  | string | 'player1' |
-| bluePlayerId | string | 'player2' |
-
-## `Player1`
-
-| name      | type   | value      |
-| --------- | ------ | ---------- |
-| id        | string | 'player1'  |
-| firstName | string | 'Ala'      |
-| lastName  | string | 'Kowalska' |
-
-## `Player2`
-
-| name      | type   | value      |
-| --------- | ------ | ---------- |
-| id        | string | 'player2'  |
-| firstName | string | 'Jan'      |
-| lastName  | string | 'Kowalski' |

@@ -9,7 +9,7 @@ import { JudgesGateway } from '../../src/gateways/judges.gateway';
 import { FightsService } from '../../src/services/fights.service';
 import { Timer } from '../../src/classes/timer.class';
 import { INestApplication } from '@nestjs/common';
-import { Event } from '../../src/interfaces/event.interface';
+import { Event, PlayerColor } from '../../src/interfaces/event.interface';
 import { FightImpl } from '../../src/classes/fight.class';
 import { Player } from '../../src/interfaces/player.interface';
 import { PlayersService } from '../../src/services/players.service';
@@ -673,9 +673,9 @@ describe('JudgesGateway', () => {
         bluePlayerPoints = 1;
 
         events = [
-          { id: 'a', playerColor: 'red' },
-          { id: 'b', playerColor: 'blue' },
-          { id: 'a', playerColor: 'red' },
+          { id: 'a', playerColor: PlayerColor.Red },
+          { id: 'b', playerColor: PlayerColor.Blue },
+          { id: 'a', playerColor: PlayerColor.Red },
         ];
       });
 
@@ -929,7 +929,7 @@ describe('JudgesGateway', () => {
 
           await new Promise<void>((resolve) =>
             wsMain.on(JudgesSocketEvents.EventsSuggestion, (data) => {
-              expect(data.judgeColor).toBe('blue');
+              expect(data.judgeColor).toBe(JudgeRole.BlueJudge);
               expect(data.events).toStrictEqual(events);
               expect(data.redPlayerPoints).toBe(redPlayerPoints);
               expect(data.bluePlayerPoints).toBe(bluePlayerPoints);
