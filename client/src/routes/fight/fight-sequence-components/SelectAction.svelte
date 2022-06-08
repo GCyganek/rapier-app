@@ -4,7 +4,7 @@
     import { get_current_component } from "svelte/internal";
     import { Components } from './Components';
     import { Colours } from "./Colours";
-    import { Batch } from "./Batch";
+    import { SequenceElement } from 'model/SequenceElement';
     import { Actions } from './Actions';
 
     const component = get_current_component();
@@ -15,7 +15,7 @@
         component.dispatchEvent && component.dispatchEvent(new CustomEvent(name, { detail }))
     }
 
-    let batch = new Batch();
+    let batch = new SequenceElement;
     export let answerDisabled;
     batch.currentComponent = Components.SelectAction;
 

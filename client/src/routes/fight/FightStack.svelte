@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { Batch } from "./fight-sequence-components/Batch";
+    import type { SequenceElement } from "model/SequenceElement";
     import { createEventDispatcher } from "svelte";
     import { Actions } from "./fight-sequence-components/Actions";
     import FightPoints from "./modal/FightPoints.svelte";
 
-    export let stack: Batch[];
+    export let stack: SequenceElement[];
 
     let isOpenPoints = false;
 

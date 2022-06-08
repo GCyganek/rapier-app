@@ -1,50 +1,55 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import type { Response } from "model/Communication";
- 
+    import FightSuggestion from "./modal/FightSuggestion.svelte";
+
+    const dispatch = createEventDispatcher();
     export let suggestion: Response.Suggestion;
+    let isOpenModal = false;
+
+    function openModal(suggestion) {
+        dispatch("suggestion");
+        isOpenModal = true;
+    }
+
+    function closeAndCleanModal() {
+        isOpenModal = false;
+        suggestion = undefined;
+    }
+
+    function toggleModal() {
+        isOpenModal = false;
+    }
 </script>
 
-{#if suggestion}
-    <div class={suggestion.judgeColor.toLowerCase()}>
-        <span class="red-points"> 
-            {suggestion.redPlayerPoints}
-        </span>
-        
-        <span class="blue-points">
-            {suggestion.bluePlayerPoints}
-        </span>
-    </div>
+{#if suggestion!==undefined}
+        <button class="suggestion" 
+                style="background-color: {suggestion.judgeColor.toLowerCase()=="red" ? 'var(--red-fighter)' : 'var(--blue-fighter)'}" 
+                on:click={() => openModal(suggestion)}>
+                Czerwony: {suggestion.redPlayerPoints}, Niebieski: {suggestion.bluePlayerPoints}
+        </button>
+        <FightSuggestion suggestion={suggestion} isOpenModal={isOpenModal} on:discardSuggestion={closeAndCleanModal} on:toggleModal={toggleModal} />
 {:else}
-    <div>
-        [oczekuję na propozycję sędziego]
-    </div>
+    <button class="suggestion-await" disabled={true} >
+        Oczekiwanie na propozycję sędzi bocznego...
+    </button>
 {/if}
 
 <style>
-    div.red {
-        border: 1px var(--red-fighter) solid;
-    }
-
-    div.blue {
-        border: 1px var(--blue-fighter) solid;
-    }
-
-    span {
+    button {
+        width: 80%;
         padding: .125rem .5rem;
-        color: white;
+        border-radius: 0.25em;
         text-align: center;
+        display: block;
     }
 
-    .red-points {
-        border-top-left-radius: .5rem;
-        border-bottom-left-radius: .5rem;
-        background-color: var(--red-fighter);
+    button.suggestion-await {
+        color: black;
     }
 
-    .blue-points {
-        border-top-right-radius: .5rem;
-        border-bottom-right-radius: .5rem;
-        background-color: var(--blue-fighter);
+    button.suggestion {
+        color: white;
     }
 
 </style>
