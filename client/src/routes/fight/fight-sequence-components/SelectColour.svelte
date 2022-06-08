@@ -1,11 +1,10 @@
 <script lang="ts">
     import Icon from '@iconify/svelte';
-    //Event dispatch handling
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
     import { Components } from './Components';
     import { Colours } from "./Colours";
-    import { Batch } from "./Batch";
+    import { SequenceElement } from 'model/SequenceElement';
     import { Actions } from './Actions';
     import { draw } from './Store';
 
@@ -19,7 +18,7 @@
     export let previousAttacker;
     export let answerDisabled;
 
-    let batch = new Batch;
+    let batch = new SequenceElement;
     batch.currentComponent = Components.SelectColour;
 
     const redHandle = () => {

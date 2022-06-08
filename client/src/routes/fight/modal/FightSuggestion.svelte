@@ -5,30 +5,34 @@
     import {FightSocket, key} from "../../FightSocket";
     import type { Response } from "model/Communication";
 
-    export let suggestion: Response.Suggestion;
-
     const dispatch = createEventDispatcher();
     const socket = (getContext(key) as () => FightSocket)();
 
     export let isOpenModal: boolean;
+    export let suggestion: Response.Suggestion;
 
     let points = {};
     points["red"] = suggestion.redPlayerPoints;
     points["blue"] = suggestion.bluePlayerPoints;
 
-    function closeModal() {
+    function discardSuggestion() {
         isOpenModal = false;
-        dispatch('closeModal', { isOpenModal });
+        dispatch('discardSuggestion', { isOpenModal });
     }
 
     function confirmSuggestion(){
         socket.sendEvents(points, suggestion.events);
-        closeModal();
+        discardSuggestion();
+    }
+
+    function toggleModal() {
+        isOpenModal = false;
+        dispatch('toggleModal', { isOpenModal });
     }
 
 </script>
 
-<div id="background" style="--display: {isOpenModal ? 'block' : 'none'};"></div>
+<div id="background" style="--display: {isOpenModal ? 'block' : 'none'};" on:click={toggleModal}></div>
 <div id="modal" style="--display: {isOpenModal ? 'block' : 'none'};">
     <p class="pointsTitle" 
         style="{suggestion.judgeColor.toLowerCase()==="red" ? 'var(--red-fighter)' : 'var(--blue-fighter)'}">Propozycja wyników</p>
@@ -58,7 +62,7 @@
         </div>
     </div>
     <div class="buttonDiv">
-        <Button class="bottomButton" id="cancelButton" on:click={closeModal}>
+        <Button class="bottomButton" id="cancelButton" on:click={discardSuggestion}>
             <Label>Odrzuć</Label>
         </Button>
         <span class="spacer"></span>

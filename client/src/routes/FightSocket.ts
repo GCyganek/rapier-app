@@ -3,7 +3,7 @@ import type { Response } from 'model/Communication';
 import type { Writable } from 'svelte/store';
 import { io, Socket } from 'socket.io-client';
 import { writable } from 'svelte/store';
-import type { Batch } from './fight/fight-sequence-components/Batch';
+import type { SequenceElement } from '../model/SequenceElement';
 
 export const key = Symbol();
 
@@ -139,7 +139,7 @@ export class FightSocket {
     return this.promiseFor<Response.Timer>(Events.ResumeTimer);
   }
 
-  sendEvents(points: { [x: string]: any }, stack: Batch[]) {
+  sendEvents(points: { [x: string]: any }, stack: SequenceElement[]) {
     const eventsParameters = {
       fightId: this.fightId,
       judgeId: this.judgeId,
@@ -148,11 +148,10 @@ export class FightSocket {
       redPlayerPoints: points['red'],
       bluePlayerPoints: points['blue'],
     };
-    if (this.role === 'MAIN')
-      this.socket.emit(Events.NewEvents, eventsParameters);
-    else {
-      this.socket.emit(Events.EventsSuggestion, eventsParameters);
-    }
+    this.socket.emit(
+      this.role === 'MAIN' ? Events.NewEvents : Events.EventsSuggestion,
+      eventsParameters,
+    );
   }
 
   on(event: Events, listener: FightSocket.Listener) {

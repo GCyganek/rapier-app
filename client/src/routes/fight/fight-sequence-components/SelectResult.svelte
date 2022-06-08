@@ -3,7 +3,7 @@
     import { createEventDispatcher } from "svelte";
     import { get_current_component } from "svelte/internal";
     import { Actions } from './Actions';
-    import { Batch } from './Batch';
+    import { SequenceElement } from 'model/SequenceElement';
     import { Colours } from './Colours';
     import { Components } from './Components';
 
@@ -15,7 +15,7 @@
         component.dispatchEvent && component.dispatchEvent(new CustomEvent(name, { detail }))
     }
 
-    let batch = new Batch;
+    let batch = new SequenceElement;
     batch.currentComponent = Components.SelectResult;
 
 

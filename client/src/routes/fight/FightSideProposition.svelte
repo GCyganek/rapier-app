@@ -18,7 +18,6 @@
 <style>
   div.side {
     display: flex;
-    height: 20vh;
     align-items: center;
     flex-direction: column;
     gap: 0.5rem;

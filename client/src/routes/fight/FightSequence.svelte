@@ -2,9 +2,9 @@
     import type { Writable } from 'svelte/store';
     import { writable } from 'svelte/store';
     import { draw, emptySeq } from './fight-sequence-components/Store';
-    import type { Batch } from './fight-sequence-components/Batch';
+    import type { SequenceElement } from 'model/SequenceElement';
 
-    const fightSequence: Writable<Batch[]> = writable([]);
+    const fightSequence: Writable<SequenceElement[]> = writable([]);
     const activeComponent: Writable<any> = writable(SelectColour);
     let attackersHistory = [];          // array to track last attacker's colour (needed for "Go back" handling)
     let previousAttacker = undefined;   // previous attacker's colour (is )
@@ -48,7 +48,7 @@
         draw.set(false);
     }
 
-    const push = (batch: Batch) => {
+    const push = (batch: SequenceElement) => {
         previousComponents.push(batch.currentComponent);
         activeComponent.set(options[batch.nextComponent]);
         fightSequence.update(fs => [...fs, batch]);
@@ -67,7 +67,7 @@
     import SelectArea from './fight-sequence-components/SelectArea.svelte';
     import { Components } from './fight-sequence-components/Components';
 
-    const logAction = (e: CustomEvent<Batch>) => {
+    const logAction = (e: CustomEvent<SequenceElement>) => {
         if (previousAttacker !== undefined) {
             attackersHistory.push(previousAttacker);
         }

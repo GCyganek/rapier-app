@@ -1,12 +1,12 @@
 <script lang="ts">
     import {createEventDispatcher, getContext} from 'svelte';
     import Button, { Label } from "@smui/button";
-    import type { Batch } from "../fight-sequence-components/Batch";
+    import type { SequenceElement } from 'model/SequenceElement';
     import { Actions } from "../fight-sequence-components/Actions";
     import {FightSocket, key} from "../../FightSocket";
     import { clear } from '../FightSequence.svelte';
 
-    export let stack: Batch[];
+    export let stack: SequenceElement[];
 
     const dispatch = createEventDispatcher();
     const socket = (getContext(key) as () => FightSocket)();
@@ -72,11 +72,11 @@
     </div>
     <div class="buttonDiv">
         <Button class="bottomButton" id="cancelButton" on:click={closeModal}>
-            <Label>Odrzuć</Label>
+            <Label>Wróć</Label>
         </Button>
         <span class="spacer"></span>
         <Button class="bottomButton" id="confirmButton" on:click={confirmPoints}>
-            <Label>Zatwierdź</Label>
+            <Label>Wyślij</Label>
         </Button>
     </div>
 
