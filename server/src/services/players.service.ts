@@ -48,6 +48,10 @@ export class PlayersService {
     return this.playerModel.findOne({ id: id }, { _id: false }).exec();
   }
 
+  async getAllPlayers(): Promise<MongoPlayer[]> {
+    return this.playerModel.find({}, { _id: false }).exec();
+  }
+
   async isPlayer(id: string): Promise<boolean> {
     return (await this.getPlayer(id)) !== null;
   }

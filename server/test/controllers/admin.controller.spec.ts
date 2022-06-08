@@ -9,6 +9,7 @@ import { mockMongoFight } from '../constants/mock-mongo-fight';
 import { FightImpl } from '../../src/classes/fight.class';
 import { Model } from 'mongoose';
 import { mockMongoPlayer } from '../constants/mock-mongo-player';
+import { Player } from 'src/interfaces/player.interface';
 
 describe('AdminController', () => {
   let app: TestingModule;
@@ -46,6 +47,7 @@ describe('AdminController', () => {
           useValue: {
             findOne: jest.fn(),
             create: jest.fn(),
+            find: jest.fn(),
             exec: jest.fn(),
           },
         },
@@ -72,6 +74,37 @@ describe('AdminController', () => {
       expect(response[0].length).toEqual(7);
       expect(response[1].length).toEqual(7);
       expect(response[2].length).toEqual(7);
+    });
+  });
+
+  describe('getPlayers', () => {
+    it('should return ids of all players', async () => {
+      const player1: Player = {
+        firstName: 'Janek',
+        lastName: 'Kowalski',
+        id: 'player1',
+      };
+      const player2: Player = {
+        firstName: 'Ala',
+        lastName: 'Pole',
+        id: 'player2',
+      };
+      const player3: Player = {
+        firstName: 'Marek',
+        lastName: 'Kot',
+        id: 'player3',
+      };
+
+      jest.spyOn(playerModel, 'find').mockReturnValue({
+        exec: jest.fn().mockResolvedValue([player1, player2, player3]),
+      } as any);
+
+      const adminController = app.get<AdminController>(AdminController);
+      const response = await adminController.getPlayers();
+      expect(response.length).toEqual(3);
+      expect(response.includes(player1)).toBeTruthy;
+      expect(response.includes(player2)).toBeTruthy;
+      expect(response.includes(player3)).toBeTruthy;
     });
   });
 
