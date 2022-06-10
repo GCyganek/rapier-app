@@ -1,4 +1,9 @@
 export interface Event {
   id: string;
-  playerColor: string;
+  playerColor: PlayerColor;
+}
+
+export enum PlayerColor {
+  Red = 'RED',
+  Blue = 'BLUE',
 }

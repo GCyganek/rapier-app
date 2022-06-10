@@ -1,7 +1,8 @@
 import { Event } from './event.interface';
+import { JudgeRole } from './join-response.interface';
 
 export interface SuggestedEventsForwarding {
-  judgeColor: string;
+  judgeColor: JudgeRole;
   events: Event[];
   redPlayerPoints: number;
   bluePlayerPoints: number;

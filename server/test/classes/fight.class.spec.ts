@@ -6,6 +6,7 @@ import {
 } from '../../src/interfaces/fight.interface';
 import { FightEndConditionFulfilledObserver } from '../../src/interfaces/observers/fight-end-condition-fulfilled-observer.interface';
 import { JudgeRole } from '../../src/interfaces/join-response.interface';
+import { PlayerColor } from '../../src/interfaces/event.interface';
 
 describe('FightImpl', () => {
   let manager: Manager;
@@ -304,9 +305,9 @@ describe('FightImpl', () => {
     const bluePlayerPoints = 1;
 
     const events = [
-      { id: 'a', playerColor: 'red' },
-      { id: 'b', playerColor: 'blue' },
-      { id: 'a', playerColor: 'red' },
+      { id: 'a', playerColor: PlayerColor.Red },
+      { id: 'b', playerColor: PlayerColor.Blue },
+      { id: 'a', playerColor: PlayerColor.Red },
     ];
 
     it('should not add events with negative number of points', () => {

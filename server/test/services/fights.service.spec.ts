@@ -5,7 +5,7 @@ import {
   FightState,
 } from '../../src/interfaces/fight.interface';
 import { ResponseStatus } from '../../src/interfaces/response.interface';
-import { Event } from '../../src/interfaces/event.interface';
+import { Event, PlayerColor } from '../../src/interfaces/event.interface';
 import { Manager } from 'socket.io-client';
 import { Timer } from '../../src/classes/timer.class';
 import { FightImpl } from '../../src/classes/fight.class';
@@ -568,9 +568,9 @@ describe('FightsService', () => {
     beforeAll(() => {
       fight = fightsService.getFight(mockFight.id);
       events = [
-        { id: 'a', playerColor: 'red' },
-        { id: 'b', playerColor: 'blue' },
-        { id: 'a', playerColor: 'red' },
+        { id: 'a', playerColor: PlayerColor.Red },
+        { id: 'b', playerColor: PlayerColor.Blue },
+        { id: 'a', playerColor: PlayerColor.Red },
       ];
     });
 

@@ -15,7 +15,7 @@ import { FightEndConditionFulfilledObserver } from '../interfaces/observers/figh
 import { FightEndConditionFulfilledResponse } from '../interfaces/fight-end-condition-fulfilled-response.interface';
 import { FightEndConditionName } from '../interfaces/fight.interface';
 import { FightImpl } from '../classes/fight.class';
-import { JoinResponse } from '../interfaces/join-response.interface';
+import { JoinResponse, JudgeRole } from '../interfaces/join-response.interface';
 import { PlayersService } from '../services/players.service';
 import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwarding.interface';
 import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
@@ -282,7 +282,8 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
 
     const fight = this.fightsService.getFight(fightId);
 
-    const judgeColor = judgeId === fight.redJudgeId ? 'red' : 'blue';
+    const judgeColor =
+      judgeId === fight.redJudgeId ? JudgeRole.RedJudge : JudgeRole.BlueJudge;
 
     const forwarding: SuggestedEventsForwarding = {
       judgeColor: judgeColor,
