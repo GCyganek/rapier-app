@@ -20,7 +20,7 @@ import { PlayersService } from '../services/players.service';
 import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwarding.interface';
 import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
   constructor(
     private fightsService: FightsService,
