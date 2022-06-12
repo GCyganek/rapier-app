@@ -10,7 +10,6 @@
   setContext(key, () => socket);
 
   function enterData() {
-    console.log(fightId, judgeId);
     socket = new FightSocket(fightId.trim(), judgeId.trim());
     enteredData = true;
   }
