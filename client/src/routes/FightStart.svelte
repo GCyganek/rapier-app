@@ -3,7 +3,7 @@
   import { Events, FightSocket, key } from './FightSocket';
   import { getContext } from 'svelte';
   import type { Response } from 'model/Communication';
-  import {push} from 'svelte-spa-router';
+  import { push } from 'svelte-spa-router';
 
   export let response: Response.Join;
   let startPointSync = 0;
@@ -21,7 +21,7 @@
   socket.on(Events.FinishFight, (response: Response.Status) => {
     if (response['status'] == 'OK') {
       fightState = FightState.Finished;
-      push("/summary");
+      push('/summary');
     }
   });
 
