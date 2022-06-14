@@ -2,7 +2,7 @@
   import { replace } from 'svelte-spa-router';
 
   function leave() {
-    replace('/fight');
+    replace('/');
   }
 </script>
 

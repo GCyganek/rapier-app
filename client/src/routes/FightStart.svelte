@@ -1,14 +1,15 @@
 <script lang="ts">
   import Fight from './Fight.svelte';
   import { Events, FightSocket, key } from './FightSocket';
-  import { getContext } from 'svelte';
-  import type { Response } from 'model/Communication';
+  import { setContext } from 'svelte';
   import { push } from 'svelte-spa-router';
 
-  export let response: Response.Join;
   let startPointSync = 0;
-
-  const socket = (getContext(key) as () => FightSocket)();
+  export let params = {};
+  let fightId = params.fightId;
+  let judgeId = params.judgeId;
+  let socket: FightSocket = new FightSocket(fightId, judgeId);
+  setContext(key, () => socket);
 
   enum FightState {
     Waiting,
@@ -18,15 +19,15 @@
 
   let fightState = FightState.Waiting;
 
-  socket.on(Events.FinishFight, (response: Response.Status) => {
-    if (response['status'] == 'OK') {
+  socket.on(Events.FinishFight, (res) => {
+    if (res.status == 'OK') {
       fightState = FightState.Finished;
       push('/summary');
     }
   });
 
   socket.on(Events.StartFight, (res) => {
-    if (response.status === 'OK') {
+    if (res.status === 'OK') {
       fightState = FightState.Started;
       startPointSync = res.timeInMillis;
     }
@@ -37,21 +38,29 @@
   }
 </script>
 
-{#if fightState === FightState.Waiting}
-  {#if response.role === 'MAIN'}
-    <div class="start">
-      <button on:click={handleClick} class="startButton">
-        Rozpocznij pojedynek
-      </button>
-    </div>
-  {:else}
-    <div class="start">
-      <p>Oczekiwanie na rozpoczęcie spotkania...</p>
-    </div>
+{#await socket.join()}
+  <div class="start">
+    <p>Oczekuję na połączenie...</p>
+  </div>
+{:then response}
+  {#if fightState === FightState.Waiting}
+    {#if response.role === 'MAIN'}
+      <div class="start">
+        <button on:click={handleClick} class="startButton">
+          Rozpocznij pojedynek
+        </button>
+      </div>
+    {:else}
+      <div class="start">
+        <p>Oczekiwanie na rozpoczęcie spotkania...</p>
+      </div>
+    {/if}
+  {:else if fightState === FightState.Started}
+    <Fight {...response} start={startPointSync} />
   {/if}
-{:else if fightState === FightState.Started}
-  <Fight {...response} start={startPointSync} />
-{/if}
+{:catch err}
+  <p>Error: {err}</p>
+{/await}
 
 <style>
   div.start {

@@ -6,7 +6,7 @@
   }
 
   function navigateFight() {
-    push('/fight');
+    push('/login');
   }
 </script>
 
