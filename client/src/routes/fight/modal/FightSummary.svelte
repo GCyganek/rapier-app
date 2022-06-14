@@ -1,12 +1,8 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { FightSocket, key } from '../../FightSocket';
-
-  const socket = (getContext(key) as () => FightSocket)();
+    import {replace} from "svelte-spa-router";
 
     function leave(){
-        socket.close();
-        window.location.reload();
+        replace("/fight")
     }
 </script>
 
