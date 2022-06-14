@@ -1,14 +1,14 @@
 <script lang="ts">
-    import {replace} from "svelte-spa-router";
+  import { replace } from 'svelte-spa-router';
 
-    function leave(){
-        replace("/fight")
-    }
+  function leave() {
+    replace('/fight');
+  }
 </script>
 
 <div class="summary">
-    <p>Walka zakończona!</p>
-    <button on:click={leave}>Wyjdź</button>
+  <p>Walka zakończona!</p>
+  <button on:click={leave}>Wyjdź</button>
 </div>
 
 <style>
