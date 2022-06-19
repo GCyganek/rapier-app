@@ -1,32 +1,32 @@
 <script lang="ts">
-  import { replace } from 'svelte-spa-router';
+  import { push } from 'svelte-spa-router';
 
-  function leave() {
-    replace('/');
+  function navigateOrganizer() {
+    push('/organizer');
+  }
+
+  function navigateFight() {
+    push('/login');
   }
 </script>
 
-<div class="summary">
-  <p>Walka zakończona!</p>
-  <button on:click={leave}>Wyjdź</button>
+<div class="home">
+  <button on:click={navigateFight}> Walka </button>
+  <button on:click={navigateOrganizer}> Organizator </button>
 </div>
 
 <style>
-  div.summary {
+  div.home {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     background-image: url('../resources/fightstart_background_semitransparent.png');
     background-repeat: repeat;
   }
-  p {
-    font-size: 2rem;
-    font-weight: bold;
-    -webkit-text-stroke: 0.05rem white;
-    text-align: center;
-  }
+
   button {
     border: 1px black solid;
     font-size: 2rem;
