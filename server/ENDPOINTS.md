@@ -1,3 +1,56 @@
+## Table of contents
+- [Administrator page](#administrator-page)
+  * [`load-players`](#load-players)
+    + [Method](#method)
+    + [Parameters (body)](#parameters-body)
+    + [Response](#response)
+    + [Example request JSON](#example-request-json)
+    + [Example response JSON](#example-response-json)
+  * [`get-players`](#get-players)
+    + [Method](#method-1)
+    + [Parameters (body)](#parameters-body-1)
+    + [Response](#response-1)
+    + [Example response JSON](#example-response-json-1)
+  * [`load-fights`](#load-fights)
+    + [Method](#method-2)
+    + [Parameters (body)](#parameters-body-2)
+    + [Response](#response-2)
+    + [Example request JSON](#example-request-json-1)
+    + [Example response JSON](#example-response-json-2)
+- [Judges communication](#judges-communication)
+  * [`join`](#join)
+    + [Parameters](#parameters)
+    + [Response (sent to the judge that called this endpoint)](#response-send-to-the-judge-that-called-this-endpoint)
+    + [Update (sent to other connected judges)](#update-send-to-other-connected-judges)
+    + [Error codes](#error-codes)
+  * [`startFight`](#startfight)
+    + [Parameters](#parameters-1)
+    + [Response (sent to all judges)](#response-send-to-all-judges)
+    + [Error codes](#error-codes-1)
+  * [`finishFight`](#finishfight)
+    + [Parameters](#parameters-2)
+    + [Response (sent to all judges)](#response-send-to-all-judges-1)
+    + [Error codes](#error-codes-2)
+  * [`pauseTimer`](#pausetimer)
+    + [Parameters](#parameters-3)
+    + [Response (sent to all judges)](#response-send-to-all-judges-2)
+    + [Error codes](#error-codes-3)
+  * [`resumeTimer`](#resumetimer)
+    + [Parameters](#parameters-4)
+    + [Response (sent to all judges)](#response-send-to-all-judges-3)
+    + [Error codes](#error-codes-4)
+  * [`newEvents`](#newevents)
+    + [Parameters](#parameters-5)
+    + [Response (sent to all judges)](#response-send-to-all-judges-4)
+    + [Error codes](#error-codes-5)
+  * [`eventsSuggestion`](#eventssuggestion)
+    + [Parameters](#parameters-6)
+    + [Response (sent to the judge suggesting new events)](#response-send-to-the-judge-suggesting-new-events)
+    + [Error codes](#error-codes-6)
+    + [Response (sent to the main judge)](#response-send-to-the-main-judge)
+  * [`fightEndConditionFulfilled`](#fightendconditionfulfilled)
+    + [Response (sent to all judges)](#response-send-to-all-judges-5)
+
 # Administrator page
 
 - Protocol: **HTTP**
@@ -90,6 +143,7 @@ empty
     }
 ]
 ```
+
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server.
@@ -359,7 +413,7 @@ proposal and sends message containing proposal to this endpoint).
 where `Event` is an interface:
 
 | name        | type        |
-| ----------- |-------------|
+| ----------- | ----------- |
 | id          | string      |
 | playerColor | PlayerColor |
 
@@ -428,7 +482,7 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 ### Response (send to the main judge)
 
 | name             | type      |
-| ---------------- |-----------|
+| ---------------- | --------- |
 | judgeColor       | JudgeRole |
 | events           | Event[]   |
 | redPlayerPoints  | number    |
@@ -437,7 +491,7 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 and `JudgeRole` is an enum:
 
 | name      | value  |
-|-----------| ------ |
+| --------- | ------ |
 | RedJudge  | "RED"  |
 | BlueJudge | "BLUE" |
 
@@ -457,3 +511,31 @@ where `conditionName` is enum with values:
 
 - `TIME_ENDED`
 - `ENOUGH_POINTS`
+
+## `reconnectResponse`
+
+Sent to judge when reconnected to running fight. Contains info about running fight.
+
+### Response
+
+| name             | type       |
+| ---------------- | ---------- |
+| timeInMillis     | number     |
+| fightState       | FightState |
+| redPlayerPoints  | number     |
+| bluePlayerPoints | number     |
+
+and `FightState` is an enum:
+
+| name      | value  |
+| --------- | ------ |
+| Scheduled | "SCHEDULED" |
+| Running | "RUNNING" |
+| Paused | "PAUSED" |
+| Finished | "FINISHED" |
+
+timeInMillis - current running fight duration in milliseconds
+
+fightState - is fight running or paused 
+
+redPlayerPoints / bluePlayerPoints - current points count achieved by each player

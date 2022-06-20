@@ -12,7 +12,6 @@ import { FightEndConditionFulfilledObserver } from '../interfaces/observers/figh
 import { FightEndConditionFulfilledPublisher } from '../interfaces/publishers/fight-end-condition-fulfilled-publisher.interface';
 import { assert } from 'console';
 import { JudgeRole } from '../interfaces/join-response.interface';
-import millisToTime from '../functions/millisToTime';
 
 export class FightImpl
   implements
@@ -70,17 +69,27 @@ export class FightImpl
     this.startedAt = new Date().valueOf();
   }
 
+  getTimeInMillis(): number {
+    if (this.state === FightState.Running) {
+      return this.currentDurationInMillis + Date.now() - this.lastFightResume;
+    }
+    return this.currentDurationInMillis;
+  }
+
   judgeSocketAlreadyAssigned(judgeId: string, socket: Socket): boolean {
     return (
       (judgeId == this.mainJudge.id &&
         this.mainJudge.socket != null &&
-        this.mainJudge.socket != socket) ||
+        this.mainJudge.socket != socket &&
+        this.mainJudge.socket.connected) ||
       (judgeId == this.redJudge.id &&
         this.redJudge.socket != null &&
-        this.redJudge.socket != socket) ||
+        this.redJudge.socket != socket &&
+        this.redJudge.socket.connected) ||
       (judgeId == this.blueJudge.id &&
         this.blueJudge.socket != null &&
-        this.blueJudge.socket != socket)
+        this.blueJudge.socket != socket &&
+        this.blueJudge.socket.connected)
     );
   }
 

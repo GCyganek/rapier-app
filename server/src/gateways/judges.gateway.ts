@@ -19,6 +19,7 @@ import { JoinResponse, JudgeRole } from '../interfaces/join-response.interface';
 import { PlayersService } from '../services/players.service';
 import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwarding.interface';
 import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
+import ReconnectResponse from 'src/interfaces/reconnect-response.interface';
 
 @WebSocketGateway()
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
@@ -71,7 +72,18 @@ export class JudgesGateway implements FightEndConditionFulfilledObserver {
       });
     }
 
-    return client.emit(JudgesSocketEvents.Join, response);
+    client.emit(JudgesSocketEvents.Join, response);
+
+    if (fight.inProgress()) {
+      const response: ReconnectResponse = {
+        fightState: fight.state,
+        timeInMillis: fight.getTimeInMillis(),
+        redPlayerPoints: fight.redPlayer.points,
+        bluePlayerPoints: fight.bluePlayer.points,
+      };
+
+      client.emit(JudgesSocketEvents.ReconnectResponse, response);
+    }
   }
 
   @SubscribeMessage(JudgesSocketEvents.StartFight)
