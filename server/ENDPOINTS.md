@@ -143,6 +143,7 @@ empty
     }
 ]
 ```
+
 ## `load-fights`
 
 Endpoint takes JSON string as x-www-form-urlencoded body parameter and saves given fights in server.
@@ -412,7 +413,7 @@ proposal and sends message containing proposal to this endpoint).
 where `Event` is an interface:
 
 | name        | type        |
-| ----------- |-------------|
+| ----------- | ----------- |
 | id          | string      |
 | playerColor | PlayerColor |
 
@@ -481,7 +482,7 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 ### Response (send to the main judge)
 
 | name             | type      |
-| ---------------- |-----------|
+| ---------------- | --------- |
 | judgeColor       | JudgeRole |
 | events           | Event[]   |
 | redPlayerPoints  | number    |
@@ -490,7 +491,7 @@ Endpoint makes sure that it is called by the red or blue judge and sends proposa
 and `JudgeRole` is an enum:
 
 | name      | value  |
-|-----------| ------ |
+| --------- | ------ |
 | RedJudge  | "RED"  |
 | BlueJudge | "BLUE" |
 
@@ -511,3 +512,30 @@ where `conditionName` is enum with values:
 - `TIME_ENDED`
 - `ENOUGH_POINTS`
 
+## `reconnectResponse`
+
+Sent to judge when reconnected to running fight. Contains info about running fight.
+
+### Response
+
+| name             | type       |
+| ---------------- | ---------- |
+| timeInMillis     | number     |
+| fightState       | FightState |
+| redPlayerPoints  | number     |
+| bluePlayerPoints | number     |
+
+and `FightState` is an enum:
+
+| name      | value  |
+| --------- | ------ |
+| Scheduled | "SCHEDULED" |
+| Running | "RUNNING" |
+| Paused | "PAUSED" |
+| Finished | "FINISHED" |
+
+timeInMillis - current running fight duration in milliseconds
+
+fightState - is fight running or paused 
+
+redPlayerPoints / bluePlayerPoints - current points count achieved by each player

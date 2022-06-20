@@ -102,14 +102,14 @@ describe('FightImpl', () => {
       socket.disconnect();
     });
 
-    it('should return true on checking already assigned judge with different socket given', () => {
+    it('should return false on checking already assigned judge, but with disconnected socket', () => {
       const anotherSocket = manager.socket('/anotherNsp');
       expect(
         fight.judgeSocketAlreadyAssigned(
           fight.mainJudge.id,
           anotherSocket as any,
         ),
-      ).toBeTruthy();
+      ).toBeFalsy();
       anotherSocket.disconnect();
     });
   });
