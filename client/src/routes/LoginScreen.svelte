@@ -1,46 +1,26 @@
 <script lang="ts">
-  import FightStart from './FightStart.svelte';
-  import { FightSocket, key } from './FightSocket';
-  import { setContext } from 'svelte';
+  import { push } from 'svelte-spa-router';
 
   let fightId = '';
   let judgeId = '';
-  let socket: FightSocket;
-
-  setContext(key, () => socket);
 
   function enterData() {
-    console.log(fightId, judgeId);
-    socket = new FightSocket(fightId.trim(), judgeId.trim());
-    enteredData = true;
+    push('/fight/' + fightId.trim() + '/' + judgeId.trim());
   }
-
-  let enteredData = false;
 </script>
 
-{#if !enteredData}
-  <div class="login">
-    <fieldset>
-      <legend>Identyfikator walki</legend>
-      <input bind:value={fightId}/>
-    </fieldset>
-    <fieldset>
-      <legend>Identyfikator sędziego</legend>
-      <input bind:value={judgeId}/>
-    </fieldset>
+<div class="login">
+  <fieldset>
+    <legend>Identyfikator walki</legend>
+    <input bind:value={fightId} />
+  </fieldset>
+  <fieldset>
+    <legend>Identyfikator sędziego</legend>
+    <input bind:value={judgeId} />
+  </fieldset>
 
-    <button on:click={enterData}> Wejdź </button>
-  </div>
-{:else}
-  {#await socket.join()}
-    <!-- Bez styli! -->
-    <p>Oczekuję na połączenie...</p>
-  {:then response}
-    <FightStart {response} />
-  {:catch err}
-    <p>Error: {err}</p>
-  {/await}
-{/if}
+  <button on:click={enterData}> Wejdź </button>
+</div>
 
 <style>
   div.login {
