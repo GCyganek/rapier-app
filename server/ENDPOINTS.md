@@ -472,6 +472,17 @@ Sent to judge when reconnected to running fight. Contains info about running fig
 | redPlayerPoints  | number     |
 | bluePlayerPoints | number     |
 
+and `FightState` is an enum:
+
+| name      | value  |
+| --------- | ------ |
+| Scheduled | "SCHEDULED" |
+| Running | "RUNNING" |
+| Paused | "PAUSED" |
+| Finished | "FINISHED" |
+
 timeInMillis - current running fight duration in milliseconds
-fightState - is fight running or paused
+
+fightState - is fight running or paused 
+
 redPlayerPoints / bluePlayerPoints - current points count achieved by each player
