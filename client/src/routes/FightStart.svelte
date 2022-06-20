@@ -3,12 +3,15 @@
   import { Events, FightSocket, key } from './FightSocket';
   import { setContext } from 'svelte';
   import { push } from 'svelte-spa-router';
+  import Error from './Error.svelte';
 
   let startPointSync = 0;
-  export let params = {};
-  let fightId = params.fightId;
-  let judgeId = params.judgeId;
-  let socket: FightSocket = new FightSocket(fightId, judgeId);
+  export let params: { fightId: string, judgeId: string };
+  
+  const fightId = params.fightId;
+  const judgeId = params.judgeId;
+  const socket = new FightSocket(fightId, judgeId);
+  
   setContext(key, () => socket);
 
   enum FightState {
@@ -39,7 +42,7 @@
 </script>
 
 {#await socket.join()}
-  <div class="start">
+  <div class="site-container">
     <p>Oczekuję na połączenie...</p>
   </div>
 {:then response}
@@ -59,7 +62,7 @@
     <Fight {...response} start={startPointSync} />
   {/if}
 {:catch err}
-  <p>Error: {err}</p>
+  <Error status={err} />
 {/await}
 
 <style>
