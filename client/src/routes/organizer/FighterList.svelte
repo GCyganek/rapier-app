@@ -6,7 +6,7 @@
 </script>
 
 {#await getPlayers()}
-  <p>...waiting</p>
+  <p>Trwa pobieranie listy zawodników...</p>
 {:then players}
   <div class="background">
     {#each players as player}
