@@ -30,7 +30,7 @@ export class FightSocket {
   #blueSuggestion: Writable<Response.Suggestion>;
 
   constructor(private fightId: string, private judgeId: string) {
-    this.socket = io(location.host);
+    this.socket = io('https://rapier-app-backend.herokuapp.com/');
     this.role = null;
 
     this.socket.on('connect', () => console.log('Connection established.'));

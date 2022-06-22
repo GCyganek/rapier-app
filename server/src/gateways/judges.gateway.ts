@@ -21,7 +21,7 @@ import { SuggestedEventsForwarding } from '../interfaces/suggested-events-forwar
 import { JudgesSocketEvents } from '../interfaces/judges-socket-events.enum';
 import ReconnectResponse from 'src/interfaces/reconnect-response.interface';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class JudgesGateway implements FightEndConditionFulfilledObserver {
   constructor(
     private fightsService: FightsService,
