@@ -23,7 +23,7 @@
   let fightState = FightState.Waiting;
 
   socket.on(Events.FinishFight, (res) => {
-    if (res.status == 'OK') {
+    if (res.status === 'OK') {
       fightState = FightState.Finished;
       push('/summary');
     }
