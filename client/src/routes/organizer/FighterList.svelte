@@ -1,6 +1,6 @@
 <script lang="ts">
   const getPlayers = async () => {
-    const response = await fetch('api/get-players');
+    const response = await fetch('https://rapier-app-backend.herokuapp.com/get-players');
     return await response.json();
   };
 </script>

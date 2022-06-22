@@ -3,7 +3,7 @@
   let lastName = '';
 
   const addFighter = async () => {
-    const response = await fetch('api/load-players', {
+    const response = await fetch('https://rapier-app-backend.herokuapp.com/load-players', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
