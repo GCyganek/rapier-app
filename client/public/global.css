@@ -100,3 +100,15 @@ button:not(:disabled):active {
 button:focus {
   border-color: #666;
 }
+
+.site-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  min-height: 100vh;
+  
+  background-image: url('../resources/fightstart_background_semitransparent.png');
+  background-repeat: repeat;
+}

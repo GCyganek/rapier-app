@@ -6,21 +6,12 @@
   }
 </script>
 
-<div class="summary">
+<div class="site-container">
   <p>Walka zakończona!</p>
   <button on:click={leave}>Wyjdź</button>
 </div>
 
 <style>
-  div.summary {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-image: url('../resources/fightstart_background_semitransparent.png');
-    background-repeat: repeat;
-  }
   p {
     font-size: 2rem;
     font-weight: bold;

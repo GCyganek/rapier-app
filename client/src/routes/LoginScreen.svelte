@@ -9,7 +9,7 @@
   }
 </script>
 
-<div class="login">
+<div class="site-container">
   <fieldset>
     <legend>Identyfikator walki</legend>
     <input bind:value={fightId} />
@@ -23,26 +23,17 @@
 </div>
 
 <style>
-  div.login {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-image: url('../resources/fightstart_background_semitransparent.png');
-    background-repeat: repeat;
-  }
-
   input {
     border: 1px black solid;
     width: 9em;
     font-size: 2rem;
   }
+  
   button {
     border: 1px black solid;
     font-size: 2rem;
   }
+  
   fieldset {
     background-color: rgba(255, 255, 255, 0.7);
   }
